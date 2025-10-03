@@ -1,0 +1,32 @@
+import Store from 'electron-store';
+
+// Define supported languages
+export type SupportedLanguage = 
+  | 'English'
+  | 'Russian'
+  | 'Ukrainian'
+  | 'Spanish'
+  | 'French'
+  | 'German'
+  | 'Italian'
+  | 'Portuguese'
+  | 'Chinese (Simplified)'
+  | 'Japanese'
+  | 'Korean';
+
+// Define theme type
+export type Theme = 'light' | 'dark' | 'system';
+
+// Define the settings interface
+export interface Settings {
+  apiKey: string;
+  targetLanguage: SupportedLanguage;
+  hotkey: string;
+  theme: Theme;
+}
+
+// Create a type for the store with proper methods
+export type SettingsStore = {
+  get: <K extends keyof Settings>(key: K) => Settings[K];
+  set: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+} & Store<Settings>;

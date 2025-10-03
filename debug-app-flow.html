@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug App Flow</title>
+</head>
+<body>
+    <h1>Debug App Flow</h1>
+    <div id="logs"></div>
+    
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function log(message) {
+            console.log(message);
+            logs.innerHTML += '<div>' + message + '</div>';
+        }
+        
+        // Simulate the data flow issue
+        log('=== Simulating App Data Flow ===');
+        
+        // Test case 1: What happens when Gemini returns JSON in markdown
+        const mockGeminiResponse = '```json\n{"originalText": "Hello World", "translatedText": "Hola Mundo"}\n```';
+        log('Mock Gemini Response: ' + mockGeminiResponse);
+        
+        // Test case 2: What happens if the object gets stringified somewhere
+        const parsedObject = {"originalText": "Hello World", "translatedText": "Hola Mundo"};
+        log('Parsed Object: ' + JSON.stringify(parsedObject));
+        
+        // Test case 3: What happens if we accidentally pass the object instead of the string
+        log('Object as string: ' + parsedObject);
+        log('Object originalText: ' + parsedObject.originalText);
+        
+        // Test case 4: What happens if the object gets converted to string in React
+        const ReactLikeRender = (text) => {
+            if (typeof text === 'object') {
+                log('⚠️ ISSUE FOUND: Trying to render object as text: ' + JSON.stringify(text));
+                return JSON.stringify(text);
+            }
+            return text;
+        };
+        
+        log('React-like render of string: ' + ReactLikeRender("Hello World"));
+        log('React-like render of object: ' + ReactLikeRender(parsedObject));
+    </script>
+</body>
+</html>

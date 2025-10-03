@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+  <title>Screen Capture Debug</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      cursor: crosshair;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    
+    .capture-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      pointer-events: auto;
+    }
+    
+    .selection-area {
+      position: absolute;
+      border: 3px solid #ff0000;
+      background-color: rgba(255, 0, 0, 0.1);
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    .debug-info {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 10001;
+      max-width: 300px;
+      white-space: pre-wrap;
+    }
+    
+    .capture-instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="capture-overlay" id="captureOverlay">
+    <div class="selection-area" id="selectionArea" style="display: none;"></div>
+    <div class="debug-info" id="debugInfo">Debug info will appear here...</div>
+    <div class="capture-instructions" id="instructions">
+      DEBUG MODE: Click and drag to test selection area visibility
+    </div>
+  </div>
+
+  <script>
+    let isSelecting = false;
+    let startPoint = { x: 0, y: 0 };
+    let endPoint = { x: 0, y: 0 };
+    
+    const overlay = document.getElementById('captureOverlay');
+    const selectionArea = document.getElementById('selectionArea');
+    const debugInfo = document.getElementById('debugInfo');
+    const instructions = document.getElementById('instructions');
+    
+    function updateDebugInfo() {
+      const rect = selectionArea.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(selectionArea);
+      
+      const info = `=== SELECTION AREA DEBUG ===
+Element exists: ${!!selectionArea}
+Element in DOM: ${document.contains(selectionArea)}
+Display: ${computedStyle.display}
+Visibility: ${computedStyle.visibility}
+Opacity: ${computedStyle.opacity}
+Z-index: ${computedStyle.zIndex}
+Position: ${computedStyle.position}
+Left: ${computedStyle.left}
+Top: ${computedStyle.top}
+Width: ${computedStyle.width}
+Height: ${computedStyle.height}
+Border: ${computedStyle.border}
+Background: ${computedStyle.backgroundColor}
+BoundingRect: ${rect.width}x${rect.height} at ${rect.left},${rect.top}
+Parent: ${selectionArea.parentElement?.tagName}
+IsSelecting: ${isSelecting}
+StartPoint: ${startPoint.x},${startPoint.y}
+EndPoint: ${endPoint.x},${endPoint.y}
+Mouse Events: ${overlay ? 'Overlay exists' : 'No overlay'}
+Document Ready: ${document.readyState}`;
+      
+      debugInfo.textContent = info;
+    }
+    
+    function setupEventListeners() {
+      console.log('=== SETTING UP EVENT LISTENERS ===');
+      
+      overlay.addEventListener('mousedown', handleMouseDown);
+      overlay.addEventListener('mousemove', handleMouseMove);
+      overlay.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Test if overlay receives events
+      overlay.addEventListener('mouseenter', () => {
+        console.log('Mouse entered overlay');
+        updateDebugInfo();
+      });
+      
+      console.log('Event listeners attached');
+      updateDebugInfo();
+    }
+    
+    function handleMouseDown(e) {
+      console.log('=== MOUSE DOWN ===');
+      console.log(`Position: ${e.clientX},${e.clientY}`);
+      console.log(`Target: ${e.target.tagName}.${e.target.className}`);
+      
+      isSelecting = true;
+      startPoint = { x: e.clientX, y: e.clientY };
+      endPoint = { x: e.clientX, y: e.clientY };
+      
+      updateSelectionArea();
+      updateDebugInfo();
+    }
+    
+    function handleMouseMove(e) {
+      if (!isSelecting) return;
+      
+      endPoint = { x: e.clientX, y: e.clientY };
+      updateSelectionArea();
+      updateDebugInfo();
+    }
+    
+    function handleMouseUp(e) {
+      console.log('=== MOUSE UP ===');
+      console.log(`Position: ${e.clientX},${e.clientY}`);
+      
+      if (!isSelecting) return;
+      
+      isSelecting = false;
+      updateDebugInfo();
+      
+      // Keep selection visible for debugging
+      setTimeout(() => {
+        selectionArea.style.display = 'none';
+        updateDebugInfo();
+      }, 3000);
+    }
+    
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        window.close();
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        // Reset selection area
+        selectionArea.style.display = 'none';
+        isSelecting = false;
+        updateDebugInfo();
+      }
+    }
+    
+    function updateSelectionArea() {
+      console.log('=== UPDATE SELECTION AREA ===');
+      
+      const x = Math.min(startPoint.x, endPoint.x);
+      const y = Math.min(startPoint.y, endPoint.y);
+      const width = Math.abs(endPoint.x - startPoint.x);
+      const height = Math.abs(endPoint.y - startPoint.y);
+      
+      console.log(`Calculated: ${width}x${height} at ${x},${y}`);
+      
+      // Apply styles
+      selectionArea.style.left = x + 'px';
+      selectionArea.style.top = y + 'px';
+      selectionArea.style.width = width + 'px';
+      selectionArea.style.height = height + 'px';
+      selectionArea.style.display = 'block';
+      
+      // Force additional styles to ensure visibility
+      selectionArea.style.border = '3px solid #ff0000';
+      selectionArea.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+      selectionArea.style.zIndex = '1000';
+      selectionArea.style.position = 'absolute';
+      selectionArea.style.pointerEvents = 'none';
+      
+      console.log('Styles applied to selection area');
+      console.log('Element display:', selectionArea.style.display);
+      console.log('Element dimensions:', selectionArea.style.width, 'x', selectionArea.style.height);
+      console.log('Element position:', selectionArea.style.left, selectionArea.style.top);
+    }
+    
+    // Initialize immediately
+    console.log('=== INITIALIZING DEBUG CAPTURE ===');
+    console.log('Document ready state:', document.readyState);
+    console.log('Selection area element:', selectionArea);
+    console.log('Overlay element:', overlay);
+    
+    setupEventListeners();
+    updateDebugInfo();
+    
+    // Update debug info periodically
+    setInterval(updateDebugInfo, 1000);
+  </script>
+</body>
+</html>

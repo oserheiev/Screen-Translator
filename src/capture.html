@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>Screen Capture</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      cursor: crosshair;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+    }
+    
+    .capture-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      pointer-events: auto;
+    }
+    
+    .selection-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: 2px solid #007acc;
+      background-color: rgba(0, 122, 204, 0.1);
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+      will-change: transform, width, height;
+      transform-origin: top left;
+    }
+    
+    .capture-instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 10001;
+    }
+
+    .capture-error {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(220, 53, 69, 0.95);
+      color: white;
+      padding: 24px;
+      border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      text-align: center;
+      max-width: 80%;
+      z-index: 10002;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .capture-error button {
+      margin: 8px 4px 0;
+      background-color: white;
+      color: #dc3545;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .capture-error button:hover {
+      background-color: #f8f9fa;
+    }
+
+    .screenshot-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="capture-overlay" id="captureOverlay">
+    <div class="selection-area" id="selectionArea" style="display: none;"></div>
+    <div class="capture-instructions" id="instructions">
+      Initializing screen capture...
+    </div>
+  </div>
+
+  <script>
+    class ScreenCapture {
+      constructor() {
+        this.isSelecting = false;
+        this.startPoint = { x: 0, y: 0 };
+        this.endPoint = { x: 0, y: 0 };
+        this.screenshotDataURL = null;
+        this.imageElement = null;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        this.currentDisplay = null;
+        this.allDisplays = [];
+        this.displayOffset = { x: 0, y: 0 };
+        this.cachedSources = null;
+        this.cachedScreens = null;
+        this.animationFrame = null;
+        
+        this.overlay = document.getElementById('captureOverlay');
+        this.selectionArea = document.getElementById('selectionArea');
+        this.instructions = document.getElementById('instructions');
+        
+        // Optimize event handlers by binding them once
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
+        
+        this.init();
+      }
+
+      async init() {
+        try {
+          console.log('Initializing optimized multi-monitor screen capture');
+          
+          // Start display detection and screenshot capture in parallel for better performance
+          const [_, __] = await Promise.all([
+            this.detectCurrentDisplay(),
+            this.preloadScreenshotCapture()
+          ]);
+          
+          // Setup UI and events immediately
+          this.setupEventListeners();
+          this.updateInstructions();
+          
+          // Capture and display screenshot
+          await this.captureAndDisplayScreenshot();
+          
+          console.log('Optimized multi-monitor screen capture initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize screen capture:', error);
+          this.showError(`Failed to initialize screen capture: ${error.message}`);
+        }
+      }
+
+      async preloadScreenshotCapture() {
+        // Pre-fetch sources and screens for faster capture
+        try {
+          const [sources, screens] = await Promise.all([
+            this.getSources(),
+            this.getScreens()
+          ]);
+          this.cachedSources = sources;
+          this.cachedScreens = screens;
+        } catch (error) {
+          console.warn('Failed to preload capture data:', error);
+        }
+      }
+
+      async captureAndDisplayScreenshot() {
+        await this.captureScreenshot();
+        this.displayScreenshot();
+      }
+
+      async detectCurrentDisplay() {
+        console.log('Detecting current display for multi-monitor setup');
+        
+        // Use cached screens if available for better performance
+        this.allDisplays = this.cachedScreens || await this.getScreens();
+        console.log(`Found ${this.allDisplays.length} displays:`, this.allDisplays.map(d => ({ id: d.id, bounds: d.bounds })));
+        
+        // Determine which display this capture window is on
+        const windowBounds = {
+          x: window.screenX,
+          y: window.screenY,
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
+        
+        console.log(`Window bounds: ${JSON.stringify(windowBounds)}`);
+        
+        // Find the display that contains this window
+        this.currentDisplay = this.allDisplays.find(display =>
+          windowBounds.x >= display.bounds.x &&
+          windowBounds.x < display.bounds.x + display.bounds.width &&
+          windowBounds.y >= display.bounds.y &&
+          windowBounds.y < display.bounds.y + display.bounds.height
+        );
+        
+        if (this.currentDisplay) {
+          console.log(`Current display: ${this.currentDisplay.id}, bounds: ${JSON.stringify(this.currentDisplay.bounds)}`);
+          // Calculate offset for coordinate mapping
+          this.displayOffset = {
+            x: this.currentDisplay.bounds.x,
+            y: this.currentDisplay.bounds.y
+          };
+        } else {
+          console.warn('Could not determine current display, using primary');
+          this.currentDisplay = this.allDisplays.find(d => d.primary) || this.allDisplays[0];
+          this.displayOffset = { x: 0, y: 0 };
+        }
+      }
+
+      async captureScreenshot() {
+        console.log('Capturing screenshot for current display');
+        
+        // Use cached sources if available for better performance
+        const sources = this.cachedSources || await this.getSources();
+        const targetSource = this.findTargetSourceForCurrentDisplay(sources);
+        
+        console.log(`Using source: ${targetSource.name} (${targetSource.id}) for display ${this.currentDisplay?.id}`);
+        
+        const stream = await this.getMediaStream(targetSource);
+        const dataURL = await this.streamToDataURL(stream);
+        
+        this.screenshotDataURL = dataURL;
+        this.cleanupStream(stream);
+        
+        console.log('Screenshot captured successfully for current display');
+      }
+
+      async getSources() {
+        const sources = await window.electron.capture.getSources();
+        if (!sources || sources.length === 0) {
+          throw new Error('No screen sources available');
+        }
+        return sources;
+      }
+
+      async getScreens() {
+        const screens = await window.electron.capture.getScreens();
+        console.log(`Found ${screens ? screens.length : 0} screens`);
+        return screens || [];
+      }
+
+      findTargetSourceForCurrentDisplay(sources) {
+        const screenSources = sources.filter(source => source.id.startsWith('screen:'));
+        let targetSource = screenSources[0]; // Default to first screen source
+        
+        if (this.currentDisplay && screenSources.length > 0) {
+          console.log(`Looking for source matching display ${this.currentDisplay.id}`);
+          
+          // Try multiple matching strategies for different platforms
+          const matchingSource = screenSources.find(source => {
+            // Strategy 1: Direct ID match
+            if (source.id.includes(this.currentDisplay.id.toString())) {
+              console.log(`Found source by ID match: ${source.id}`);
+              return true;
+            }
+            
+            // Strategy 2: Display ID format match
+            if (source.display_id === `screen:${this.currentDisplay.id}:0`) {
+              console.log(`Found source by display_id match: ${source.display_id}`);
+              return true;
+            }
+            
+            // Strategy 3: Name-based matching (for some platforms)
+            if (source.name && source.name.includes(this.currentDisplay.id.toString())) {
+              console.log(`Found source by name match: ${source.name}`);
+              return true;
+            }
+            
+            return false;
+          });
+          
+          if (matchingSource) {
+            targetSource = matchingSource;
+            console.log(`Successfully matched source for display ${this.currentDisplay.id}`);
+          } else {
+            console.warn(`No matching source found for display ${this.currentDisplay.id}, using default`);
+          }
+        }
+        
+        return targetSource;
+      }
+
+      async getMediaStream(source) {
+        // Use proper Electron desktop capture constraints format
+        const constraints = {
+          audio: false,
+          video: {
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: source.id,
+              minWidth: 1280,
+              maxWidth: 3840,
+              minHeight: 720,
+              maxHeight: 2160,
+              maxFrameRate: 1
+            }
+          }
+        };
+        
+        console.log('Getting media stream with Electron desktop constraints:', constraints);
+        
+        // Add validation before getUserMedia call
+        if (!source || !source.id) {
+          throw new Error('Invalid screen source provided');
+        }
+        
+        try {
+          return await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (error) {
+          console.error('Failed to get media stream:', error);
+          throw new Error(`Screen capture failed: ${error.message}`);
+        }
+      }
+
+      async streamToDataURL(stream) {
+        return new Promise((resolve, reject) => {
+          const video = document.createElement('video');
+          video.style.display = 'none';
+          
+          const timeout = setTimeout(() => {
+            this.cleanupVideo(video, stream);
+            reject(new Error('Video loading timeout'));
+          }, 10000);
+          
+          video.onloadedmetadata = async () => {
+            try {
+              clearTimeout(timeout);
+              await video.play();
+              
+              // Wait for first frame
+              await new Promise(resolve => setTimeout(resolve, 200));
+              
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                throw new Error('Failed to get canvas context');
+              }
+              
+              ctx.drawImage(video, 0, 0);
+              const dataURL = canvas.toDataURL('image/png', 1.0);
+              
+              this.cleanupVideo(video, stream);
+              resolve(dataURL);
+            } catch (error) {
+              this.cleanupVideo(video, stream);
+              reject(error);
+            }
+          };
+          
+          video.onerror = (error) => {
+            clearTimeout(timeout);
+            this.cleanupVideo(video, stream);
+            reject(new Error('Video loading failed'));
+          };
+          
+          video.srcObject = stream;
+        });
+      }
+
+      cleanupVideo(video, stream) {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        if (video && video.parentNode) {
+          video.remove();
+        }
+      }
+
+      cleanupStream(stream) {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+
+      displayScreenshot() {
+        if (!this.screenshotDataURL) {
+          throw new Error('No screenshot data available');
+        }
+        
+        this.imageElement = document.createElement('img');
+        this.imageElement.className = 'screenshot-background';
+        this.imageElement.src = this.screenshotDataURL;
+        document.body.appendChild(this.imageElement);
+      }
+
+      setupEventListeners() {
+        console.log('Setting up optimized event listeners');
+        
+        // Use pre-bound event handlers for better performance
+        this.overlay.addEventListener('mousedown', this.handleMouseDown, { passive: false });
+        this.overlay.addEventListener('mousemove', this.handleMouseMove, { passive: true });
+        this.overlay.addEventListener('mouseup', this.handleMouseUp, { passive: false });
+        document.addEventListener('keydown', this.handleKeyDown, { passive: false });
+        
+        // Ensure overlay can receive events
+        this.overlay.style.pointerEvents = 'auto';
+        document.body.style.pointerEvents = 'auto';
+        
+        // Optimize overlay for better responsiveness
+        this.overlay.style.willChange = 'transform';
+        this.selectionArea.style.willChange = 'transform, width, height';
+      }
+
+      localToGlobalCoordinates(x, y) {
+        return {
+          x: x + this.displayOffset.x,
+          y: y + this.displayOffset.y
+        };
+      }
+
+      globalToLocalCoordinates(x, y) {
+        return {
+          x: x - this.displayOffset.x,
+          y: y - this.displayOffset.y
+        };
+      }
+
+      getGlobalSelectionBounds() {
+        const localBounds = this.getSelectionBounds();
+        return {
+          x: localBounds.x + this.displayOffset.x,
+          y: localBounds.y + this.displayOffset.y,
+          width: localBounds.width,
+          height: localBounds.height
+        };
+      }
+
+      updateInstructions() {
+        const displayInfo = this.currentDisplay ?
+          ` (Display ${this.currentDisplay.id})` : '';
+        this.instructions.textContent = `Click and drag to select an area${displayInfo}. Press ESC to cancel.`;
+        
+        // Make instructions more visible with better styling
+        this.instructions.style.opacity = '1';
+        this.instructions.style.transition = 'opacity 0.2s ease-in-out';
+      }
+
+      handleMouseDown(e) {
+        const globalCoords = this.localToGlobalCoordinates(e.clientX, e.clientY);
+        console.log(`Mouse down at local: ${e.clientX},${e.clientY}, global: ${globalCoords.x},${globalCoords.y}`);
+        
+        this.isSelecting = true;
+        this.startPoint = { x: e.clientX, y: e.clientY };
+        this.endPoint = { x: e.clientX, y: e.clientY };
+        this.updateSelectionArea();
+      }
+
+      handleMouseMove(e) {
+        if (!this.isSelecting) return;
+        
+        this.endPoint = { x: e.clientX, y: e.clientY };
+        this.updateSelectionArea();
+      }
+
+      async handleMouseUp(e) {
+        const globalCoords = this.localToGlobalCoordinates(e.clientX, e.clientY);
+        console.log(`Mouse up at local: ${e.clientX},${e.clientY}, global: ${globalCoords.x},${globalCoords.y}`);
+        
+        if (!this.isSelecting) return;
+        this.isSelecting = false;
+        
+        const selection = this.getSelectionBounds();
+        const globalSelection = this.getGlobalSelectionBounds();
+        console.log(`Local selection: ${selection.width}x${selection.height} at ${selection.x},${selection.y}`);
+        console.log(`Global selection: ${globalSelection.width}x${globalSelection.height} at ${globalSelection.x},${globalSelection.y}`);
+        
+        if (selection.width < 10 || selection.height < 10) {
+          console.log('Selection too small, ignoring');
+          this.selectionArea.style.display = 'none';
+          return;
+        }
+        
+        try {
+          this.instructions.textContent = 'Processing capture...';
+          const imageData = await this.captureSelectedArea(selection);
+          await this.sendCaptureResult(imageData);
+        } catch (error) {
+          console.error('Capture failed:', error);
+          this.showError(`Capture failed: ${error.message}`);
+        }
+      }
+
+      handleKeyDown(e) {
+        if (e.key === 'Escape') {
+          this.cleanup();
+          window.close();
+        }
+      }
+
+      getSelectionBounds() {
+        return {
+          x: Math.min(this.startPoint.x, this.endPoint.x),
+          y: Math.min(this.startPoint.y, this.endPoint.y),
+          width: Math.abs(this.endPoint.x - this.startPoint.x),
+          height: Math.abs(this.endPoint.y - this.startPoint.y)
+        };
+      }
+
+      updateSelectionArea() {
+        const bounds = this.getSelectionBounds();
+        
+        // Use transform for better performance instead of changing left/top
+        this.selectionArea.style.transform = `translate(${bounds.x}px, ${bounds.y}px)`;
+        this.selectionArea.style.width = bounds.width + 'px';
+        this.selectionArea.style.height = bounds.height + 'px';
+        this.selectionArea.style.display = 'block';
+        
+        // Use requestAnimationFrame for smoother updates during dragging
+        if (this.isSelecting && !this.animationFrame) {
+          this.animationFrame = requestAnimationFrame(() => {
+            this.animationFrame = null;
+          });
+        }
+      }
+
+      async captureSelectedArea(selection) {
+        console.log('Capturing selected area');
+        
+        if (!this.imageElement || !this.imageElement.complete) {
+          throw new Error('Screenshot image not ready');
+        }
+        
+        const { naturalWidth, naturalHeight } = this.imageElement;
+        if (naturalWidth === 0 || naturalHeight === 0) {
+          throw new Error('Invalid image dimensions');
+        }
+        
+        // Calculate scaling factors
+        const scaleX = naturalWidth / window.innerWidth;
+        const scaleY = naturalHeight / window.innerHeight;
+        
+        // Scale coordinates to match image resolution
+        const scaledSelection = {
+          x: Math.max(0, selection.x * scaleX),
+          y: Math.max(0, selection.y * scaleY),
+          width: Math.min(selection.width * scaleX, naturalWidth),
+          height: Math.min(selection.height * scaleY, naturalHeight)
+        };
+        
+        console.log(`Scaled selection: ${scaledSelection.width}x${scaledSelection.height} at ${scaledSelection.x},${scaledSelection.y}`);
+        
+        // Create high-quality canvas
+        const pixelRatio = window.devicePixelRatio || 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = selection.width * pixelRatio;
+        canvas.height = selection.height * pixelRatio;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('Failed to get canvas context');
+        }
+        
+        // Configure high-quality rendering
+        ctx.scale(pixelRatio, pixelRatio);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw the selected area
+        ctx.drawImage(
+          this.imageElement,
+          scaledSelection.x, scaledSelection.y, scaledSelection.width, scaledSelection.height,
+          0, 0, selection.width, selection.height
+        );
+        
+        const dataURL = canvas.toDataURL('image/png', 1.0);
+        
+        if (!dataURL || dataURL.length < 1000) {
+          throw new Error('Generated image data is too small');
+        }
+        
+        return dataURL;
+      }
+
+      async sendCaptureResult(imageData) {
+        console.log('Sending capture result to main process');
+        
+        if (!window.electron?.capture?.complete) {
+          throw new Error('Electron capture API not available');
+        }
+        
+        await window.electron.capture.complete(imageData);
+        console.log('Capture result sent successfully');
+      }
+
+      showError(message) {
+        console.error(message);
+        
+        // Remove existing error
+        const existingError = document.querySelector('.capture-error');
+        if (existingError) {
+          existingError.remove();
+        }
+        
+        const errorElement = document.createElement('div');
+        errorElement.className = 'capture-error';
+        errorElement.innerHTML = `
+          <p>${message}</p>
+          <div>
+            <button onclick="window.close()">Close</button>
+            <button onclick="screenCapture.retry()">Try Again</button>
+          </div>
+        `;
+        
+        document.body.appendChild(errorElement);
+      }
+
+      async retry() {
+        if (this.retryCount >= this.maxRetries) {
+          this.showError('Maximum retry attempts reached. Please close and try again.');
+          return;
+        }
+        
+        this.retryCount++;
+        console.log(`Retrying capture (attempt ${this.retryCount}/${this.maxRetries})`);
+        
+        // Remove error message
+        const errorElement = document.querySelector('.capture-error');
+        if (errorElement) {
+          errorElement.remove();
+        }
+        
+        // Reset state
+        this.cleanup();
+        this.instructions.textContent = 'Initializing screen capture...';
+        
+        // Wait a moment before retrying
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        try {
+          await this.init();
+        } catch (error) {
+          this.showError(`Retry failed: ${error.message}`);
+        }
+      }
+
+      cleanup() {
+        if (this.imageElement) {
+          this.imageElement.remove();
+          this.imageElement = null;
+        }
+        this.screenshotDataURL = null;
+        this.isSelecting = false;
+      }
+    }
+
+    // Initialize when DOM is ready
+    let screenCapture;
+    document.addEventListener('DOMContentLoaded', () => {
+      screenCapture = new ScreenCapture();
+    });
+  </script>
+</body>
+</html>
