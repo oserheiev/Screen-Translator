@@ -32,7 +32,6 @@
   "license": "ISC",
   "dependencies": {
     "@google/genai": "^0.13.0",
-    "electron": "^30.0.0",
     "electron-store": "^8.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -69,11 +68,14 @@
   "build": {
     "appId": "com.screentranslator.app",
     "productName": "Screen Translator",
+    "icon": "assets/icons/icon.png",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "assets/icons/icon.png"
     },
     "win": {
-      "target": "nsis"
+      "target": "dir",
+      "icon": "assets/icons/icon.png"
     },
     "files": [
       "build/**/*",

@@ -6,13 +6,15 @@ interface TextDisplayProps {
   onTextEdit?: (text: string) => void;
   label: string;
   editable?: boolean;
+  disabled?: boolean;
 }
 
 const TextDisplay: React.FC<TextDisplayProps> = ({ 
   text, 
   onTextEdit, 
   label, 
-  editable = true 
+  editable = true,
+  disabled = false
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
@@ -52,6 +54,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({
             value={text} 
             onChange={handleTextChange}
             placeholder={`${label} will appear here`}
+            disabled={disabled}
           />
         ) : (
           <div>{text || `${label} will appear here`}</div>

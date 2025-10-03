@@ -5,6 +5,7 @@ import { SupportedLanguage, TranslationResult, Theme } from '../types';
 interface AppContextType {
   originalText: string;
   translatedText: string;
+  sourceLanguage: SupportedLanguage;
   targetLanguage: SupportedLanguage;
   apiKey: string;
   hotkey: string;
@@ -12,6 +13,7 @@ interface AppContextType {
   isProcessing: boolean;
   error: string | null;
   setOriginalText: (text: string) => void;
+  setSourceLanguage: (language: SupportedLanguage) => void;
   setTargetLanguage: (language: SupportedLanguage) => void;
   setApiKey: (key: string) => void;
   setHotkey: (hotkey: string) => void;
@@ -24,6 +26,7 @@ interface AppContextType {
 const defaultContext: AppContextType = {
   originalText: '',
   translatedText: '',
+  sourceLanguage: 'Auto',
   targetLanguage: 'English',
   apiKey: '',
   hotkey: 'Ctrl+Alt+T', // Default, will be updated based on platform
@@ -31,6 +34,7 @@ const defaultContext: AppContextType = {
   isProcessing: false,
   error: null,
   setOriginalText: () => {},
+  setSourceLanguage: () => {},
   setTargetLanguage: () => {},
   setApiKey: () => {},
   setHotkey: () => {},
@@ -51,6 +55,7 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [originalText, setOriginalText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
+  const [sourceLanguage, setSourceLanguage] = useState<SupportedLanguage>('Auto');
   const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('English');
   const [apiKey, setApiKey] = useState('');
   const [hotkey, setHotkey] = useState('Ctrl+Alt+T'); // Default, will be updated based on platform
@@ -69,6 +74,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           
           if (settings.apiKey) {
             setApiKey(settings.apiKey);
+          }
+          if (settings.sourceLanguage) {
+            setSourceLanguage(settings.sourceLanguage as SupportedLanguage);
           }
           if (settings.targetLanguage) {
             setTargetLanguage(settings.targetLanguage as SupportedLanguage);
@@ -99,6 +107,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         if (window.electron) {
           await window.electron.settings.save({
             apiKey,
+            sourceLanguage,
             targetLanguage,
             hotkey,
             theme
@@ -113,7 +122,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     if (apiKey) {
       saveSettings();
     }
-  }, [apiKey, targetLanguage, hotkey, theme]);
+  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme]);
 
   // Separate useEffect for GeminiService creation - only when apiKey changes
   useEffect(() => {
@@ -136,12 +145,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       return;
     }
 
+    // Show and focus the main window when translation starts
+    if (window.electron?.window?.show) {
+      try {
+        await window.electron.window.show();
+        console.log('Main window shown and focused at translation start');
+      } catch (error) {
+        console.error('Failed to show main window:', error);
+      }
+    }
+
     setIsProcessing(true);
     setError(null);
     console.log('Starting image processing...');
 
     try {
-      const result: TranslationResult = await geminiService.processImage(imageData, targetLanguage);
+      const result: TranslationResult = await geminiService.processImage(imageData, sourceLanguage, targetLanguage);
       console.log('Image processing result:', result);
       console.log('Result type:', typeof result);
       console.log('originalText type:', typeof result.originalText);
@@ -159,7 +178,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setIsProcessing(false);
       console.log('Image processing completed');
     }
-  }, [geminiService, targetLanguage, apiKey]);
+  }, [geminiService, sourceLanguage, targetLanguage, apiKey]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
@@ -172,18 +191,28 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       return;
     }
 
+    // Show and focus the main window when translation starts
+    if (window.electron?.window?.show) {
+      try {
+        await window.electron.window.show();
+        console.log('Main window shown and focused at translation start');
+      } catch (error) {
+        console.error('Failed to show main window:', error);
+      }
+    }
+
     setIsProcessing(true);
     setError(null);
 
     try {
-      const result = await geminiService.translateText(text, targetLanguage);
+      const result = await geminiService.translateText(text, sourceLanguage, targetLanguage);
       setTranslatedText(result);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, targetLanguage]);
+  }, [geminiService, sourceLanguage, targetLanguage]);
 
   const clearError = () => {
     setError(null);
@@ -192,6 +221,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const value: AppContextType = {
     originalText,
     translatedText,
+    sourceLanguage,
     targetLanguage,
     apiKey,
     hotkey,
@@ -199,6 +229,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     isProcessing,
     error,
     setOriginalText,
+    setSourceLanguage,
     setTargetLanguage,
     setApiKey,
     setHotkey,

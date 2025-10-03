@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CaptureButton from './components/CaptureButton';
 import TextDisplay from './components/TextDisplay';
 import TranslationDisplay from './components/TranslationDisplay';
-import LanguageSelector from './components/LanguageSelector';
+import DualLanguageSelector from './components/DualLanguageSelector';
 import SettingsModal from './components/SettingsModal';
 import ErrorMessage from './components/ErrorMessage';
+import LoadingSpinner from './components/LoadingSpinner';
 import { useAppContext } from './contexts/AppContext';
 import { SupportedLanguage, Theme } from './types';
 
@@ -12,6 +13,7 @@ const App: React.FC = () => {
   const {
     originalText,
     translatedText,
+    sourceLanguage,
     targetLanguage,
     apiKey,
     hotkey,
@@ -19,6 +21,7 @@ const App: React.FC = () => {
     isProcessing,
     error,
     setOriginalText,
+    setSourceLanguage,
     setTargetLanguage,
     setApiKey,
     setHotkey,
@@ -78,8 +81,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLanguageChange = (language: string) => {
-    setTargetLanguage(language as SupportedLanguage);
+  const handleSourceLanguageChange = (language: SupportedLanguage) => {
+    setSourceLanguage(language);
+    if (originalText) {
+      translateText(originalText);
+    }
+  };
+
+  const handleTargetLanguageChange = (language: SupportedLanguage) => {
+    setTargetLanguage(language);
     if (originalText) {
       translateText(originalText);
     }
@@ -117,6 +127,7 @@ const App: React.FC = () => {
           <button 
             className="settings-button" 
             onClick={handleSettingsOpen}
+            disabled={isProcessing}
           >
             Settings
           </button>
@@ -130,11 +141,20 @@ const App: React.FC = () => {
         />
       )}
 
-      <main className="app-content">
+      {isProcessing && (
+        <div className="loading-overlay">
+          <LoadingSpinner message="Translating..." />
+        </div>
+      )}
+
+      <main className={`app-content ${isProcessing ? 'processing' : ''}`}>
         <div className="language-selector-container">
-          <LanguageSelector 
-            selectedLanguage={targetLanguage} 
-            onLanguageChange={handleLanguageChange} 
+          <DualLanguageSelector 
+            sourceLanguage={sourceLanguage}
+            targetLanguage={targetLanguage}
+            onSourceLanguageChange={handleSourceLanguageChange}
+            onTargetLanguageChange={handleTargetLanguageChange}
+            disabled={isProcessing}
           />
         </div>
 
@@ -143,6 +163,7 @@ const App: React.FC = () => {
             text={originalText}
             onTextEdit={handleTextEdit}
             label="Original Text"
+            disabled={isProcessing}
           />
           
           <div className="translate-button-container">

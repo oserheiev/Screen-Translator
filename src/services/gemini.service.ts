@@ -11,24 +11,26 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
-  async processImage(imageData: string, targetLanguage: string): Promise<TranslationResult> {
+  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string): Promise<TranslationResult> {
     console.log('GeminiService.processImage called');
+    console.log('Source language:', sourceLanguage);
     console.log('Target language:', targetLanguage);
     console.log('Image data length:', imageData.length);
-    
+
     try {
       // Remove the data URL prefix
       const base64Image = imageData.split(',')[1];
       console.log('Base64 image length:', base64Image?.length || 0);
-      
+
       if (!base64Image) {
         throw new Error('Invalid image data format');
       }
-      
+
       // Create the prompt
-      const prompt = `Extract text from this image and translate it to ${targetLanguage}. Return a JSON object with "originalText" and "translatedText" fields.`;
+      const sourceLanguageText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
+      const prompt = `Extract text from this image (source language: ${sourceLanguageText}) and translate it to ${targetLanguage}. Return a JSON object with "originalText" and "translatedText" fields.`;
       console.log('Prompt:', prompt);
-      
+
       // Generate content
       console.log('Calling Gemini API...');
       const result = await this.ai.models.generateContent({
@@ -48,9 +50,9 @@ export class GeminiService {
           }
         ]
       });
-      
+
       console.log('Gemini API response received');
-      
+
       // Get the response text
       let responseText = '';
       try {
@@ -72,12 +74,12 @@ export class GeminiService {
         console.log('Full result object:', JSON.stringify(result, null, 2));
         throw new Error('Failed to extract text from API response');
       }
-      
+
       try {
         console.log('Raw response text before parsing:', responseText);
         console.log('Response text type:', typeof responseText);
         console.log('Response text length:', responseText.length);
-        
+
         // Check if response is wrapped in markdown code blocks
         let cleanedResponse = responseText.trim();
         if (cleanedResponse.startsWith('```json') && cleanedResponse.endsWith('```')) {
@@ -89,14 +91,14 @@ export class GeminiService {
           cleanedResponse = cleanedResponse.slice(3, -3).trim(); // Remove ``` and ```
           console.log('Cleaned response:', cleanedResponse);
         }
-        
+
         // Try to parse the JSON response
         const parsed = JSON.parse(cleanedResponse);
         console.log('Successfully parsed JSON response:', parsed);
         console.log('Parsed response type:', typeof parsed);
         console.log('originalText:', parsed.originalText);
         console.log('translatedText:', parsed.translatedText);
-        
+
         // Validate and clean the extracted text
         const result = this.validateAndCleanTranslationResult(parsed);
         return result;
@@ -104,7 +106,7 @@ export class GeminiService {
         console.log('JSON parsing failed with error:', parseError);
         console.log('Raw response that failed to parse:', responseText);
         console.log('Attempting to extract text manually...');
-        
+
         // Try to extract JSON from the response manually
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -118,7 +120,7 @@ export class GeminiService {
             console.log('Second JSON parse attempt failed:', secondParseError);
           }
         }
-        
+
         console.log('All JSON parsing attempts failed, attempting to extract text from natural language response');
         // Try to extract meaningful text from natural language response
         const extractedResult = this.extractTextFromNaturalResponse(responseText, targetLanguage);
@@ -130,14 +132,15 @@ export class GeminiService {
     }
   }
 
-  async translateText(text: string, targetLanguage: string): Promise<string> {
+  async translateText(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
     try {
       // Generate content
+      const sourceLanguageText = sourceLanguage === 'Auto' ? 'detected language' : `from ${sourceLanguage}`;
       const result = await this.ai.models.generateContent({
         model: 'gemini-2.0-flash-lite',
-        contents: `Translate the following text to ${targetLanguage}: "${text}"`
+        contents: `Translate the following text ${sourceLanguageText} to ${targetLanguage}: "${text}"`
       });
-      
+
       // Get the response text
       let responseText = '';
       try {
@@ -158,12 +161,12 @@ export class GeminiService {
         console.log('Full result object:', JSON.stringify(result, null, 2));
         throw new Error('Failed to extract text from API response');
       }
-      
+
       // Clean the response text to ensure it's user-friendly
       const cleanedText = this.cleanText(responseText);
       console.log('Original response:', responseText);
       console.log('Cleaned response:', cleanedText);
-      
+
       return cleanedText;
     } catch (error) {
       throw this.handleError(error);
@@ -172,16 +175,16 @@ export class GeminiService {
 
   private validateAndCleanTranslationResult(parsed: any): TranslationResult {
     console.log('Validating and cleaning translation result:', parsed);
-    
+
     // Ensure we have the required fields
     if (!parsed || typeof parsed !== 'object') {
       throw new Error('Invalid response format: not an object');
     }
-    
+
     // Extract and clean the text fields
     let originalText = '';
     let translatedText = '';
-    
+
     // Handle various possible field names and formats
     if (parsed.originalText !== undefined) {
       originalText = this.cleanText(String(parsed.originalText));
@@ -190,7 +193,7 @@ export class GeminiService {
     } else if (parsed.source !== undefined) {
       originalText = this.cleanText(String(parsed.source));
     }
-    
+
     if (parsed.translatedText !== undefined) {
       translatedText = this.cleanText(String(parsed.translatedText));
     } else if (parsed.translated !== undefined) {
@@ -200,21 +203,21 @@ export class GeminiService {
     } else if (parsed.translation !== undefined) {
       translatedText = this.cleanText(String(parsed.translation));
     }
-    
+
     console.log('Cleaned originalText:', originalText);
     console.log('Cleaned translatedText:', translatedText);
-    
+
     return {
       originalText,
       translatedText
     };
   }
-  
+
   private cleanText(text: string): string {
     if (!text || typeof text !== 'string') {
       return '';
     }
-    
+
     // Remove common unwanted patterns
     let cleaned = text
       .trim()
@@ -226,7 +229,7 @@ export class GeminiService {
       // Remove extra whitespace
       .replace(/\s+/g, ' ')
       .trim();
-    
+
     // If the text looks like JSON or contains JSON-like patterns, try to extract meaningful content
     if (cleaned.includes('{') && cleaned.includes('}')) {
       // Try to extract text from JSON-like strings
@@ -235,16 +238,16 @@ export class GeminiService {
         cleaned = textMatch[1];
       }
     }
-    
+
     return cleaned;
   }
-  
+
   private extractTextFromNaturalResponse(responseText: string, targetLanguage: string): TranslationResult {
     console.log('Extracting text from natural language response');
-    
+
     // Clean the response text
     const cleanedResponse = this.cleanText(responseText);
-    
+
     // Try to identify if this is a translation response with both original and translated text
     const patterns = [
       // Pattern: "Original: ... Translation: ..." (with newline)
@@ -254,7 +257,7 @@ export class GeminiService {
       // Pattern: "... -> ..." or "... → ..."
       /(.+?)\s*(?:->|→|translates to|means)\s*(.+)/i
     ];
-    
+
     for (const pattern of patterns) {
       const match = cleanedResponse.match(pattern);
       if (match) {
@@ -267,7 +270,7 @@ export class GeminiService {
         }
       }
     }
-    
+
     // If we can't parse it properly, return the cleaned response as original text
     // and indicate that translation failed
     console.log('Could not parse natural language response, using as original text');
@@ -285,14 +288,14 @@ export class GeminiService {
     }
 
     const delay = this.baseDelay * Math.pow(2, this.retryCount - 1);
-    console.log(`Rate limit hit. Retrying in ${Math.ceil(delay/1000)} seconds... (Attempt ${this.retryCount}/${this.maxRetries})`);
-    
+    console.log(`Rate limit hit. Retrying in ${Math.ceil(delay / 1000)} seconds... (Attempt ${this.retryCount}/${this.maxRetries})`);
+
     await new Promise(resolve => setTimeout(resolve, delay));
   }
 
   private handleError(error: any): Error {
     console.error("Gemini API error:", error);
-    
+
     if (error.message?.includes('429')) {
       return new Error('Rate limit exceeded. Please try again later.');
     }
@@ -302,7 +305,7 @@ export class GeminiService {
     if (error.message?.includes('404')) {
       return new Error('API endpoint not found. Please check if the Gemini API is available.');
     }
-    
+
     return error instanceof Error ? error : new Error(String(error));
   }
 

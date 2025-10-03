@@ -4,12 +4,14 @@ export interface ElectronAPI {
   settings: {
     get: () => Promise<{
       apiKey: string;
+      sourceLanguage: SupportedLanguage;
       targetLanguage: SupportedLanguage;
       hotkey: string;
       theme: Theme;
     }>;
     save: (settings: {
       apiKey?: string;
+      sourceLanguage?: SupportedLanguage;
       targetLanguage?: SupportedLanguage;
       hotkey?: string;
       theme?: Theme;
@@ -28,6 +30,9 @@ export interface ElectronAPI {
   platform: {
     getPlatform: () => Promise<string>;
   };
+  window: {
+    show: () => Promise<void>;
+  };
   on: (
     channel: string,
     callback: (...args: any[]) => void
@@ -40,6 +45,7 @@ export interface TranslationResult {
 }
 
 export type SupportedLanguage = 
+  | 'Auto'
   | 'English'
   | 'Russian'
   | 'Ukrainian'

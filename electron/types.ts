@@ -2,6 +2,7 @@ import Store from 'electron-store';
 
 // Define supported languages
 export type SupportedLanguage = 
+  | 'Auto'
   | 'English'
   | 'Russian'
   | 'Ukrainian'
@@ -20,6 +21,7 @@ export type Theme = 'light' | 'dark' | 'system';
 // Define the settings interface
 export interface Settings {
   apiKey: string;
+  sourceLanguage: SupportedLanguage;
   targetLanguage: SupportedLanguage;
   hotkey: string;
   theme: Theme;

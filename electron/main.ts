@@ -8,6 +8,7 @@ import { Settings, SupportedLanguage, Theme } from './types';
 const store = new Store<Settings>({
   defaults: {
     apiKey: '',
+    sourceLanguage: 'Auto',
     targetLanguage: 'English',
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
     theme: 'system'
@@ -410,14 +411,20 @@ function setupIpcHandlers() {
   ipcMain.handle('get-settings', () => {
     return {
       apiKey: store.get('apiKey'),
+      sourceLanguage: store.get('sourceLanguage'),
       targetLanguage: store.get('targetLanguage'),
-      hotkey: store.get('hotkey')
+      hotkey: store.get('hotkey'),
+      theme: store.get('theme')
     };
   });
 
   ipcMain.handle('save-settings', (_, settings: Partial<Settings>) => {
     if (settings.apiKey !== undefined) {
       store.set('apiKey', settings.apiKey);
+    }
+    
+    if (settings.sourceLanguage !== undefined) {
+      store.set('sourceLanguage', settings.sourceLanguage);
     }
     
     if (settings.targetLanguage !== undefined) {
@@ -427,6 +434,10 @@ function setupIpcHandlers() {
     if (settings.hotkey !== undefined) {
       store.set('hotkey', settings.hotkey);
       registerGlobalShortcut();
+    }
+    
+    if (settings.theme !== undefined) {
+      store.set('theme', settings.theme);
     }
     
     return true;
@@ -473,6 +484,17 @@ function setupIpcHandlers() {
 
   ipcMain.handle('get-platform', () => {
     return process.platform;
+  });
+
+  ipcMain.handle('show-window', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.moveTop();
+    }
   });
 }
 

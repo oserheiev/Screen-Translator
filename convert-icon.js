@@ -23,14 +23,21 @@ async function convertSvgToPng() {
     // Load the SVG image
     const img = await loadImage(svgPath);
     
-    // Create standard icon (512x512)
+    // Create standard icon (512x512) - used for Windows and general purposes
     await createPngIcon(img, 'icon.png', 512);
     
     // Create macOS specific icon (16x16)
     await createPngIcon(img, 'icon-mac.png', 16);
     
-    // Create macOS Retina icon (32x32)
-    await createPngIcon(img, 'icon-mac@2x.png', 32);
+    // Create macOS Retina icon (256x256) - electron-builder requires at least 256x256
+    await createPngIcon(img, 'icon-mac@2x.png', 256);
+    
+    // Create additional Windows icon sizes
+    await createPngIcon(img, 'icon-256.png', 256);
+    await createPngIcon(img, 'icon-128.png', 128);
+    await createPngIcon(img, 'icon-64.png', 64);
+    await createPngIcon(img, 'icon-32.png', 32);
+    await createPngIcon(img, 'icon-16.png', 16);
     
     console.log('All PNG files created successfully');
   } catch (error) {

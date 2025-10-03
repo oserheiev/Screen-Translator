@@ -67,6 +67,7 @@ describe('Electron Types', () => {
     it('should have all required properties with correct types', () => {
       const settings: Settings = {
         apiKey: 'test-api-key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: 'Ctrl+Alt+T',
         theme: 'system'
@@ -81,6 +82,7 @@ describe('Electron Types', () => {
     it('should accept valid language values', () => {
       const settingsWithSpanish: Settings = {
         apiKey: 'key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'Spanish',
         hotkey: 'Ctrl+Alt+T',
         theme: 'light'
@@ -88,6 +90,7 @@ describe('Electron Types', () => {
 
       const settingsWithJapanese: Settings = {
         apiKey: 'key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'Japanese',
         hotkey: 'Ctrl+Alt+T',
         theme: 'dark'
@@ -100,6 +103,7 @@ describe('Electron Types', () => {
     it('should accept valid theme values', () => {
       const lightSettings: Settings = {
         apiKey: 'key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: 'Ctrl+Alt+T',
         theme: 'light'
@@ -107,6 +111,7 @@ describe('Electron Types', () => {
 
       const darkSettings: Settings = {
         apiKey: 'key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: 'Ctrl+Alt+T',
         theme: 'dark'
@@ -114,6 +119,7 @@ describe('Electron Types', () => {
 
       const systemSettings: Settings = {
         apiKey: 'key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: 'Ctrl+Alt+T',
         theme: 'system'
@@ -222,6 +228,7 @@ describe('Electron Types', () => {
     it('should work with default settings object', () => {
       const defaultSettings: Settings = {
         apiKey: '',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
         theme: 'system'
@@ -236,6 +243,7 @@ describe('Electron Types', () => {
     it('should work with settings updates', () => {
       const currentSettings: Settings = {
         apiKey: 'current-key',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: 'Ctrl+Alt+T',
         theme: 'system'
@@ -300,6 +308,7 @@ describe('Electron Types', () => {
       languageTests.forEach(({ lang, expected }) => {
         const settings: Settings = {
           apiKey: 'key',
+          sourceLanguage: 'Auto',
           targetLanguage: lang,
           hotkey: 'Ctrl+Alt+T',
           theme: 'system'
@@ -332,6 +341,7 @@ describe('Electron Types', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
       const macSettings: Settings = {
         apiKey: '',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
         theme: 'system'
@@ -342,6 +352,7 @@ describe('Electron Types', () => {
       Object.defineProperty(process, 'platform', { value: 'win32' });
       const winSettings: Settings = {
         apiKey: '',
+        sourceLanguage: 'Auto',
         targetLanguage: 'English',
         hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
         theme: 'system'

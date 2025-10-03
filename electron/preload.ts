@@ -43,6 +43,9 @@ contextBridge.exposeInMainWorld(
     platform: {
       getPlatform: () => ipcRenderer.invoke('get-platform')
     },
+    window: {
+      show: () => ipcRenderer.invoke('show-window')
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
       const validChannels = ['image-captured', 'capture-error'];

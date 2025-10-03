@@ -4,11 +4,13 @@ import { SupportedLanguage } from '../types';
 interface LanguageSelectorProps {
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
+  disabled?: boolean;
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   selectedLanguage, 
-  onLanguageChange 
+  onLanguageChange,
+  disabled = false
 }) => {
   const supportedLanguages: SupportedLanguage[] = [
     'English',
@@ -35,6 +37,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         id="language-select"
         value={selectedLanguage}
         onChange={handleChange}
+        disabled={disabled}
       >
         {supportedLanguages.map(language => (
           <option key={language} value={language}>
