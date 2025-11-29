@@ -113,7 +113,7 @@
 <body>
   <div class="capture-overlay" id="captureOverlay">
     <div class="selection-area" id="selectionArea" style="display: none;"></div>
-    <div class="capture-instructions" id="instructions">
+    <div class="capture-instructions" id="instructions" style="display: none;">
       Initializing screen capture...
     </div>
   </div>
@@ -160,12 +160,11 @@
 
           // Setup UI and events immediately
           this.setupEventListeners();
-          this.updateInstructions();
 
           // Capture and display screenshot
           await this.captureAndDisplayScreenshot();
 
-          // Set cursor to crosshair after screenshot is ready
+          this.displayInstructions();
           document.body.style.cursor = 'crosshair';
 
           console.log('Optimized multi-monitor screen capture initialized successfully');
@@ -454,7 +453,7 @@
         };
       }
 
-      updateInstructions() {
+      displayInstructions() {
         const displayInfo = this.currentDisplay ?
           ` (Display ${this.currentDisplay.id})` : '';
         this.instructions.textContent = `Click and drag to select an area${displayInfo}. Press ESC to cancel.`;
@@ -462,6 +461,7 @@
         // Make instructions more visible with better styling
         this.instructions.style.opacity = '1';
         this.instructions.style.transition = 'opacity 0.2s ease-in-out';
+        this.instructions.style.display = '';
       }
 
       handleMouseDown(e) {
