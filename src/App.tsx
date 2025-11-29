@@ -50,7 +50,7 @@ const App: React.FC = () => {
       });
 
       return () => {
-        removeListener();
+        removeListener(); 1
       };
     }
   }, [processImage]);
@@ -83,16 +83,10 @@ const App: React.FC = () => {
 
   const handleSourceLanguageChange = (language: SupportedLanguage) => {
     setSourceLanguage(language);
-    if (originalText) {
-      translateText(originalText);
-    }
   };
 
   const handleTargetLanguageChange = (language: SupportedLanguage) => {
     setTargetLanguage(language);
-    if (originalText) {
-      translateText(originalText);
-    }
   };
 
   const handleSettingsOpen = () => {
@@ -106,11 +100,11 @@ const App: React.FC = () => {
   const handleApiKeyChange = (key: string) => {
     setApiKey(key);
   };
-  
+
   const handleHotkeyChange = (newHotkey: string) => {
     setHotkey(newHotkey);
   };
-  
+
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
   };
@@ -124,8 +118,8 @@ const App: React.FC = () => {
             onCapture={handleCapture}
             disabled={isProcessing}
           />
-          <button 
-            className="settings-button" 
+          <button
+            className="settings-button"
             onClick={handleSettingsOpen}
             disabled={isProcessing}
           >
@@ -135,9 +129,9 @@ const App: React.FC = () => {
       </header>
 
       {error && (
-        <ErrorMessage 
-          message={error} 
-          onRetry={clearError} 
+        <ErrorMessage
+          message={error}
+          onRetry={clearError}
         />
       )}
 
@@ -149,7 +143,7 @@ const App: React.FC = () => {
 
       <main className={`app-content ${isProcessing ? 'processing' : ''}`}>
         <div className="language-selector-container">
-          <DualLanguageSelector 
+          <DualLanguageSelector
             sourceLanguage={sourceLanguage}
             targetLanguage={targetLanguage}
             onSourceLanguageChange={handleSourceLanguageChange}
@@ -165,7 +159,7 @@ const App: React.FC = () => {
             label="Original Text"
             disabled={isProcessing}
           />
-          
+
           <div className="translate-button-container">
             <button
               className="translate-button"
@@ -175,7 +169,7 @@ const App: React.FC = () => {
               {isProcessing ? 'Translating...' : 'Translate'}
             </button>
           </div>
-          
+
           <TranslationDisplay
             text={translatedText}
             label="Translated Text"

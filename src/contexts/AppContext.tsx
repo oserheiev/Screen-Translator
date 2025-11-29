@@ -33,15 +33,15 @@ const defaultContext: AppContextType = {
   theme: 'system',
   isProcessing: false,
   error: null,
-  setOriginalText: () => {},
-  setSourceLanguage: () => {},
-  setTargetLanguage: () => {},
-  setApiKey: () => {},
-  setHotkey: () => {},
-  setTheme: () => {},
-  processImage: async () => {},
-  translateText: async () => {},
-  clearError: () => {}
+  setOriginalText: () => { },
+  setSourceLanguage: () => { },
+  setTargetLanguage: () => { },
+  setApiKey: () => { },
+  setHotkey: () => { },
+  setTheme: () => { },
+  processImage: async () => { },
+  translateText: async () => { },
+  clearError: () => { }
 };
 
 export const AppContext = createContext<AppContextType>(defaultContext);
@@ -71,7 +71,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         if (window.electron) {
           const settings = await window.electron.settings.get();
           const platform = await window.electron.platform.getPlatform();
-          
+
           if (settings.apiKey) {
             setApiKey(settings.apiKey);
           }
@@ -138,7 +138,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     console.log('processImage called with imageData length:', imageData.length);
     console.log('geminiService available:', !!geminiService);
     console.log('apiKey set:', !!apiKey);
-    
+
     if (!geminiService) {
       console.error('No geminiService available');
       setError('API key not set. Please set your Gemini API key in settings.');
@@ -167,7 +167,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       console.log('translatedText type:', typeof result.translatedText);
       console.log('originalText value:', result.originalText);
       console.log('translatedText value:', result.translatedText);
-      
+
       setOriginalText(result.originalText);
       setTranslatedText(result.translatedText);
       console.log('Text set successfully');

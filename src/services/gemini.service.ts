@@ -135,149 +135,20 @@ export class GeminiService {
   async translateText(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
     try {
       // Generate content
-      const sourceLanguageText = sourceLanguage === 'Auto' ? 'detected language' : `from ${sourceLanguage}`;
+      const sourceLanguageText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
       const result = await this.ai.models.generateContent({
         model: 'gemini-2.0-flash-lite',
-        contents: `Translate the following text ${sourceLanguageText} to ${targetLanguage}: "${text}"`
+        contents: `Translate the following text "${text}" from ${sourceLanguageText} to ${targetLanguage}.` +
+          'Return only a string with the translated text.'
       });
 
-      // Get the response text
-      let responseText = '';
-      try {
-        // Use the correct API method to extract text
-        if (result.candidates && result.candidates[0]) {
-          const candidate = result.candidates[0];
-          if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
-            responseText = candidate.content.parts[0].text || '';
-          }
-        } else if (result.text) {
-          responseText = result.text;
-        } else {
-          console.log('Full result object:', JSON.stringify(result, null, 2));
-          throw new Error('Unable to extract text from response');
-        }
-      } catch (error) {
-        console.error('Error extracting text from response:', error);
-        console.log('Full result object:', JSON.stringify(result, null, 2));
-        throw new Error('Failed to extract text from API response');
-      }
-
-      // Clean the response text to ensure it's user-friendly
-      const cleanedText = this.cleanText(responseText);
+      const responseText = result.text || '';
       console.log('Original response:', responseText);
-      console.log('Cleaned response:', cleanedText);
 
-      return cleanedText;
+      return responseText;
     } catch (error) {
       throw this.handleError(error);
     }
-  }
-
-  private validateAndCleanTranslationResult(parsed: any): TranslationResult {
-    console.log('Validating and cleaning translation result:', parsed);
-
-    // Ensure we have the required fields
-    if (!parsed || typeof parsed !== 'object') {
-      throw new Error('Invalid response format: not an object');
-    }
-
-    // Extract and clean the text fields
-    let originalText = '';
-    let translatedText = '';
-
-    // Handle various possible field names and formats
-    if (parsed.originalText !== undefined) {
-      originalText = this.cleanText(String(parsed.originalText));
-    } else if (parsed.original !== undefined) {
-      originalText = this.cleanText(String(parsed.original));
-    } else if (parsed.source !== undefined) {
-      originalText = this.cleanText(String(parsed.source));
-    }
-
-    if (parsed.translatedText !== undefined) {
-      translatedText = this.cleanText(String(parsed.translatedText));
-    } else if (parsed.translated !== undefined) {
-      translatedText = this.cleanText(String(parsed.translated));
-    } else if (parsed.target !== undefined) {
-      translatedText = this.cleanText(String(parsed.target));
-    } else if (parsed.translation !== undefined) {
-      translatedText = this.cleanText(String(parsed.translation));
-    }
-
-    console.log('Cleaned originalText:', originalText);
-    console.log('Cleaned translatedText:', translatedText);
-
-    return {
-      originalText,
-      translatedText
-    };
-  }
-
-  private cleanText(text: string): string {
-    if (!text || typeof text !== 'string') {
-      return '';
-    }
-
-    // Remove common unwanted patterns
-    let cleaned = text
-      .trim()
-      // Remove quotes if the entire text is wrapped in them
-      .replace(/^["'](.*)["']$/, '$1')
-      // Remove markdown formatting
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      // Remove extra whitespace
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // If the text looks like JSON or contains JSON-like patterns, try to extract meaningful content
-    if (cleaned.includes('{') && cleaned.includes('}')) {
-      // Try to extract text from JSON-like strings
-      const textMatch = cleaned.match(/"(?:originalText|translatedText|text|content)"\s*:\s*"([^"]+)"/);
-      if (textMatch) {
-        cleaned = textMatch[1];
-      }
-    }
-
-    return cleaned;
-  }
-
-  private extractTextFromNaturalResponse(responseText: string, targetLanguage: string): TranslationResult {
-    console.log('Extracting text from natural language response');
-
-    // Clean the response text
-    const cleanedResponse = this.cleanText(responseText);
-
-    // Try to identify if this is a translation response with both original and translated text
-    const patterns = [
-      // Pattern: "Original: ... Translation: ..." (with newline)
-      /(?:original|source):\s*(.+?)(?:\n|\r\n).*?(?:translation|translated|target):\s*(.+?)(?:\n|$)/is,
-      // Pattern: "Original: ... Translation: ..." (same line)
-      /(?:original|source):\s*(.+?)\s+(?:translation|translated|target):\s*(.+)/i,
-      // Pattern: "... -> ..." or "... → ..."
-      /(.+?)\s*(?:->|→|translates to|means)\s*(.+)/i
-    ];
-
-    for (const pattern of patterns) {
-      const match = cleanedResponse.match(pattern);
-      if (match) {
-        if (match.length >= 3) {
-          // Found both original and translated text
-          return {
-            originalText: this.cleanText(match[1]),
-            translatedText: this.cleanText(match[2])
-          };
-        }
-      }
-    }
-
-    // If we can't parse it properly, return the cleaned response as original text
-    // and indicate that translation failed
-    console.log('Could not parse natural language response, using as original text');
-    return {
-      originalText: cleanedResponse,
-      translatedText: `[Translation failed - please try again]`
-    };
   }
 
   private async handleRateLimit(): Promise<void> {
