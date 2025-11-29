@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, systemPreferences } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, systemPreferences, shell } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
@@ -62,6 +62,12 @@ function createWindow() {
   // Register global shortcut
   registerGlobalShortcut();
 
+  // Handle external links
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
   // Set up IPC handlers
   setupIpcHandlers();
 }
@@ -83,31 +89,31 @@ function createTray() {
   }
 
   tray = new Tray(iconPath);
-  
+
   const contextMenu = Menu.buildFromTemplate([
-    { 
-      label: 'Capture Screen', 
-      click: () => startScreenCapture() 
+    {
+      label: 'Capture Screen',
+      click: () => startScreenCapture()
     },
-    { 
-      label: 'Open', 
-      click: () => mainWindow?.show() 
+    {
+      label: 'Open',
+      click: () => mainWindow?.show()
     },
-    { 
-      type: 'separator' 
+    {
+      type: 'separator'
     },
-    { 
-      label: 'Quit', 
+    {
+      label: 'Quit',
       click: () => {
         app.quitting = true;
         app.quit();
-      } 
+      }
     }
   ]);
-  
+
   tray.setToolTip('Screen Translator');
   tray.setContextMenu(contextMenu);
-  
+
   tray.on('click', () => {
     if (mainWindow?.isVisible()) {
       mainWindow.hide();
@@ -119,20 +125,20 @@ function createTray() {
 
 function registerGlobalShortcut() {
   const hotkey = store.get('hotkey');
-  
+
   // Validate hotkey before registration
   if (!hotkey || typeof hotkey !== 'string' || hotkey.trim() === '') {
     console.error('Invalid hotkey configuration:', hotkey);
     return;
   }
-  
+
   globalShortcut.unregisterAll();
-  
+
   try {
     const success = globalShortcut.register(hotkey, () => {
       startScreenCapture();
     });
-    
+
     if (!success) {
       console.error('Failed to register global shortcut - hotkey may be in use:', hotkey);
     } else {
@@ -148,7 +154,7 @@ async function requestScreenCapturePermission(): Promise<boolean> {
     try {
       const status = systemPreferences.getMediaAccessStatus('screen');
       console.log('Screen capture permission status:', status);
-      
+
       if (status === 'denied') {
         console.error('Screen capture permission denied by user');
         if (mainWindow) {
@@ -184,7 +190,7 @@ async function requestScreenCapturePermission(): Promise<boolean> {
 }
 async function startScreenCapture() {
   console.log('Starting optimized multi-monitor screen capture...');
-  
+
   // Check permissions first
   const hasPermission = await requestScreenCapturePermission();
   if (!hasPermission) {
@@ -206,7 +212,7 @@ async function startScreenCapture() {
       captureWindows.set(display.id, window);
       return { window, displayId: display.id };
     });
-    
+
     const windowResults = await Promise.all(windowCreationPromises);
     console.log(`Created ${windowResults.length} capture windows`);
 
@@ -223,7 +229,7 @@ async function startScreenCapture() {
 
     // Show all capture windows immediately
     showAllCaptureWindows();
-    
+
     console.log(`Successfully initialized capture windows for ${captureWindows.size} displays`);
   } catch (error) {
     console.error('Failed to start screen capture:', error);
@@ -239,7 +245,7 @@ async function startScreenCapture() {
 
 async function closeAllCaptureWindows() {
   console.log(`Closing ${captureWindows.size} existing capture windows`);
-  
+
   const closePromises = Array.from(captureWindows.values()).map(window => {
     return new Promise<void>((resolve) => {
       if (window && !window.isDestroyed()) {
@@ -250,17 +256,17 @@ async function closeAllCaptureWindows() {
       }
     });
   });
-  
+
   await Promise.all(closePromises);
   captureWindows.clear();
-  
+
   // Wait a moment for cleanup
   await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 async function createCaptureWindowForDisplay(display: Electron.Display): Promise<BrowserWindow> {
   console.log(`Creating capture window for display ${display.id}: ${JSON.stringify(display.bounds)}`);
-  
+
   const captureWindow = new BrowserWindow({
     width: display.bounds.width,
     height: display.bounds.height,
@@ -304,7 +310,7 @@ async function createCaptureWindowForDisplay(display: Electron.Display): Promise
   }
 
   console.log(`Capture window created for display ${display.id} at position (${display.bounds.x}, ${display.bounds.y}) with size ${display.bounds.width}x${display.bounds.height}`);
-  
+
   return captureWindow;
 }
 
@@ -355,20 +361,20 @@ function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: numbe
 
 function showAllCaptureWindows() {
   console.log(`Showing ${captureWindows.size} capture windows with optimized timing`);
-  
+
   captureWindows.forEach((captureWindow, displayId) => {
     if (captureWindow && !captureWindow.isDestroyed()) {
       console.log(`Preparing to show capture window for display ${displayId}`);
-      
+
       // Set up ready-to-show handler with faster fallback
       let shown = false;
-      
+
       const showWindow = () => {
         if (shown || captureWindow.isDestroyed()) return;
         shown = true;
-        
+
         console.log(`Showing capture window for display ${displayId}`);
-        
+
         // Optimized window showing sequence
         captureWindow.setAlwaysOnTop(true, 'screen-saver');
         captureWindow.setIgnoreMouseEvents(false);
@@ -376,7 +382,7 @@ function showAllCaptureWindows() {
         captureWindow.show();
         captureWindow.focus();
         captureWindow.moveTop();
-        
+
         // Immediate focus without delay for better responsiveness
         process.nextTick(() => {
           if (captureWindow && !captureWindow.isDestroyed()) {
@@ -386,10 +392,10 @@ function showAllCaptureWindows() {
           }
         });
       };
-      
+
       // Try ready-to-show first
       captureWindow.once('ready-to-show', showWindow);
-      
+
       // Faster fallback timeout for better responsiveness
       setTimeout(() => {
         if (!shown) {
@@ -422,24 +428,24 @@ function setupIpcHandlers() {
     if (settings.apiKey !== undefined) {
       store.set('apiKey', settings.apiKey);
     }
-    
+
     if (settings.sourceLanguage !== undefined) {
       store.set('sourceLanguage', settings.sourceLanguage);
     }
-    
+
     if (settings.targetLanguage !== undefined) {
       store.set('targetLanguage', settings.targetLanguage);
     }
-    
+
     if (settings.hotkey !== undefined) {
       store.set('hotkey', settings.hotkey);
       registerGlobalShortcut();
     }
-    
+
     if (settings.theme !== undefined) {
       store.set('theme', settings.theme);
     }
-    
+
     return true;
   });
 
@@ -470,10 +476,10 @@ function setupIpcHandlers() {
   ipcMain.handle('capture-completed', async (_, imageData: string) => {
     console.log('Capture completed, image data length:', imageData.length);
     console.log('Sending image-captured event to main window');
-    
+
     // Close and cleanup all capture windows
     await closeAllCaptureWindows();
-    
+
     mainWindow?.webContents.send('image-captured', imageData);
     console.log('Image-captured event sent');
   });
