@@ -29,12 +29,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!key.trim()) {
       setError('API key is required');
       return;
     }
-    
+
     onApiKeyChange(key.trim());
     onHotkeyChange(currentHotkey);
     onThemeChange(currentTheme);
@@ -45,11 +45,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     setKey(e.target.value);
     setError('');
   };
-  
+
   const handleHotkeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentHotkey(e.target.value);
   };
-  
+
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrentTheme(e.target.value as Theme);
   };
@@ -63,16 +63,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <button className="close-button" onClick={onClose}>×</button>
           )}
         </div>
-        
+
         {isFirstRun && (
           <p>
             To use Screen Translator, you need to set up your Gemini API key.
             This key is used for text recognition and translation.
           </p>
         )}
-        
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="api-key">Gemini API Key</label>
@@ -83,15 +83,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               onChange={handleKeyChange}
               placeholder="Enter your Gemini API key"
             />
-            <a 
-              href="https://aistudio.google.com/app/apikey" 
-              target="_blank" 
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
               rel="noopener noreferrer"
             >
               Get a Gemini API key
             </a>
           </div>
-          
+
           {!isFirstRun && (
             <>
               <div className="form-group">
@@ -107,7 +107,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   Use format like Ctrl+Alt+T or Command+Shift+S
                 </small>
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="theme">Theme</label>
                 <select
@@ -122,12 +122,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </>
           )}
-          
+
           <div className="modal-footer">
             {!isFirstRun && (
-              <button 
-                type="button" 
-                className="cancel-button" 
+              <button
+                type="button"
+                className="cancel-button"
                 onClick={onClose}
               >
                 Cancel

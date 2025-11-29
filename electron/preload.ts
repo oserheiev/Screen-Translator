@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, shell } from 'electron';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -46,6 +46,9 @@ contextBridge.exposeInMainWorld(
     window: {
       show: () => ipcRenderer.invoke('show-window')
     },
+    shell: {
+      openExternal: (url: string) => shell.openExternal(url)
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
       const validChannels = ['image-captured', 'capture-error'];
@@ -53,14 +56,14 @@ contextBridge.exposeInMainWorld(
         // Deliberately strip event as it includes `sender`
         const subscription = (_event: any, ...args: any[]) => callback(...args);
         ipcRenderer.on(channel, subscription);
-        
+
         // Return a function to remove the event listener
         return () => {
           ipcRenderer.removeListener(channel, subscription);
         };
       }
-      
-      return () => {}; // Return empty function if channel is not valid
+
+      return () => { }; // Return empty function if channel is not valid
     }
   }
 );

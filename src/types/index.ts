@@ -33,6 +33,9 @@ export interface ElectronAPI {
   window: {
     show: () => Promise<void>;
   };
+  shell: {
+    openExternal: (url: string) => Promise<void>;
+  };
   on: (
     channel: string,
     callback: (...args: any[]) => void
@@ -44,7 +47,7 @@ export interface TranslationResult {
   translatedText: string;
 }
 
-export type SupportedLanguage = 
+export type SupportedLanguage =
   | 'Auto'
   | 'English'
   | 'Russian'
