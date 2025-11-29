@@ -28,7 +28,8 @@ export class GeminiService {
 
       // Create the prompt
       const sourceLanguageText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
-      const prompt = `Extract text from this image (source language: ${sourceLanguageText}) and translate it to ${targetLanguage}. Return a JSON object with "originalText" and "translatedText" fields.`;
+      const prompt = `Extract text from this image (source language: ${sourceLanguageText}) and translate it to ${targetLanguage}. ` +
+        'Return output: {"originalText": "some text", "translatedText": "some text"}. Do not include any additional text or formatting.';
       console.log('Prompt:', prompt);
 
       // Generate content
@@ -51,81 +52,15 @@ export class GeminiService {
         ]
       });
 
-      console.log('Gemini API response received');
+      const responseText = result.text;
 
-      // Get the response text
-      let responseText = '';
-      try {
-        // Use the correct API method to extract text
-        if (result.candidates && result.candidates[0]) {
-          const candidate = result.candidates[0];
-          if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
-            responseText = candidate.content.parts[0].text || '';
-          }
-        } else if (result.text) {
-          responseText = result.text;
-        } else {
-          console.log('Full result object:', JSON.stringify(result, null, 2));
-          throw new Error('Unable to extract text from response');
-        }
-        console.log('Response text:', responseText);
-      } catch (error) {
-        console.error('Error extracting text from response:', error);
-        console.log('Full result object:', JSON.stringify(result, null, 2));
-        throw new Error('Failed to extract text from API response');
+      if (!responseText) {
+        throw new Error('No response text received');
       }
 
-      try {
-        console.log('Raw response text before parsing:', responseText);
-        console.log('Response text type:', typeof responseText);
-        console.log('Response text length:', responseText.length);
-
-        // Check if response is wrapped in markdown code blocks
-        let cleanedResponse = responseText.trim();
-        if (cleanedResponse.startsWith('```json') && cleanedResponse.endsWith('```')) {
-          console.log('Response is wrapped in markdown code blocks, extracting JSON...');
-          cleanedResponse = cleanedResponse.slice(7, -3).trim(); // Remove ```json and ```
-          console.log('Cleaned response:', cleanedResponse);
-        } else if (cleanedResponse.startsWith('```') && cleanedResponse.endsWith('```')) {
-          console.log('Response is wrapped in generic code blocks, extracting content...');
-          cleanedResponse = cleanedResponse.slice(3, -3).trim(); // Remove ``` and ```
-          console.log('Cleaned response:', cleanedResponse);
-        }
-
-        // Try to parse the JSON response
-        const parsed = JSON.parse(cleanedResponse);
-        console.log('Successfully parsed JSON response:', parsed);
-        console.log('Parsed response type:', typeof parsed);
-        console.log('originalText:', parsed.originalText);
-        console.log('translatedText:', parsed.translatedText);
-
-        // Validate and clean the extracted text
-        const result = this.validateAndCleanTranslationResult(parsed);
-        return result;
-      } catch (parseError) {
-        console.log('JSON parsing failed with error:', parseError);
-        console.log('Raw response that failed to parse:', responseText);
-        console.log('Attempting to extract text manually...');
-
-        // Try to extract JSON from the response manually
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            console.log('Found JSON pattern, attempting to parse:', jsonMatch[0]);
-            const parsed = JSON.parse(jsonMatch[0]);
-            console.log('Successfully parsed extracted JSON:', parsed);
-            const result = this.validateAndCleanTranslationResult(parsed);
-            return result;
-          } catch (secondParseError) {
-            console.log('Second JSON parse attempt failed:', secondParseError);
-          }
-        }
-
-        console.log('All JSON parsing attempts failed, attempting to extract text from natural language response');
-        // Try to extract meaningful text from natural language response
-        const extractedResult = this.extractTextFromNaturalResponse(responseText, targetLanguage);
-        return extractedResult;
-      }
+      console.log('Response text:', responseText);
+      var cleanedText = responseText.replace(/json|`/g, '');
+      return JSON.parse(cleanedText);
     } catch (error) {
       console.error('GeminiService error:', error);
       throw this.handleError(error);
