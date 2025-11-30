@@ -16,10 +16,10 @@ const logFile = path.join(logDir, `app-${new Date().toISOString().replace(/:/g, 
 function log(level, message, ...args) {
   const timestamp = new Date().toISOString();
   const formattedMessage = `[${timestamp}] [${level}] ${message}`;
-  
+
   // Log to console
   console[level.toLowerCase()](formattedMessage, ...args);
-  
+
   // Log to file
   try {
     const logEntry = `${formattedMessage} ${args.length ? JSON.stringify(args) : ''}\n`;
@@ -56,7 +56,7 @@ let captureWindow = null;
 function createWindow() {
   // Create the browser window
   const fs = require('fs');
-  
+
   // Use platform-specific icons for the window
   let iconPath;
   if (process.platform === 'darwin') {
@@ -66,15 +66,15 @@ function createWindow() {
     // On other platforms, use the regular icon
     iconPath = path.join(__dirname, 'assets/icons/icon.png');
   }
-  
+
   // Check if icon exists
   const iconExists = fs.existsSync(iconPath);
   iconPath = iconExists ? iconPath : null;
-  
+
   if (!iconExists) {
     console.warn('No icon file found for window');
   }
-  
+
   const windowOptions = {
     width: 800,
     height: 600,
@@ -84,12 +84,12 @@ function createWindow() {
       preload: path.join(__dirname, 'build/electron/preload.js')
     }
   };
-  
+
   // Only add icon if it exists
   if (iconPath) {
     windowOptions.icon = iconPath;
   }
-  
+
   mainWindow = new BrowserWindow(windowOptions);
 
   // Load the index.html of the app
@@ -126,7 +126,7 @@ function createTray() {
 
   const fs = require('fs');
   let iconPath;
-  
+
   // Use platform-specific icons
   if (process.platform === 'darwin') {
     // On macOS, use the smaller icon
@@ -137,18 +137,18 @@ function createTray() {
     iconPath = path.join(__dirname, 'assets/icons/icon.png');
     console.log('Using standard icon');
   }
-  
+
   console.log('Attempting to load tray icon from:', iconPath);
-  
+
   // Check if file exists
   const iconExists = fs.existsSync(iconPath);
   console.log('Icon exists check:', iconExists);
-  
+
   if (!iconExists) {
     console.error('Icon not found. Cannot create tray.');
     return; // Exit function if icon doesn't exist
   }
-  
+
   // Try to create tray with the icon
   try {
     tray = new Tray(iconPath);
@@ -156,13 +156,13 @@ function createTray() {
     console.error('Error creating tray:', error);
     return; // Exit function if tray creation fails
   }
-  
+
   // Only proceed if tray was successfully created
   if (!tray) {
     console.error('Tray creation failed');
     return;
   }
-  
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Capture Screen',
@@ -183,10 +183,10 @@ function createTray() {
       }
     }
   ]);
-  
+
   tray.setToolTip('Screen Translator');
   tray.setContextMenu(contextMenu);
-  
+
   tray.on('click', () => {
     if (mainWindow?.isVisible()) {
       mainWindow.hide();
@@ -198,9 +198,9 @@ function createTray() {
 
 function registerGlobalShortcut() {
   const hotkey = store.get('hotkey');
-  
+
   globalShortcut.unregisterAll();
-  
+
   try {
     globalShortcut.register(hotkey, () => {
       startScreenCapture();
@@ -235,19 +235,19 @@ function startScreenCapture() {
       }
 
       logger.info(`Found ${sources.length} screen sources`);
-      
+
       const primaryDisplay = screen.getPrimaryDisplay();
       const { width, height } = primaryDisplay.workAreaSize;
 
       logger.info(`Creating capture window with dimensions: ${width}x${height}`);
-      
+
       // Create a window that covers the entire screen
       // Use the actual screen dimensions, not just the work area
       const actualWidth = primaryDisplay.bounds.width;
       const actualHeight = primaryDisplay.bounds.height;
-      
+
       logger.debug(`Using actual screen dimensions: ${actualWidth}x${actualHeight}`);
-      
+
       captureWindow = new BrowserWindow({
         x: primaryDisplay.bounds.x,
         y: primaryDisplay.bounds.y,
@@ -255,6 +255,7 @@ function startScreenCapture() {
         height: actualHeight,
         transparent: true,
         frame: false,
+        focusable: false,
         fullscreen: true,
         alwaysOnTop: true, // Make sure it's on top of everything
         skipTaskbar: true, // Don't show in taskbar
@@ -269,7 +270,7 @@ function startScreenCapture() {
           webSecurity: true
         }
       });
-      
+
       // Log window bounds for debugging
       const bounds = captureWindow.getBounds();
       logger.debug(`Capture window bounds: x=${bounds.x}, y=${bounds.y}, width=${bounds.width}, height=${bounds.height}`);
@@ -280,8 +281,8 @@ function startScreenCapture() {
         // Add a small delay to ensure everything is initialized
         setTimeout(() => {
           if (captureWindow) {
-            captureWindow.show();
-            captureWindow.focus();
+            captureWindow.showInactive();
+            logger.info('Capture window shown and focused');
             logger.info('Capture window shown and focused');
           }
         }, 300);
@@ -298,7 +299,7 @@ function startScreenCapture() {
         if (captureWindow) {
           captureWindow.close();
         }
-        
+
         const { dialog } = require('electron');
         dialog.showErrorBox(
           'Screen Capture Error',
@@ -355,20 +356,20 @@ function setupIpcHandlers() {
     if (settings.apiKey !== undefined) {
       store.set('apiKey', settings.apiKey);
     }
-    
+
     if (settings.targetLanguage !== undefined) {
       store.set('targetLanguage', settings.targetLanguage);
     }
-    
+
     if (settings.hotkey !== undefined) {
       store.set('hotkey', settings.hotkey);
       registerGlobalShortcut();
     }
-    
+
     if (settings.theme !== undefined) {
       store.set('theme', settings.theme);
     }
-    
+
     return true;
   });
 
@@ -379,32 +380,32 @@ function setupIpcHandlers() {
   ipcMain.handle('get-screens', async () => {
     return screen.getAllDisplays();
   });
-  
+
   // Add handler for logging from renderer process
   ipcMain.handle('log-message', (_, message, ...args) => {
     logger.debug(`[Renderer] ${message}`, ...args);
     return true;
   });
-  
+
   // Add handler for get-sources
   ipcMain.handle('get-sources', async () => {
     try {
       logger.info('Getting screen sources...');
-      
+
       // Get available sources (screens, windows)
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: 0, height: 0 } // No thumbnails needed
       });
-      
+
       logger.info(`Found ${sources.length} screen sources`);
-      
+
       if (sources.length === 0) {
         logger.warn('No screen sources found');
       } else {
         sources.forEach((source, index) => {
           logger.debug(`Source ${index}: ${source.name} (${source.id})`);
-          
+
           // Log display details if available
           const displays = screen.getAllDisplays();
           if (displays.length > 0) {
@@ -415,7 +416,7 @@ function setupIpcHandlers() {
           }
         });
       }
-      
+
       return sources;
     } catch (error) {
       logger.error('Error getting screen sources:', error);

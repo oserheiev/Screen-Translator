@@ -379,14 +379,12 @@ function showAllCaptureWindows() {
         captureWindow.setAlwaysOnTop(true, 'screen-saver');
         captureWindow.setIgnoreMouseEvents(false);
         captureWindow.setVisibleOnAllWorkspaces(true);
-        captureWindow.show();
-        captureWindow.focus();
+        captureWindow.showInactive();
         captureWindow.moveTop();
 
         // Immediate focus without delay for better responsiveness
         process.nextTick(() => {
           if (captureWindow && !captureWindow.isDestroyed()) {
-            captureWindow.focus();
             captureWindow.moveTop();
             console.log(`Capture window for display ${displayId} is now active`);
           }
