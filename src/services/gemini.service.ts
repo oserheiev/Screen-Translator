@@ -9,14 +9,33 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
-  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string): Promise<TranslationResult> {
+  async listModels(): Promise<string[]> {
+    try {
+      const response = await this.ai.models.list();
+      const models: string[] = [];
+
+      // @ts-ignore - The SDK types might be slightly mismatched or require specific iteration
+      for await (const model of response) {
+        const m = model as any;
+        if (m.name && m.supportedActions?.includes('generateContent')) {
+          models.push(m.name.replace('models/', ''));
+        }
+      }
+      return models;
+    } catch (error) {
+      console.error('GeminiService.listModels error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<TranslationResult> {
     try {
       const base64Image = this.extractBase64Image(imageData);
       const prompt = this.createImagePrompt(sourceLanguage, targetLanguage);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
-          model: CONFIG.GEMINI.MODEL_NAME,
+          model: modelName,
           contents: [
             {
               role: 'user',
@@ -42,13 +61,13 @@ export class GeminiService {
     }
   }
 
-  async translateText(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
+  async translateText(text: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<string> {
     try {
       const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
-          model: CONFIG.GEMINI.MODEL_NAME,
+          model: modelName,
           contents: prompt
         });
         return this.extractTextFromResponse(result);

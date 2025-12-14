@@ -22,6 +22,9 @@ interface AppContextType {
   processImage: (imageData: string) => Promise<void>;
   translateText: (text: string) => Promise<void>;
   clearError: () => void;
+  selectedModel: string;
+  availableModels: string[];
+  setModel: (model: string) => void;
 }
 
 const defaultContext: AppContextType = {
@@ -42,7 +45,10 @@ const defaultContext: AppContextType = {
   setTheme: () => { },
   processImage: async () => { },
   translateText: async () => { },
-  clearError: () => { }
+  clearError: () => { },
+  selectedModel: 'gemini-2.5-flash',
+  availableModels: [],
+  setModel: () => { }
 };
 
 export const AppContext = createContext<AppContextType>(defaultContext);
@@ -65,6 +71,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
 
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+
   const { getSettings, saveSettings, showWindow, getPlatform, isElectronAvailable } = useElectronIpc();
 
   useEffect(() => {
@@ -86,6 +95,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
               setHotkey(defaultHotkey);
             }
             if (settings.theme) setTheme(settings.theme as Theme);
+            if (settings.model) setSelectedModel(settings.model);
           }
         }
       } catch (error) {
@@ -106,7 +116,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             sourceLanguage,
             targetLanguage,
             hotkey,
-            theme
+            theme,
+            model: selectedModel
           });
         }
       } catch (error) {
@@ -115,7 +126,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     save();
-  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, saveSettings, isElectronAvailable]);
+  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, saveSettings, isElectronAvailable]);
 
   // Separate useEffect for GeminiService creation - only when apiKey changes
   useEffect(() => {
@@ -124,8 +135,37 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setGeminiService(new GeminiService(apiKey));
     } else {
       setGeminiService(null);
+      setAvailableModels([]);
     }
   }, [apiKey]);
+
+  // Fetch models when service is ready
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (geminiService && apiKey) {
+        try {
+          const models = await geminiService.listModels();
+          setAvailableModels(models);
+
+          // Check if selected model is available
+          if (models.length > 0 && !models.includes(selectedModel)) {
+            const newModel = models[0];
+            // Use the custom alert window
+            window.electron.alert.show(
+              'Model Unavailable',
+              `Model ${selectedModel} is not available. Switched to ${newModel}`
+            );
+
+            setSelectedModel(newModel);
+          }
+        } catch (e) {
+          console.error('Failed to fetch models:', e);
+        }
+      }
+    };
+
+    fetchModels();
+  }, [geminiService, apiKey, selectedModel]);
 
   const processImage = useCallback(async (imageData: string) => {
     console.log('processImage called with imageData length:', imageData.length);
@@ -144,7 +184,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     console.log('Starting image processing...');
 
     try {
-      const result: TranslationResult = await geminiService.processImage(imageData, sourceLanguage, targetLanguage);
+      const result: TranslationResult = await geminiService.processImage(imageData, sourceLanguage, targetLanguage, selectedModel);
       setOriginalText(result.originalText);
       setTranslatedText(result.translatedText);
       console.log('Text set successfully');
@@ -155,7 +195,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setIsProcessing(false);
       console.log('Image processing completed');
     }
-  }, [geminiService, sourceLanguage, targetLanguage, showWindow]);
+  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showWindow]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
@@ -175,14 +215,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setError(null);
 
     try {
-      const result = await geminiService.translateText(text, sourceLanguage, targetLanguage);
+      const result = await geminiService.translateText(text, sourceLanguage, targetLanguage, selectedModel);
       setTranslatedText(result);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage, showWindow]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel]);
 
   const clearError = () => {
     setError(null);
@@ -206,7 +246,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setTheme,
     processImage,
     translateText,
-    clearError
+    clearError,
+    selectedModel,
+    availableModels,
+    setModel: setSelectedModel
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

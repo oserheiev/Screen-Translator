@@ -1,7 +1,7 @@
 import Store from 'electron-store';
 
 // Define supported languages
-export type SupportedLanguage = 
+export type SupportedLanguage =
   | 'Auto'
   | 'English'
   | 'Russian'
@@ -25,6 +25,7 @@ export interface Settings {
   targetLanguage: SupportedLanguage;
   hotkey: string;
   theme: Theme;
+  model: string;
 }
 
 // Create a type for the store with proper methods

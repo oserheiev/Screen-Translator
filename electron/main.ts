@@ -12,7 +12,8 @@ const store = new Store<Settings>({
     sourceLanguage: 'Auto',
     targetLanguage: 'English',
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
-    theme: 'system'
+    theme: 'system',
+    model: 'gemini-2.5-flash'
   }
 });
 
@@ -362,7 +363,8 @@ function setupIpcHandlers() {
       sourceLanguage: store.get('sourceLanguage'),
       targetLanguage: store.get('targetLanguage'),
       hotkey: store.get('hotkey'),
-      theme: store.get('theme')
+      theme: store.get('theme'),
+      model: store.get('model')
     };
   });
 
@@ -375,6 +377,7 @@ function setupIpcHandlers() {
       registerGlobalShortcut();
     }
     if (settings.theme !== undefined) store.set('theme', settings.theme);
+    if (settings.model !== undefined) store.set('model', settings.model);
     return true;
   });
 
@@ -427,6 +430,50 @@ function setupIpcHandlers() {
     if (senderWindow) {
       console.log('Capture window reported ready, forcing focus');
       senderWindow.focus();
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SHOW_ALERT, async (_, { title, message }) => {
+    const width = 400;
+    const height = 250;
+
+    const alertWindow = new BrowserWindow({
+      width,
+      height,
+      frame: false,
+      resizable: true, // Allow resizing so setSize works reliably
+      alwaysOnTop: true,
+      skipTaskbar: true, // Don't show in taskbar if possible
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, WINDOW_CONFIG.PRELOAD_PATH)
+      },
+      icon: path.join(__dirname, WINDOW_CONFIG.ICON_PATH)
+    });
+
+    // Get current theme if possible from store, or pass it
+    const theme = store.get('theme') || 'system';
+
+    alertWindow.loadURL(
+      url.format({
+        pathname: path.join(__dirname, WINDOW_CONFIG.INDEX_HTML_PATH),
+        protocol: 'file:',
+        slashes: true,
+        search: `?mode=alert&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}&theme=${theme}`
+      })
+    );
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    senderWindow?.close();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.RESIZE_WINDOW, (event, { width, height }) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow && !senderWindow.isDestroyed()) {
+      senderWindow.setSize(width, height);
     }
   });
 }
