@@ -2,7 +2,8 @@ import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, system
 import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
-import { Settings, SupportedLanguage, Theme } from './types';
+import { Settings } from './types';
+import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 
 // Initialize the settings store
 const store = new Store<Settings>({
@@ -22,20 +23,20 @@ let captureWindows: Map<number, BrowserWindow> = new Map();
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: WINDOW_CONFIG.WIDTH,
+    height: WINDOW_CONFIG.HEIGHT,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, WINDOW_CONFIG.PRELOAD_PATH)
     },
-    icon: path.join(__dirname, '../../assets/icons/icon.png')
+    icon: path.join(__dirname, WINDOW_CONFIG.ICON_PATH)
   });
 
   // Load the index.html of the app
   mainWindow.loadURL(
     url.format({
-      pathname: path.join(__dirname, '../index.html'),
+      pathname: path.join(__dirname, WINDOW_CONFIG.INDEX_HTML_PATH),
       protocol: 'file:',
       slashes: true
     })
@@ -78,14 +79,9 @@ function createTray() {
   // Use platform-specific tray icons for proper sizing
   let iconPath: string;
   if (process.platform === 'darwin') {
-    // macOS uses 16x16 or 32x32 for tray icons
-    iconPath = path.join(__dirname, '../../assets/icons/icon-mac.png');
-  } else if (process.platform === 'win32') {
-    // Windows typically uses 16x16 for tray icons
-    iconPath = path.join(__dirname, '../../assets/icons/icon.png');
+    iconPath = path.join(__dirname, TRAY_ICONS.MACOS);
   } else {
-    // Linux and other platforms
-    iconPath = path.join(__dirname, '../../assets/icons/icon.png');
+    iconPath = path.join(__dirname, TRAY_ICONS.WINDOWS);
   }
 
   tray = new Tray(iconPath);
@@ -126,7 +122,6 @@ function createTray() {
 function registerGlobalShortcut() {
   const hotkey = store.get('hotkey');
 
-  // Validate hotkey before registration
   if (!hotkey || typeof hotkey !== 'string' || hotkey.trim() === '') {
     console.error('Invalid hotkey configuration:', hotkey);
     return;
@@ -158,55 +153,43 @@ async function requestScreenCapturePermission(): Promise<boolean> {
       if (status === 'denied') {
         console.error('Screen capture permission denied by user');
         if (mainWindow) {
-          mainWindow.webContents.send('capture-error',
-            'Screen recording permission denied. Please enable it in System Preferences > Security & Privacy > Privacy > Screen Recording, then restart the application.'
+          mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
+            'Screen recording permission denied. Please enable it in System Preferences > Security & Privacy.'
           );
         }
         return false;
       } else if (status === 'not-determined') {
-        console.log('Screen capture permission not determined, will be requested during capture');
-        // Note: Screen recording permission cannot be requested programmatically on macOS
-        // It will be requested automatically when getUserMedia is called
+        console.log('Screen capture permission not determined');
         if (mainWindow) {
-          mainWindow.webContents.send('capture-error',
-            'Screen recording permission is required. The system will prompt you to grant permission when you start capturing. If denied, please enable it manually in System Preferences > Security & Privacy > Privacy > Screen Recording.'
+          mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
+            'Screen recording permission is required. Please grant it when prompted.'
           );
         }
-        return true; // Allow the attempt - permission will be requested during getUserMedia
+        return true;
       }
       return status === 'granted';
     } catch (error) {
       console.error('Error checking screen capture permission:', error);
-      if (mainWindow) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        mainWindow.webContents.send('capture-error',
-          `Error checking screen capture permissions: ${errorMessage}. Please try again.`
-        );
-      }
-      return false; // Don't proceed if we can't check permissions
+      return false;
     }
   }
-  return true; // Non-macOS platforms
+  return true;
 }
-async function startScreenCapture() {
-  console.log('Starting optimized multi-monitor screen capture...');
 
-  // Check permissions first
+async function startScreenCapture() {
+  console.log('Starting screen capture...');
+
   const hasPermission = await requestScreenCapturePermission();
   if (!hasPermission) {
-    console.error('Screen capture permission not granted');
     return;
   }
 
-  // Force close any existing capture windows first
   await closeAllCaptureWindows();
 
-  // Get all displays for multi-monitor support
   const displays = screen.getAllDisplays();
-  console.log(`Found ${displays.length} displays for capture`);
+  console.log(`Found ${displays.length} displays`);
 
   try {
-    // Create capture windows for all displays in parallel for better performance
     const windowCreationPromises = displays.map(async (display) => {
       const window = await createCaptureWindowForDisplay(display);
       captureWindows.set(display.id, window);
@@ -214,11 +197,8 @@ async function startScreenCapture() {
     });
 
     const windowResults = await Promise.all(windowCreationPromises);
-    console.log(`Created ${windowResults.length} capture windows`);
 
-    // Load capture interface and setup events in parallel
     const setupPromises = windowResults.map(async ({ window, displayId }) => {
-      // Load interface and setup events concurrently
       const [_] = await Promise.all([
         loadCaptureInterfaceForWindow(window),
         Promise.resolve(setupCaptureWindowEvents(window, displayId))
@@ -227,16 +207,14 @@ async function startScreenCapture() {
 
     await Promise.all(setupPromises);
 
-    // Show all capture windows immediately
     showAllCaptureWindows();
 
-    console.log(`Successfully initialized capture windows for ${captureWindows.size} displays`);
+    console.log(`Initialized capture windows for ${captureWindows.size} displays`);
   } catch (error) {
     console.error('Failed to start screen capture:', error);
     if (mainWindow) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      mainWindow.webContents.send('capture-error',
-        `Failed to start screen capture: ${errorMessage}. Please try again.`
+      mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
+        `Failed to start screen capture: ${error instanceof Error ? error.message : String(error)}`
       );
     }
     await closeAllCaptureWindows();
@@ -244,7 +222,7 @@ async function startScreenCapture() {
 }
 
 async function closeAllCaptureWindows() {
-  console.log(`Closing ${captureWindows.size} existing capture windows`);
+  console.log(`Closing ${captureWindows.size} capture windows`);
 
   const closePromises = Array.from(captureWindows.values()).map(window => {
     return new Promise<void>((resolve) => {
@@ -259,14 +237,10 @@ async function closeAllCaptureWindows() {
 
   await Promise.all(closePromises);
   captureWindows.clear();
-
-  // Wait a moment for cleanup
   await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 async function createCaptureWindowForDisplay(display: Electron.Display): Promise<BrowserWindow> {
-  console.log(`Creating capture window for display ${display.id}: ${JSON.stringify(display.bounds)}`);
-
   const captureWindow = new BrowserWindow({
     width: display.bounds.width,
     height: display.bounds.height,
@@ -287,15 +261,13 @@ async function createCaptureWindowForDisplay(display: Electron.Display): Promise
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, WINDOW_CONFIG.PRELOAD_PATH),
       additionalArguments: [`--display-id=${display.id}`]
     }
   });
 
-  // Set visible on all workspaces after creation
   captureWindow.setVisibleOnAllWorkspaces(true);
 
-  // Ensure the window covers the entire screen with exact positioning
   captureWindow.setBounds({
     x: display.bounds.x,
     y: display.bounds.y,
@@ -303,13 +275,9 @@ async function createCaptureWindowForDisplay(display: Electron.Display): Promise
     height: display.bounds.height
   });
 
-  // Additional positioning for multi-monitor setups
   if (process.platform === 'darwin') {
-    // macOS specific: ensure window appears on correct screen
     captureWindow.setPosition(display.bounds.x, display.bounds.y);
   }
-
-  console.log(`Capture window created for display ${display.id} at position (${display.bounds.x}, ${display.bounds.y}) with size ${display.bounds.width}x${display.bounds.height}`);
 
   return captureWindow;
 }
@@ -317,21 +285,19 @@ async function createCaptureWindowForDisplay(display: Electron.Display): Promise
 async function loadCaptureInterfaceForWindow(captureWindow: BrowserWindow) {
   await captureWindow.loadURL(
     url.format({
-      pathname: path.join(__dirname, '../capture.html'),
+      pathname: path.join(__dirname, WINDOW_CONFIG.CAPTURE_HTML_PATH),
       protocol: 'file:',
       slashes: true
     })
   );
-  console.log('Capture page loaded successfully for window');
 }
 
 function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: number) {
-  // Handle load failures
   captureWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-    console.error(`Capture window for display ${displayId} failed to load:`, errorCode, errorDescription);
+    console.error(`Capture window for display ${displayId} failed to load:`, errorDescription);
     if (mainWindow) {
-      mainWindow.webContents.send('capture-error',
-        `Capture window failed to load: ${errorDescription}. Please try again.`
+      mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
+        `Capture window failed to load: ${errorDescription}`
       );
     }
     captureWindows.delete(displayId);
@@ -341,78 +307,56 @@ function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: numbe
   });
 
   captureWindow.on('closed', () => {
-    console.log(`Capture window for display ${displayId} closed`);
     captureWindows.delete(displayId);
   });
 
-  // Handle ESC key to cancel capture - close all windows
   captureWindow.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'Escape') {
-      console.log('ESC key pressed, closing all capture windows');
       closeAllCaptureWindows();
     }
-  });
-
-  // Forward console messages for debugging
-  captureWindow.webContents.on('console-message', (event, level, message) => {
-    console.log(`[Capture Window ${displayId}] ${message}`);
   });
 }
 
 function showAllCaptureWindows() {
-  console.log(`Showing ${captureWindows.size} capture windows with optimized timing`);
-
   captureWindows.forEach((captureWindow, displayId) => {
     if (captureWindow && !captureWindow.isDestroyed()) {
-      console.log(`Preparing to show capture window for display ${displayId}`);
-
-      // Set up ready-to-show handler with faster fallback
       let shown = false;
 
       const showWindow = () => {
         if (shown || captureWindow.isDestroyed()) return;
         shown = true;
 
-        console.log(`Showing capture window for display ${displayId}`);
-
-        // Optimized window showing sequence
         captureWindow.setAlwaysOnTop(true, 'screen-saver');
         captureWindow.setIgnoreMouseEvents(false);
         captureWindow.setVisibleOnAllWorkspaces(true);
         captureWindow.showInactive();
         captureWindow.moveTop();
 
-        // Immediate focus without delay for better responsiveness
         process.nextTick(() => {
           if (captureWindow && !captureWindow.isDestroyed()) {
             captureWindow.moveTop();
-            console.log(`Capture window for display ${displayId} is now active`);
           }
         });
       };
 
-      // Try ready-to-show first
       captureWindow.once('ready-to-show', showWindow);
 
-      // Faster fallback timeout for better responsiveness
       setTimeout(() => {
         if (!shown) {
-          console.log(`Fast fallback: Force showing capture window for display ${displayId}`);
           showWindow();
         }
-      }, 300); // Reduced from 1000ms to 300ms
+      }, 300);
     }
   });
 }
 
-// IPC handlers
 function setupIpcHandlers() {
-  ipcMain.handle('start-screen-capture', async () => {
+  ipcMain.handle(IPC_CHANNELS.START_CAPTURE, async () => {
     await startScreenCapture();
     return true;
   });
 
-  ipcMain.handle('get-settings', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, () => {
     return {
       apiKey: store.get('apiKey'),
       sourceLanguage: store.get('sourceLanguage'),
@@ -422,42 +366,27 @@ function setupIpcHandlers() {
     };
   });
 
-  ipcMain.handle('save-settings', (_, settings: Partial<Settings>) => {
-    if (settings.apiKey !== undefined) {
-      store.set('apiKey', settings.apiKey);
-    }
-
-    if (settings.sourceLanguage !== undefined) {
-      store.set('sourceLanguage', settings.sourceLanguage);
-    }
-
-    if (settings.targetLanguage !== undefined) {
-      store.set('targetLanguage', settings.targetLanguage);
-    }
-
+  ipcMain.handle(IPC_CHANNELS.SAVE_SETTINGS, (_, settings: Partial<Settings>) => {
+    if (settings.apiKey !== undefined) store.set('apiKey', settings.apiKey);
+    if (settings.sourceLanguage !== undefined) store.set('sourceLanguage', settings.sourceLanguage);
+    if (settings.targetLanguage !== undefined) store.set('targetLanguage', settings.targetLanguage);
     if (settings.hotkey !== undefined) {
       store.set('hotkey', settings.hotkey);
       registerGlobalShortcut();
     }
-
-    if (settings.theme !== undefined) {
-      store.set('theme', settings.theme);
-    }
-
+    if (settings.theme !== undefined) store.set('theme', settings.theme);
     return true;
   });
 
-  ipcMain.handle('clipboard-write-text', async (_, text: string) => {
+  ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, async (_, text: string) => {
     require('electron').clipboard.writeText(text);
   });
 
-  ipcMain.handle('get-screens', async () => {
-    const displays = screen.getAllDisplays();
-    console.log(`Returning ${displays.length} displays:`, displays.map(d => ({ id: d.id, bounds: d.bounds })));
-    return displays;
+  ipcMain.handle(IPC_CHANNELS.GET_SCREENS, async () => {
+    return screen.getAllDisplays();
   });
 
-  ipcMain.handle('get-sources', async () => {
+  ipcMain.handle(IPC_CHANNELS.GET_SOURCES, async () => {
     try {
       const { desktopCapturer } = require('electron');
       const sources = await desktopCapturer.getSources({
@@ -471,33 +400,33 @@ function setupIpcHandlers() {
     }
   });
 
-  ipcMain.handle('capture-completed', async (_, imageData: string) => {
-    console.log('Capture completed, image data length:', imageData.length);
-    console.log('Sending image-captured event to main window');
-
-    // Close and cleanup all capture windows
+  ipcMain.handle(IPC_CHANNELS.CAPTURE_COMPLETED, async (_, imageData: string) => {
     await closeAllCaptureWindows();
-
-    mainWindow?.webContents.send('image-captured', imageData);
-    console.log('Image-captured event sent');
+    mainWindow?.webContents.send(IPC_CHANNELS.IMAGE_CAPTURED, imageData);
   });
 
-  ipcMain.handle('log-message', (_, message: string, ...args: any[]) => {
+  ipcMain.handle(IPC_CHANNELS.LOG_MESSAGE, (_, message: string, ...args: any[]) => {
     console.log(message, ...args);
   });
 
-  ipcMain.handle('get-platform', () => {
+  ipcMain.handle(IPC_CHANNELS.GET_PLATFORM, () => {
     return process.platform;
   });
 
-  ipcMain.handle('show-window', () => {
+  ipcMain.handle(IPC_CHANNELS.SHOW_WINDOW, () => {
     if (mainWindow) {
-      if (mainWindow.isMinimized()) {
-        mainWindow.restore();
-      }
+      if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.show();
       mainWindow.focus();
       mainWindow.moveTop();
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CAPTURE_READY, (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow) {
+      console.log('Capture window reported ready, forcing focus');
+      senderWindow.focus();
     }
   });
 }
@@ -526,7 +455,6 @@ app.on('before-quit', () => {
   globalShortcut.unregisterAll();
 });
 
-// Declare app.quitting property
 declare global {
   namespace Electron {
     interface App {

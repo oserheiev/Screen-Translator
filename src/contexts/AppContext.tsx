@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, TranslationResult, Theme } from '../types';
+import { useElectronIpc } from '../hooks/useElectronIpc';
 
 interface AppContextType {
   originalText: string;
@@ -29,7 +30,7 @@ const defaultContext: AppContextType = {
   sourceLanguage: 'Auto',
   targetLanguage: 'English',
   apiKey: '',
-  hotkey: 'Ctrl+Alt+T', // Default, will be updated based on platform
+  hotkey: 'Ctrl+Alt+T',
   theme: 'system',
   isProcessing: false,
   error: null,
@@ -58,38 +59,33 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [sourceLanguage, setSourceLanguage] = useState<SupportedLanguage>('Auto');
   const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('English');
   const [apiKey, setApiKey] = useState('');
-  const [hotkey, setHotkey] = useState('Ctrl+Alt+T'); // Default, will be updated based on platform
+  const [hotkey, setHotkey] = useState('Ctrl+Alt+T');
   const [theme, setTheme] = useState<Theme>('system');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
 
+  const { getSettings, saveSettings, showWindow, getPlatform, isElectronAvailable } = useElectronIpc();
+
   useEffect(() => {
     // Load settings from Electron store
     const loadSettings = async () => {
       try {
-        if (window.electron) {
-          const settings = await window.electron.settings.get();
-          const platform = await window.electron.platform.getPlatform();
+        if (isElectronAvailable) {
+          const settings = await getSettings();
+          const platform = await getPlatform();
 
-          if (settings.apiKey) {
-            setApiKey(settings.apiKey);
-          }
-          if (settings.sourceLanguage) {
-            setSourceLanguage(settings.sourceLanguage as SupportedLanguage);
-          }
-          if (settings.targetLanguage) {
-            setTargetLanguage(settings.targetLanguage as SupportedLanguage);
-          }
-          if (settings.hotkey) {
-            setHotkey(settings.hotkey);
-          } else {
-            // Set default hotkey based on platform
-            const defaultHotkey = platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T';
-            setHotkey(defaultHotkey);
-          }
-          if (settings.theme) {
-            setTheme(settings.theme as Theme);
+          if (settings) {
+            if (settings.apiKey) setApiKey(settings.apiKey);
+            if (settings.sourceLanguage) setSourceLanguage(settings.sourceLanguage as SupportedLanguage);
+            if (settings.targetLanguage) setTargetLanguage(settings.targetLanguage as SupportedLanguage);
+            if (settings.hotkey) {
+              setHotkey(settings.hotkey);
+            } else {
+              const defaultHotkey = platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T';
+              setHotkey(defaultHotkey);
+            }
+            if (settings.theme) setTheme(settings.theme as Theme);
           }
         }
       } catch (error) {
@@ -98,14 +94,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     loadSettings();
-  }, []);
+  }, [getSettings, getPlatform, isElectronAvailable]);
 
   // Separate useEffect for saving settings
   useEffect(() => {
-    const saveSettings = async () => {
+    const save = async () => {
       try {
-        if (window.electron) {
-          await window.electron.settings.save({
+        if (isElectronAvailable && apiKey) {
+          await saveSettings({
             apiKey,
             sourceLanguage,
             targetLanguage,
@@ -118,11 +114,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       }
     };
 
-    // Only save if we have an apiKey to avoid unnecessary saves
-    if (apiKey) {
-      saveSettings();
-    }
-  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme]);
+    save();
+  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, saveSettings, isElectronAvailable]);
 
   // Separate useEffect for GeminiService creation - only when apiKey changes
   useEffect(() => {
@@ -136,8 +129,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const processImage = useCallback(async (imageData: string) => {
     console.log('processImage called with imageData length:', imageData.length);
-    console.log('geminiService available:', !!geminiService);
-    console.log('apiKey set:', !!apiKey);
 
     if (!geminiService) {
       console.error('No geminiService available');
@@ -146,14 +137,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
 
     // Show and focus the main window when translation starts
-    if (window.electron?.window?.show) {
-      try {
-        await window.electron.window.show();
-        console.log('Main window shown and focused at translation start');
-      } catch (error) {
-        console.error('Failed to show main window:', error);
-      }
-    }
+    await showWindow();
 
     setIsProcessing(true);
     setError(null);
@@ -161,13 +145,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     try {
       const result: TranslationResult = await geminiService.processImage(imageData, sourceLanguage, targetLanguage);
-      console.log('Image processing result:', result);
-      console.log('Result type:', typeof result);
-      console.log('originalText type:', typeof result.originalText);
-      console.log('translatedText type:', typeof result.translatedText);
-      console.log('originalText value:', result.originalText);
-      console.log('translatedText value:', result.translatedText);
-
       setOriginalText(result.originalText);
       setTranslatedText(result.translatedText);
       console.log('Text set successfully');
@@ -178,7 +155,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setIsProcessing(false);
       console.log('Image processing completed');
     }
-  }, [geminiService, sourceLanguage, targetLanguage, apiKey]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
@@ -192,14 +169,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
 
     // Show and focus the main window when translation starts
-    if (window.electron?.window?.show) {
-      try {
-        await window.electron.window.show();
-        console.log('Main window shown and focused at translation start');
-      } catch (error) {
-        console.error('Failed to show main window:', error);
-      }
-    }
+    await showWindow();
 
     setIsProcessing(true);
     setError(null);
@@ -212,7 +182,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow]);
 
   const clearError = () => {
     setError(null);

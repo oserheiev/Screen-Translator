@@ -1,122 +1,136 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { TranslationResult } from '../types';
+import { CONFIG } from '../config';
 
 export class GeminiService {
   private ai: GoogleGenAI;
-  private retryCount: number = 0;
-  private maxRetries: number = 3;
-  private baseDelay: number = 2000;
 
   constructor(apiKey: string) {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
   async processImage(imageData: string, sourceLanguage: string, targetLanguage: string): Promise<TranslationResult> {
-    console.log('GeminiService.processImage called');
-    console.log('Source language:', sourceLanguage);
-    console.log('Target language:', targetLanguage);
-    console.log('Image data length:', imageData.length);
-
     try {
-      // Remove the data URL prefix
-      const base64Image = imageData.split(',')[1];
-      console.log('Base64 image length:', base64Image?.length || 0);
+      const base64Image = this.extractBase64Image(imageData);
+      const prompt = this.createImagePrompt(sourceLanguage, targetLanguage);
 
-      if (!base64Image) {
-        throw new Error('Invalid image data format');
-      }
-
-      // Create the prompt
-      const sourceLanguageText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
-      const prompt = `Extract text from this image (source language: ${sourceLanguageText}) and translate it to ${targetLanguage}. ` +
-        'Return output: {"originalText": "some text", "translatedText": "some text"}. Do not include any additional text or formatting.';
-      console.log('Prompt:', prompt);
-
-      // Generate content
-      console.log('Calling Gemini API...');
-      const result = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: 'image/png',
-                  data: base64Image
+      const responseText = await this.executeWithRetry(async () => {
+        const result = await this.ai.models.generateContent({
+          model: CONFIG.GEMINI.MODEL_NAME,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: 'image/png',
+                    data: base64Image
+                  }
                 }
-              }
-            ]
-          }
-        ]
+              ]
+            }
+          ]
+        });
+        return this.extractTextFromResponse(result);
       });
 
-      const responseText = result.text;
-
-      if (!responseText) {
-        throw new Error('No response text received');
-      }
-
-      console.log('Response text:', responseText);
-      var cleanedText = responseText.replace(/json|`/g, '');
-      return JSON.parse(cleanedText);
+      return this.parseJSONResponse<TranslationResult>(responseText);
     } catch (error) {
-      console.error('GeminiService error:', error);
+      console.error('GeminiService.processImage error:', error);
       throw this.handleError(error);
     }
   }
 
   async translateText(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
     try {
-      // Generate content
-      const sourceLanguageText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
-      const result = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: `Translate the following text "${text}" from ${sourceLanguageText} to ${targetLanguage}.` +
-          'Return only a string with the translated text.'
-      });
+      const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
 
-      const responseText = result.text || '';
-      console.log('Original response:', responseText);
+      const responseText = await this.executeWithRetry(async () => {
+        const result = await this.ai.models.generateContent({
+          model: CONFIG.GEMINI.MODEL_NAME,
+          contents: prompt
+        });
+        return this.extractTextFromResponse(result);
+      });
 
       return responseText;
     } catch (error) {
+      console.error('GeminiService.translateText error:', error);
       throw this.handleError(error);
     }
   }
 
-  private async handleRateLimit(): Promise<void> {
-    this.retryCount++;
-
-    if (this.retryCount > this.maxRetries) {
-      throw new Error('Maximum retry attempts reached. Please try again later.');
+  private extractBase64Image(imageData: string): string {
+    const base64Image = imageData.split(',')[1];
+    if (!base64Image) {
+      throw new Error('Invalid image data format');
     }
+    return base64Image;
+  }
 
-    const delay = this.baseDelay * Math.pow(2, this.retryCount - 1);
-    console.log(`Rate limit hit. Retrying in ${Math.ceil(delay / 1000)} seconds... (Attempt ${this.retryCount}/${this.maxRetries})`);
+  private createImagePrompt(sourceLanguage: string, targetLanguage: string): string {
+    const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
+    return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
+      'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"}. ' +
+      'Do not include markdown formatting (like ```json) or any additional text.';
+  }
 
-    await new Promise(resolve => setTimeout(resolve, delay));
+  private createTranslationPrompt(text: string, sourceLanguage: string, targetLanguage: string): string {
+    const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
+    return `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
+      'Return only the translated text string.';
+  }
+
+  private extractTextFromResponse(result: GenerateContentResponse): string {
+    const text = result.text;
+    if (!text) {
+      throw new Error('No response text received from Gemini API');
+    }
+    return text;
+  }
+
+  private parseJSONResponse<T>(text: string): T {
+    try {
+      // Clean potential markdown code blocks
+      const cleanedText = text.replace(/```json\n?|```/g, '').trim();
+      return JSON.parse(cleanedText);
+    } catch (e) {
+      throw new Error('Failed to parse (JSON) response from Gemini API');
+    }
+  }
+
+  private async executeWithRetry<T>(operation: () => Promise<T>): Promise<T> {
+    let lastError: any;
+    for (let attempt = 1; attempt <= CONFIG.GEMINI.MAX_RETRIES; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        lastError = error;
+        if (!this.isRetryable(error) || attempt === CONFIG.GEMINI.MAX_RETRIES) {
+          throw error;
+        }
+
+        const delay = CONFIG.GEMINI.BASE_DELAY_MS * Math.pow(2, attempt - 1);
+        console.warn(`Attempt ${attempt} failed. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    throw lastError;
+  }
+
+  private isRetryable(error: any): boolean {
+    const msg = error?.message || '';
+    return msg.includes('429') || msg.includes('503') || msg.includes('500');
   }
 
   private handleError(error: any): Error {
-    console.error("Gemini API error:", error);
-
-    if (error.message?.includes('429')) {
-      return new Error('Rate limit exceeded. Please try again later.');
-    }
-    if (error.message?.includes('403')) {
-      return new Error('Invalid API key or insufficient permissions.');
-    }
-    if (error.message?.includes('404')) {
-      return new Error('API endpoint not found. Please check if the Gemini API is available.');
-    }
+    const msg = error?.message || '';
+    if (msg.includes('429')) return new Error('Rate limit exceeded. Please try again later.');
+    if (msg.includes('403')) return new Error('Invalid API key or permissions.');
+    if (msg.includes('404')) return new Error('Gemini API not found.');
 
     return error instanceof Error ? error : new Error(String(error));
-  }
-
-  reset(): void {
-    this.retryCount = 0;
   }
 }
 
