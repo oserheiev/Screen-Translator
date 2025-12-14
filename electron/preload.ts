@@ -35,7 +35,8 @@ contextBridge.exposeInMainWorld(
           throw new Error('Failed to send capture data');
         }
       },
-      log: (message: string, ...args: any[]) => ipcRenderer.invoke('log-message', message, ...args)
+      log: (message: string, ...args: any[]) => ipcRenderer.invoke('log-message', message, ...args),
+      ready: () => ipcRenderer.invoke('capture-ready')
     },
     clipboard: {
       writeText: (text: string) => ipcRenderer.invoke('clipboard-write-text', text)

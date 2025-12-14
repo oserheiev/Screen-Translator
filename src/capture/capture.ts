@@ -73,6 +73,7 @@ class ScreenCapture {
 
             this.displayInstructions();
             document.body.style.cursor = 'crosshair';
+            window.electron.capture.ready();
 
             console.log('Optimized multi-monitor screen capture initialized successfully');
         } catch (error) {

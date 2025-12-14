@@ -26,4 +26,5 @@ export const IPC_CHANNELS = {
     SHOW_WINDOW: 'show-window',
     IMAGE_CAPTURED: 'image-captured',
     CAPTURE_ERROR: 'capture-error',
+    CAPTURE_READY: 'capture-ready',
 } as const;

@@ -8,7 +8,6 @@ export const CONFIG = {
         SOURCE_LANGUAGE: 'Auto',
         TARGET_LANGUAGE: 'English',
         THEME: 'system',
-        // Platform specific defaults will be handled in main process
         HOTKEY: 'Ctrl+Alt+T',
     }
 } as const;

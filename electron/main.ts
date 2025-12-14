@@ -421,6 +421,14 @@ function setupIpcHandlers() {
       mainWindow.moveTop();
     }
   });
+
+  ipcMain.handle(IPC_CHANNELS.CAPTURE_READY, (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow) {
+      console.log('Capture window reported ready, forcing focus');
+      senderWindow.focus();
+    }
+  });
 }
 
 // App lifecycle events
