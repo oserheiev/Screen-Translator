@@ -4,7 +4,10 @@ const webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.tsx',
+  entry: {
+    main: './src/index.tsx',
+    capture: './src/capture/capture.ts'
+  },
   target: 'electron-renderer',
   devtool: 'source-map',
   module: {
@@ -38,17 +41,18 @@ module.exports = {
     }
   },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'build'),
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
+      chunks: ['main']
     }),
     new HtmlWebpackPlugin({
       filename: 'capture.html',
       template: './src/capture.html',
-      chunks: []
+      chunks: ['capture']
     }),
     // Define process.env for the renderer process
     new webpack.DefinePlugin({

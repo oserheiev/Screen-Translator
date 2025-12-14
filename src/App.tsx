@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useElectronIpc } from './hooks/useElectronIpc';
 import CaptureButton from './components/CaptureButton';
 import TextDisplay from './components/TextDisplay';
 import TranslationDisplay from './components/TranslationDisplay';
@@ -41,19 +42,20 @@ const App: React.FC = () => {
     }
   }, [apiKey]);
 
-  useEffect(() => {
-    // Set up listener for image capture from main process
-    if (window.electron) {
-      const removeListener = window.electron.on('image-captured', (imageData: string) => {
-        console.log('Received image-captured event, image data length:', imageData.length);
-        processImage(imageData);
-      });
+  const { startCapture, onImageCaptured } = useElectronIpc();
 
-      return () => {
-        removeListener(); 1
-      };
-    }
-  }, [processImage]);
+  // ... (previous state code)
+
+  useEffect(() => {
+    const removeListener = onImageCaptured((imageData: string) => {
+      console.log('Received image-captured event, image data length:', imageData.length);
+      processImage(imageData);
+    });
+
+    return () => {
+      removeListener();
+    };
+  }, [processImage, onImageCaptured]);
 
   // Removed automatic translation on text changes to prevent continuous translation
   // Translation now only happens:
@@ -62,13 +64,7 @@ const App: React.FC = () => {
   // 3. When user manually requests translation
 
   const handleCapture = async () => {
-    if (window.electron) {
-      try {
-        await window.electron.capture.start();
-      } catch (error) {
-        console.error('Failed to start screen capture:', error);
-      }
-    }
+    await startCapture();
   };
 
   const handleTextEdit = (text: string) => {
