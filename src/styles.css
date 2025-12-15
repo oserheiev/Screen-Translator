@@ -270,6 +270,24 @@ button:disabled {
   padding: 12px;
   background-color: var(--input-background);
   overflow-y: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+
+.text-display-content p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.text-display-content ul,
+.text-display-content ol {
+  margin-left: 20px;
+  margin-bottom: 8px;
+}
+
+.text-display-content li {
+  margin-bottom: 4px;
 }
 
 .text-display-content textarea {

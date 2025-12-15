@@ -92,13 +92,14 @@ export class GeminiService {
     const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
     return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
       'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"}. ' +
-      'Do not include markdown formatting (like ```json) or any additional text.';
+      'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
+      'Do not include markdown formatting for the JSON itself (like ```json).';
   }
 
   private createTranslationPrompt(text: string, sourceLanguage: string, targetLanguage: string): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
     return `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
-      'Return only the translated text string.';
+      'Return only the translated text string. Use Markdown to preserve any existing structure (lists, indentation).';
   }
 
   private extractTextFromResponse(result: GenerateContentResponse): string {
