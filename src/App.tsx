@@ -29,7 +29,10 @@ const App: React.FC = () => {
     setTheme,
     processImage,
     translateText,
-    clearError
+    clearError,
+    selectedModel,
+    availableModels,
+    setModel
   } = useAppContext();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -105,6 +108,10 @@ const App: React.FC = () => {
     setTheme(newTheme);
   };
 
+  const handleModelChange = (model: string) => {
+    setModel(model);
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -178,9 +185,12 @@ const App: React.FC = () => {
           apiKey={apiKey}
           hotkey={hotkey}
           theme={theme}
+          availableModels={availableModels}
+          selectedModel={selectedModel}
           onApiKeyChange={handleApiKeyChange}
           onHotkeyChange={handleHotkeyChange}
           onThemeChange={handleThemeChange}
+          onModelChange={handleModelChange}
           onClose={handleSettingsClose}
         />
       )}
@@ -190,9 +200,12 @@ const App: React.FC = () => {
           apiKey={apiKey}
           hotkey={hotkey}
           theme={theme}
+          availableModels={availableModels}
+          selectedModel={selectedModel}
           onApiKeyChange={handleApiKeyChange}
           onHotkeyChange={handleHotkeyChange}
           onThemeChange={handleThemeChange}
+          onModelChange={handleModelChange}
           onClose={() => setIsFirstRun(false)}
           isFirstRun={true}
         />

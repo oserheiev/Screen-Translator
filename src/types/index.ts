@@ -8,6 +8,7 @@ export interface ElectronAPI {
       targetLanguage: SupportedLanguage;
       hotkey: string;
       theme: Theme;
+      model: string;
     }>;
     save: (settings: {
       apiKey?: string;
@@ -15,6 +16,7 @@ export interface ElectronAPI {
       targetLanguage?: SupportedLanguage;
       hotkey?: string;
       theme?: Theme;
+      model?: string;
     }) => Promise<boolean>;
   };
   capture: {
@@ -23,6 +25,11 @@ export interface ElectronAPI {
     getSources: () => Promise<Electron.DesktopCapturerSource[]>;
     complete: (imageData: string) => Promise<void>;
     log: (message: string, ...args: any[]) => Promise<void>;
+  };
+  alert: {
+    show: (title: string, message: string) => Promise<void>;
+    close: () => Promise<void>;
+    resize: (width: number, height: number) => Promise<void>;
   };
   clipboard: {
     writeText: (text: string) => Promise<void>;

@@ -9,14 +9,33 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
-  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string): Promise<TranslationResult> {
+  async listModels(): Promise<string[]> {
+    try {
+      const response = await this.ai.models.list();
+      const models: string[] = [];
+
+      // @ts-ignore - The SDK types might be slightly mismatched or require specific iteration
+      for await (const model of response) {
+        const m = model as any;
+        if (m.name && m.supportedActions?.includes('generateContent')) {
+          models.push(m.name.replace('models/', ''));
+        }
+      }
+      return models;
+    } catch (error) {
+      console.error('GeminiService.listModels error:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<TranslationResult> {
     try {
       const base64Image = this.extractBase64Image(imageData);
       const prompt = this.createImagePrompt(sourceLanguage, targetLanguage);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
-          model: CONFIG.GEMINI.MODEL_NAME,
+          model: modelName,
           contents: [
             {
               role: 'user',
@@ -42,13 +61,13 @@ export class GeminiService {
     }
   }
 
-  async translateText(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
+  async translateText(text: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<string> {
     try {
       const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
-          model: CONFIG.GEMINI.MODEL_NAME,
+          model: modelName,
           contents: prompt
         });
         return this.extractTextFromResponse(result);
@@ -73,13 +92,14 @@ export class GeminiService {
     const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
     return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
       'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"}. ' +
-      'Do not include markdown formatting (like ```json) or any additional text.';
+      'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
+      'Do not include markdown formatting for the JSON itself (like ```json).';
   }
 
   private createTranslationPrompt(text: string, sourceLanguage: string, targetLanguage: string): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
     return `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
-      'Return only the translated text string.';
+      'Return only the translated text string. Use Markdown to preserve any existing structure (lists, indentation).';
   }
 
   private extractTextFromResponse(result: GenerateContentResponse): string {

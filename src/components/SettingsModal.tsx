@@ -5,9 +5,12 @@ interface SettingsModalProps {
   apiKey: string;
   hotkey: string;
   theme: Theme;
+  availableModels: string[];
+  selectedModel: string;
   onApiKeyChange: (key: string) => void;
   onHotkeyChange: (hotkey: string) => void;
   onThemeChange: (theme: Theme) => void;
+  onModelChange: (model: string) => void;
   onClose: () => void;
   isFirstRun?: boolean;
 }
@@ -16,15 +19,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   apiKey,
   hotkey,
   theme,
+  availableModels,
+  selectedModel,
   onApiKeyChange,
   onHotkeyChange,
   onThemeChange,
+  onModelChange,
   onClose,
   isFirstRun = false
 }) => {
   const [key, setKey] = useState(apiKey);
   const [currentHotkey, setCurrentHotkey] = useState(hotkey);
   const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
+  const [currentModel, setCurrentModel] = useState(selectedModel);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,6 +45,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onApiKeyChange(key.trim());
     onHotkeyChange(currentHotkey);
     onThemeChange(currentTheme);
+    onModelChange(currentModel);
     onClose();
   };
 
@@ -52,6 +60,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrentTheme(e.target.value as Theme);
+  };
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentModel(e.target.value);
   };
 
   return (
@@ -106,6 +118,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <small className="form-help">
                   Use format like Ctrl+Alt+T or Command+Shift+S
                 </small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="model">Model</label>
+                <select
+                  id="model"
+                  value={currentModel}
+                  onChange={handleModelChange}
+                  disabled={availableModels.length === 0}
+                >
+                  {availableModels.length > 0 ? (
+                    availableModels.map(model => (
+                      <option key={model} value={model}>{model}</option>
+                    ))
+                  ) : (
+                    <option value={currentModel}>{currentModel} (Loading or Unavailable)</option>
+                  )}
+                </select>
               </div>
 
               <div className="form-group">

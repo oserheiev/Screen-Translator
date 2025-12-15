@@ -41,6 +41,11 @@ contextBridge.exposeInMainWorld(
     clipboard: {
       writeText: (text: string) => ipcRenderer.invoke('clipboard-write-text', text)
     },
+    alert: {
+      show: (title: string, message: string) => ipcRenderer.invoke('show-alert', { title, message }),
+      close: () => ipcRenderer.invoke('close-window'),
+      resize: (width: number, height: number) => ipcRenderer.invoke('resize-window', { width, height })
+    },
     platform: {
       getPlatform: () => ipcRenderer.invoke('get-platform')
     },

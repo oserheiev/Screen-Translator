@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ClipboardService from '../services/clipboard.service';
+import Markdown from 'markdown-to-jsx';
 
 interface TranslationDisplayProps {
   text: string;
@@ -12,9 +13,9 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, label }) 
 
   const handleCopy = async () => {
     if (!text) return;
-    
+
     const success = await clipboardService.copyToClipboard(text);
-    
+
     if (success) {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
@@ -25,8 +26,8 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, label }) 
     <div className="text-display">
       <div className="text-display-header">
         <span>{label}</span>
-        <button 
-          className="copy-button" 
+        <button
+          className="copy-button"
           onClick={handleCopy}
           disabled={!text}
         >
@@ -34,7 +35,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, label }) 
         </button>
       </div>
       <div className="text-display-content">
-        <div>{text || `${label} will appear here`}</div>
+        <Markdown>{text || `${label} will appear here`}</Markdown>
       </div>
     </div>
   );
