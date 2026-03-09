@@ -1,5 +1,14 @@
 export type Theme = 'light' | 'dark' | 'system';
 
+export interface HistoryEntry {
+  id: string;
+  originalText: string;
+  translatedText: string;
+  sourceLanguage: SupportedLanguage;
+  targetLanguage: SupportedLanguage;
+  timestamp: number;
+}
+
 export interface ElectronAPI {
   settings: {
     get: () => Promise<{
@@ -18,6 +27,10 @@ export interface ElectronAPI {
       theme?: Theme;
       model?: string;
     }) => Promise<boolean>;
+  };
+  history: {
+    get: () => Promise<HistoryEntry[]>;
+    save: (history: HistoryEntry[]) => Promise<void>;
   };
   capture: {
     start: () => Promise<boolean>;

@@ -85,10 +85,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   id="hotkey"
                   type="text"
                   value={currentHotkey}
-                  onChange={e => setCurrentHotkey(e.target.value)}
-                  placeholder="e.g., Ctrl+Alt+T"
+                  readOnly
+                  placeholder="Click here, then press your shortcut"
+                  onKeyDown={e => {
+                    e.preventDefault();
+                    const parts: string[] = [];
+                    if (e.metaKey) parts.push('Command');
+                    if (e.ctrlKey) parts.push('Ctrl');
+                    if (e.altKey) parts.push('Alt');
+                    if (e.shiftKey) parts.push('Shift');
+                    const key = e.key;
+                    if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
+                      parts.push(key.length === 1 ? key.toUpperCase() : key);
+                    }
+                    if (parts.length > 1) setCurrentHotkey(parts.join('+'));
+                  }}
                 />
-                <small className="form-help">Use format like Ctrl+Alt+T or Command+Shift+S</small>
+                <small className="form-help">Click the field and press your desired key combination</small>
               </div>
 
               <div className="form-group">

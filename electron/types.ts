@@ -26,6 +26,7 @@ export interface Settings {
   hotkey: string;
   theme: Theme;
   model: string;
+  history?: any[];
 }
 
 // Create a type for the store with proper methods

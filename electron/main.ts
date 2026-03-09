@@ -475,6 +475,14 @@ function setupIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL, (_, url: string) => {
     shell.openExternal(url);
   });
+
+  ipcMain.handle(IPC_CHANNELS.GET_HISTORY, () => {
+    return store.get('history') || [];
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SAVE_HISTORY, (_, history: any[]) => {
+    store.set('history', history);
+  });
 }
 
 // App lifecycle events
