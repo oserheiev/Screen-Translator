@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   release-mac:
@@ -34,7 +38,7 @@ jobs:
       - name: Build & publish macOS
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release -- --mac
+        run: npm run release -- --mac --x64 --arm64
 
   release-win:
     runs-on: windows-latest
@@ -59,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: npm-logs-win
-          path: C:\npm\cache\_logs\
+          path: ~/.npm/_logs/
 
       - name: Build & publish Windows
         env:

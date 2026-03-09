@@ -221,23 +221,32 @@ async function startScreenCapture() {
   }
 }
 
+let isClosingWindows = false;
 async function closeAllCaptureWindows() {
-  console.log(`Closing ${captureWindows.size} capture windows`);
+  if (isClosingWindows || captureWindows.size === 0) return;
+  isClosingWindows = true;
 
-  const closePromises = Array.from(captureWindows.values()).map(window => {
-    return new Promise<void>((resolve) => {
-      if (window && !window.isDestroyed()) {
-        window.once('closed', () => resolve());
-        window.close();
-      } else {
-        resolve();
+  try {
+    console.log(`Closing ${captureWindows.size} capture windows`);
+    const windows = Array.from(captureWindows.values());
+    captureWindows.clear();
+
+    for (const win of windows) {
+      if (win && !win.isDestroyed()) {
+        try {
+          win.hide();
+          // Use setImmediate to ensure current event loop finishes before destruction
+          setImmediate(() => {
+            if (!win.isDestroyed()) win.destroy();
+          });
+        } catch (e) {
+          console.error('Error closing capture window:', e);
+        }
       }
-    });
-  });
-
-  await Promise.all(closePromises);
-  captureWindows.clear();
-  await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  } finally {
+    isClosingWindows = false;
+  }
 }
 
 async function createCaptureWindowForDisplay(display: Electron.Display): Promise<BrowserWindow> {
@@ -402,9 +411,9 @@ function setupAutoUpdater() {
   });
 
   // Check on startup, then every 4 hours
-  autoUpdater.checkForUpdates().catch(() => {/* ignore startup errors */});
+  autoUpdater.checkForUpdates().catch(() => {/* ignore startup errors */ });
   setInterval(() => {
-    autoUpdater.checkForUpdates().catch(() => {/* ignore */});
+    autoUpdater.checkForUpdates().catch(() => {/* ignore */ });
   }, 4 * 60 * 60 * 1000);
 }
 
@@ -460,9 +469,16 @@ function setupIpcHandlers() {
     }
   });
 
-  ipcMain.handle(IPC_CHANNELS.CAPTURE_COMPLETED, async (_, imageData: string) => {
-    await closeAllCaptureWindows();
-    mainWindow?.webContents.send(IPC_CHANNELS.IMAGE_CAPTURED, imageData);
+  ipcMain.handle(IPC_CHANNELS.CAPTURE_COMPLETED, async (_, imageDataPath: string) => {
+    // Send data to main window first
+    mainWindow?.webContents.send(IPC_CHANNELS.IMAGE_CAPTURED, imageDataPath);
+
+    // Close capture windows asynchronously with a slight delay to ensure IPC return
+    setTimeout(() => {
+      closeAllCaptureWindows().catch(err => console.error('Delayed close failed:', err));
+    }, 50);
+
+    return true;
   });
 
   ipcMain.handle(IPC_CHANNELS.LOG_MESSAGE, (_, message: string, ...args: any[]) => {

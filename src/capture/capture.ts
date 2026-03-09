@@ -20,6 +20,7 @@ interface SelectionBounds extends Point {
 
 class ScreenCapture {
     private isSelecting: boolean = false;
+    private isCompleting: boolean = false;
     private startPoint: Point = { x: 0, y: 0 };
     private endPoint: Point = { x: 0, y: 0 };
     private screenshotDataURL: string | null = null;
@@ -328,8 +329,8 @@ class ScreenCapture {
         // Use pre-bound event handlers for better performance
         this.overlay.addEventListener('mousedown', this.handleMouseDown as EventListener, { passive: false });
         this.overlay.addEventListener('mousemove', this.handleMouseMove as EventListener, { passive: true });
-        this.overlay.addEventListener('mouseup', this.handleMouseUp as EventListener, { passive: false });
-        document.addEventListener('keydown', this.handleKeyDown, { passive: false });
+        this.overlay.addEventListener('mouseup', (this.handleMouseUp as unknown) as EventListener, { passive: false });
+        document.addEventListener('keydown', (this.handleKeyDown as unknown) as EventListener, { passive: false });
 
         // Ensure overlay can receive events
         this.overlay.style.pointerEvents = 'auto';
@@ -389,8 +390,9 @@ class ScreenCapture {
         const globalCoords = this.localToGlobalCoordinates(e.clientX, e.clientY);
         console.log(`Mouse up at local: ${e.clientX},${e.clientY}, global: ${globalCoords.x},${globalCoords.y}`);
 
-        if (!this.isSelecting) return;
+        if (!this.isSelecting || this.isCompleting) return;
         this.isSelecting = false;
+        this.isCompleting = true;
 
         const selection = this.getSelectionBounds();
         const globalSelection = this.getGlobalSelectionBounds();
@@ -416,7 +418,7 @@ class ScreenCapture {
     handleKeyDown(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             this.cleanup();
-            window.close();
+            // Window will be closed by main process on Escape
         }
     }
 
@@ -537,7 +539,10 @@ class ScreenCapture {
         document.body.appendChild(errorElement);
 
         // Add event listeners
-        document.getElementById('close-btn')?.addEventListener('click', () => window.close());
+        document.getElementById('close-btn')?.addEventListener('click', () => {
+             // In Electron, it's better to let main handle closure
+             this.cleanup();
+        });
         document.getElementById('retry-btn')?.addEventListener('click', () => this.retry());
     }
 
