@@ -14,8 +14,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
-      - run: npm install
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/electron
+          key: electron-mac-${{ hashFiles('package.json') }}
+
+      - run: npm ci
 
       - name: Build & publish macOS
         env:
@@ -30,8 +37,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
-      - run: npm install
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\electron\Cache
+          key: electron-win-${{ hashFiles('package.json') }}
+
+      - run: npm ci
 
       - name: Build & publish Windows
         env:
