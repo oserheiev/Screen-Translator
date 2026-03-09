@@ -181,6 +181,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     setIsProcessing(true);
     setError(null);
+    setTranslatedText('');
     console.log('Starting image processing...');
 
     try {
@@ -213,6 +214,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     setIsProcessing(true);
     setError(null);
+    setTranslatedText('');
 
     try {
       const result = await geminiService.translateText(text, sourceLanguage, targetLanguage, selectedModel);

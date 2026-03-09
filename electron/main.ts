@@ -151,22 +151,17 @@ async function requestScreenCapturePermission(): Promise<boolean> {
       const status = systemPreferences.getMediaAccessStatus('screen');
       console.log('Screen capture permission status:', status);
 
-      if (status === 'denied') {
-        console.error('Screen capture permission denied by user');
+      if (status === 'denied' || status === 'not-determined') {
+        console.log('Screen capture permission not granted, status:', status);
+        // Attempt getSources to register the app in macOS Screen Recording list
+        try {
+          const { desktopCapturer } = require('electron');
+          await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 0, height: 0 } });
+        } catch (_) { /* ignore — just triggering registration */ }
         if (mainWindow) {
-          mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
-            'Screen recording permission denied. Please enable it in System Preferences > Security & Privacy.'
-          );
+          mainWindow.webContents.send(IPC_CHANNELS.PERMISSION_ERROR, { platform: process.platform });
         }
         return false;
-      } else if (status === 'not-determined') {
-        console.log('Screen capture permission not determined');
-        if (mainWindow) {
-          mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
-            'Screen recording permission is required. Please grant it when prompted.'
-          );
-        }
-        return true;
       }
       return status === 'granted';
     } catch (error) {
@@ -475,6 +470,10 @@ function setupIpcHandlers() {
     if (senderWindow && !senderWindow.isDestroyed()) {
       senderWindow.setSize(width, height);
     }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL, (_, url: string) => {
+    shell.openExternal(url);
   });
 }
 
