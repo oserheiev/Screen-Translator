@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { Theme } from '../types';
 
 interface SettingsModalProps {
   apiKey: string;
   hotkey: string;
-  theme: Theme;
   availableModels: string[];
   selectedModel: string;
   onApiKeyChange: (key: string) => void;
   onHotkeyChange: (hotkey: string) => void;
-  onThemeChange: (theme: Theme) => void;
   onModelChange: (model: string) => void;
   onClose: () => void;
   isFirstRun?: boolean;
@@ -18,52 +15,29 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({
   apiKey,
   hotkey,
-  theme,
   availableModels,
   selectedModel,
   onApiKeyChange,
   onHotkeyChange,
-  onThemeChange,
   onModelChange,
   onClose,
   isFirstRun = false
 }) => {
   const [key, setKey] = useState(apiKey);
   const [currentHotkey, setCurrentHotkey] = useState(hotkey);
-  const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
   const [currentModel, setCurrentModel] = useState(selectedModel);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!key.trim()) {
       setError('API key is required');
       return;
     }
-
     onApiKeyChange(key.trim());
     onHotkeyChange(currentHotkey);
-    onThemeChange(currentTheme);
     onModelChange(currentModel);
     onClose();
-  };
-
-  const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setKey(e.target.value);
-    setError('');
-  };
-
-  const handleHotkeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentHotkey(e.target.value);
-  };
-
-  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentTheme(e.target.value as Theme);
-  };
-
-  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentModel(e.target.value);
   };
 
   return (
@@ -77,9 +51,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {isFirstRun && (
-          <p>
-            To use Screen Translator, you need to set up your Gemini API key.
-            This key is used for text recognition and translation.
+          <p className="modal-subtitle">
+            To get started, enter your Gemini API key below. It's used for text recognition and translation.
           </p>
         )}
 
@@ -92,7 +65,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               id="api-key"
               type="text"
               value={key}
-              onChange={handleKeyChange}
+              onChange={e => { setKey(e.target.value); setError(''); }}
               placeholder="Enter your Gemini API key"
             />
             <a
@@ -100,7 +73,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Get a Gemini API key
+              Get a Gemini API key →
             </a>
           </div>
 
@@ -112,12 +85,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   id="hotkey"
                   type="text"
                   value={currentHotkey}
-                  onChange={handleHotkeyChange}
+                  onChange={e => setCurrentHotkey(e.target.value)}
                   placeholder="e.g., Ctrl+Alt+T"
                 />
-                <small className="form-help">
-                  Use format like Ctrl+Alt+T or Command+Shift+S
-                </small>
+                <small className="form-help">Use format like Ctrl+Alt+T or Command+Shift+S</small>
               </div>
 
               <div className="form-group">
@@ -125,7 +96,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <select
                   id="model"
                   value={currentModel}
-                  onChange={handleModelChange}
+                  onChange={e => setCurrentModel(e.target.value)}
                   disabled={availableModels.length === 0}
                 >
                   {availableModels.length > 0 ? (
@@ -137,29 +108,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   )}
                 </select>
               </div>
-
-              <div className="form-group">
-                <label htmlFor="theme">Theme</label>
-                <select
-                  id="theme"
-                  value={currentTheme}
-                  onChange={handleThemeChange}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="system">System Default</option>
-                </select>
-              </div>
             </>
           )}
 
           <div className="modal-footer">
             {!isFirstRun && (
-              <button
-                type="button"
-                className="cancel-button"
-                onClick={onClose}
-              >
+              <button type="button" className="cancel-button" onClick={onClose}>
                 Cancel
               </button>
             )}

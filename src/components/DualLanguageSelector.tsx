@@ -9,7 +9,7 @@ interface DualLanguageSelectorProps {
   disabled?: boolean;
 }
 
-const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({ 
+const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
   sourceLanguage,
   targetLanguage,
   onSourceLanguageChange,
@@ -33,64 +33,48 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
 
   const targetLanguages = supportedLanguages.filter(lang => lang !== 'Auto');
 
-  const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onSourceLanguageChange(e.target.value as SupportedLanguage);
-  };
-
-  const handleTargetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onTargetLanguageChange(e.target.value as SupportedLanguage);
-  };
-
   const swapLanguages = () => {
-    if (sourceLanguage !== 'Auto' && targetLanguage !== 'Auto') {
-      onSourceLanguageChange(targetLanguage);
+    if (sourceLanguage !== 'Auto') {
+      onSourceLanguageChange(targetLanguage as SupportedLanguage);
       onTargetLanguageChange(sourceLanguage);
     }
   };
 
   return (
-    <div className="dual-language-selector">
-      <div className="language-selector-row">
-        <div className="language-selector">
-          <label htmlFor="source-language-select">From:</label>
-          <select 
-            id="source-language-select"
-            value={sourceLanguage}
-            onChange={handleSourceChange}
-            disabled={disabled}
-          >
-            {supportedLanguages.map(language => (
-              <option key={language} value={language}>
-                {language}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button 
-          className="swap-languages-button"
-          onClick={swapLanguages}
-          disabled={disabled || sourceLanguage === 'Auto'}
-          title="Swap languages"
+    <div className="lang-selector-group">
+      <div className="lang-pill">
+        <select
+          value={sourceLanguage}
+          onChange={e => onSourceLanguageChange(e.target.value as SupportedLanguage)}
+          disabled={disabled}
+          aria-label="Source language"
         >
-          ⇄
-        </button>
+          {supportedLanguages.map(lang => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
 
-        <div className="language-selector">
-          <label htmlFor="target-language-select">To:</label>
-          <select 
-            id="target-language-select"
-            value={targetLanguage}
-            onChange={handleTargetChange}
-            disabled={disabled}
-          >
-            {targetLanguages.map(language => (
-              <option key={language} value={language}>
-                {language}
-              </option>
-            ))}
-          </select>
-        </div>
+      <button
+        className="lang-swap"
+        onClick={swapLanguages}
+        disabled={disabled || sourceLanguage === 'Auto'}
+        title="Swap languages"
+      >
+        ⇄
+      </button>
+
+      <div className="lang-pill">
+        <select
+          value={targetLanguage}
+          onChange={e => onTargetLanguageChange(e.target.value as SupportedLanguage)}
+          disabled={disabled}
+          aria-label="Target language"
+        >
+          {targetLanguages.map(lang => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
