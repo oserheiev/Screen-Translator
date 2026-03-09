@@ -24,6 +24,13 @@ jobs:
 
       - run: npm ci
 
+      - name: Upload npm logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-logs-mac
+          path: ~/.npm/_logs/
+
       - name: Build & publish macOS
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,6 +53,13 @@ jobs:
           key: electron-win-${{ hashFiles('package.json') }}
 
       - run: npm ci
+
+      - name: Upload npm logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-logs-win
+          path: ~\AppData\Local\npm-cache\_logs\
 
       - name: Build & publish Windows
         env:
