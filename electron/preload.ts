@@ -55,6 +55,10 @@ contextBridge.exposeInMainWorld(
     shell: {
       openExternal: (url: string) => ipcRenderer.invoke('open-external', url)
     },
+    history: {
+      get: () => ipcRenderer.invoke('get-history'),
+      save: (history: any[]) => ipcRenderer.invoke('save-history', history)
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
       const validChannels = ['image-captured', 'capture-error', 'permission-error'];

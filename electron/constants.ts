@@ -32,4 +32,6 @@ export const IPC_CHANNELS = {
     RESIZE_WINDOW: 'resize-window',
     PERMISSION_ERROR: 'permission-error',
     OPEN_EXTERNAL: 'open-external',
+    GET_HISTORY: 'get-history',
+    SAVE_HISTORY: 'save-history',
 } as const;

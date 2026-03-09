@@ -5,8 +5,8 @@ import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
 import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
+import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
-import { SupportedLanguage } from './types';
 
 const ClockIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,6 +45,7 @@ const App: React.FC = () => {
     hotkey,
     isProcessing,
     error,
+    history,
     setOriginalText,
     setSourceLanguage,
     setTargetLanguage,
@@ -53,12 +54,15 @@ const App: React.FC = () => {
     processImage,
     translateText,
     clearError,
+    clearHistory,
+    restoreHistoryEntry,
     selectedModel,
     availableModels,
     setModel
   } = useAppContext();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isFirstRun, setIsFirstRun] = useState<boolean>(true);
   const [permissionPlatform, setPermissionPlatform] = useState<string | null>(null);
 
@@ -99,123 +103,139 @@ const App: React.FC = () => {
     : '⚡ Gemini Flash';
 
   return (
-    <div className="app-container">
-      {/* Header */}
-      <header className="app-header">
-        <div className="header-left">
-          <button className="header-icon-btn" title="History" disabled>
-            <ClockIcon />
-          </button>
-          <h1 className="header-title">Screen Translator</h1>
-        </div>
-        <div className="header-right">
-          <div className="model-pill">{modelLabel}</div>
-          <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title="Settings">
-            <GearIcon />
-          </button>
-        </div>
-      </header>
+    <div className="app-shell">
+      {/* History sidebar */}
+      <div className={`history-panel-wrapper${isHistoryOpen ? ' open' : ''}`}>
+        <HistoryPanel
+          entries={history}
+          onSelect={(entry) => { restoreHistoryEntry(entry); }}
+          onClear={clearHistory}
+        />
+      </div>
 
-      {/* Toolbar */}
-      <div className="toolbar-row">
-        <div className="toolbar-pill">
-          <DualLanguageSelector
-            sourceLanguage={sourceLanguage}
-            targetLanguage={targetLanguage}
-            onSourceLanguageChange={setSourceLanguage}
-            onTargetLanguageChange={setTargetLanguage}
-            disabled={isProcessing}
-          />
-          <div className="toolbar-divider" />
-          <div className="split-btn">
+      {/* Main content */}
+      <div className="app-container">
+        {/* Header */}
+        <header className="app-header">
+          <div className="header-left">
             <button
-              className={`split-btn-translate${isProcessing ? ' loading' : ''}`}
-              onClick={handleManualTranslate}
-              disabled={!originalText || isProcessing}
+              className={`header-icon-btn${isHistoryOpen ? ' active' : ''}`}
+              title="History"
+              onClick={() => setIsHistoryOpen(o => !o)}
             >
-              {isProcessing ? (
-                <><div className="btn-spinner" /> Translating...</>
-              ) : (
-                <><ChevronIcon /> Translate</>
-              )}
+              <ClockIcon />
             </button>
-            <div className="split-btn-divider" />
-            <button
-              className="split-btn-capture"
-              onClick={handleCapture}
-              disabled={isProcessing}
-              title="Capture screen"
-            >
-              <CameraIcon />
+            <h1 className="header-title">Screen Translator</h1>
+          </div>
+          <div className="header-right">
+            <div className="model-pill">{modelLabel}</div>
+            <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title="Settings">
+              <GearIcon />
             </button>
           </div>
+        </header>
+
+        {/* Toolbar */}
+        <div className="toolbar-row">
+          <div className="toolbar-pill">
+            <DualLanguageSelector
+              sourceLanguage={sourceLanguage}
+              targetLanguage={targetLanguage}
+              onSourceLanguageChange={setSourceLanguage}
+              onTargetLanguageChange={setTargetLanguage}
+              disabled={isProcessing}
+            />
+            <div className="toolbar-divider" />
+            <div className="split-btn">
+              <button
+                className={`split-btn-translate${isProcessing ? ' loading' : ''}`}
+                onClick={handleManualTranslate}
+                disabled={!originalText || isProcessing}
+              >
+                {isProcessing ? (
+                  <><div className="btn-spinner" /> Translating...</>
+                ) : (
+                  <><ChevronIcon /> Translate</>
+                )}
+              </button>
+              <div className="split-btn-divider" />
+              <button
+                className="split-btn-capture"
+                onClick={handleCapture}
+                disabled={isProcessing}
+                title="Capture screen"
+              >
+                <CameraIcon />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="error-banner">
-          <span className="error-banner-text">{error}</span>
-          <button className="error-banner-dismiss" onClick={clearError}>×</button>
+        {/* Error banner */}
+        {error && (
+          <div className="error-banner">
+            <span className="error-banner-text">{error}</span>
+            <button className="error-banner-dismiss" onClick={clearError}>×</button>
+          </div>
+        )}
+
+        {/* Panels */}
+        <div className="panels-row">
+          <TextDisplay
+            text={originalText}
+            onTextEdit={setOriginalText}
+            disabled={isProcessing}
+          />
+          <TranslationDisplay
+            text={translatedText}
+            isLoading={isProcessing}
+          />
         </div>
-      )}
 
-      {/* Panels */}
-      <div className="panels-row">
-        <TextDisplay
-          text={originalText}
-          onTextEdit={setOriginalText}
-          disabled={isProcessing}
-        />
-        <TranslationDisplay
-          text={translatedText}
-          isLoading={isProcessing}
-        />
+        {/* Settings modal */}
+        {isSettingsOpen && (
+          <SettingsModal
+            apiKey={apiKey}
+            hotkey={hotkey}
+            availableModels={availableModels}
+            selectedModel={selectedModel}
+            onApiKeyChange={setApiKey}
+            onHotkeyChange={setHotkey}
+            onModelChange={setModel}
+            onClose={() => setIsSettingsOpen(false)}
+          />
+        )}
+
+        {/* Permission modal */}
+        {permissionPlatform && (
+          <PermissionModal
+            platform={permissionPlatform}
+            onOpenSettings={() => {
+              const electron = (window as any).electron;
+              const url = permissionPlatform === 'darwin'
+                ? 'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture'
+                : 'ms-settings:privacy-broadfilesystemaccess';
+              electron?.shell?.openExternal(url);
+            }}
+            onClose={() => setPermissionPlatform(null)}
+          />
+        )}
+
+        {/* First-run modal */}
+        {isFirstRun && !apiKey && (
+          <SettingsModal
+            apiKey={apiKey}
+            hotkey={hotkey}
+            availableModels={availableModels}
+            selectedModel={selectedModel}
+            onApiKeyChange={setApiKey}
+            onHotkeyChange={setHotkey}
+            onModelChange={setModel}
+            onClose={() => setIsFirstRun(false)}
+            isFirstRun={true}
+          />
+        )}
       </div>
-
-      {/* Settings modal */}
-      {isSettingsOpen && (
-        <SettingsModal
-          apiKey={apiKey}
-          hotkey={hotkey}
-          availableModels={availableModels}
-          selectedModel={selectedModel}
-          onApiKeyChange={setApiKey}
-          onHotkeyChange={setHotkey}
-          onModelChange={setModel}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      )}
-
-      {/* Permission modal */}
-      {permissionPlatform && (
-        <PermissionModal
-          platform={permissionPlatform}
-          onOpenSettings={() => {
-            const electron = (window as any).electron;
-            const url = permissionPlatform === 'darwin'
-              ? 'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture'
-              : 'ms-settings:privacy-broadfilesystemaccess';
-            electron?.shell?.openExternal(url);
-          }}
-          onClose={() => setPermissionPlatform(null)}
-        />
-      )}
-
-      {/* First-run modal */}
-      {isFirstRun && !apiKey && (
-        <SettingsModal
-          apiKey={apiKey}
-          hotkey={hotkey}
-          availableModels={availableModels}
-          selectedModel={selectedModel}
-          onApiKeyChange={setApiKey}
-          onHotkeyChange={setHotkey}
-          onModelChange={setModel}
-          onClose={() => setIsFirstRun(false)}
-          isFirstRun={true}
-        />
-      )}
     </div>
   );
 };

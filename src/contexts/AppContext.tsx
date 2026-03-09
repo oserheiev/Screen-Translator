@@ -1,6 +1,6 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import GeminiService from '../services/gemini.service';
-import { SupportedLanguage, TranslationResult, Theme } from '../types';
+import { SupportedLanguage, TranslationResult, Theme, HistoryEntry } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
 
 interface AppContextType {
@@ -13,6 +13,7 @@ interface AppContextType {
   theme: Theme;
   isProcessing: boolean;
   error: string | null;
+  history: HistoryEntry[];
   setOriginalText: (text: string) => void;
   setSourceLanguage: (language: SupportedLanguage) => void;
   setTargetLanguage: (language: SupportedLanguage) => void;
@@ -22,6 +23,8 @@ interface AppContextType {
   processImage: (imageData: string) => Promise<void>;
   translateText: (text: string) => Promise<void>;
   clearError: () => void;
+  clearHistory: () => void;
+  restoreHistoryEntry: (entry: HistoryEntry) => void;
   selectedModel: string;
   availableModels: string[];
   setModel: (model: string) => void;
@@ -37,6 +40,7 @@ const defaultContext: AppContextType = {
   theme: 'system',
   isProcessing: false,
   error: null,
+  history: [],
   setOriginalText: () => { },
   setSourceLanguage: () => { },
   setTargetLanguage: () => { },
@@ -46,6 +50,8 @@ const defaultContext: AppContextType = {
   processImage: async () => { },
   translateText: async () => { },
   clearError: () => { },
+  clearHistory: () => { },
+  restoreHistoryEntry: () => { },
   selectedModel: 'gemini-2.5-flash',
   availableModels: [],
   setModel: () => { }
@@ -70,6 +76,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const historyLoadedRef = useRef(false);
 
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -77,7 +85,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const { getSettings, saveSettings, showWindow, getPlatform, isElectronAvailable } = useElectronIpc();
 
   useEffect(() => {
-    // Load settings from Electron store
+    // Load settings and history from Electron store
     const loadSettings = async () => {
       try {
         if (isElectronAvailable) {
@@ -97,9 +105,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             if (settings.theme) setTheme(settings.theme as Theme);
             if (settings.model) setSelectedModel(settings.model);
           }
+
+          const savedHistory = await window.electron.history.get();
+          setHistory(savedHistory || []);
+          historyLoadedRef.current = true;
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
+        historyLoadedRef.current = true;
       }
     };
 
@@ -127,6 +140,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     save();
   }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, saveSettings, isElectronAvailable]);
+
+  // Persist history whenever it changes (after initial load)
+  useEffect(() => {
+    if (!historyLoadedRef.current || !isElectronAvailable) return;
+    window.electron.history.save(history).catch(console.error);
+  }, [history, isElectronAvailable]);
 
   // Separate useEffect for GeminiService creation - only when apiKey changes
   useEffect(() => {
@@ -167,6 +186,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     fetchModels();
   }, [geminiService, apiKey, selectedModel]);
 
+  const appendHistory = useCallback((entry: HistoryEntry) => {
+    setHistory(prev => [entry, ...prev].slice(0, 30));
+  }, []);
+
   const processImage = useCallback(async (imageData: string) => {
     console.log('processImage called with imageData length:', imageData.length);
 
@@ -188,6 +211,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const result: TranslationResult = await geminiService.processImage(imageData, sourceLanguage, targetLanguage, selectedModel);
       setOriginalText(result.originalText);
       setTranslatedText(result.translatedText);
+      appendHistory({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        originalText: result.originalText,
+        translatedText: result.translatedText,
+        sourceLanguage,
+        targetLanguage,
+        timestamp: Date.now()
+      });
       console.log('Text set successfully');
     } catch (error) {
       console.error('Error processing image:', error);
@@ -196,7 +227,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setIsProcessing(false);
       console.log('Image processing completed');
     }
-  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showWindow]);
+  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showWindow, appendHistory]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
@@ -219,16 +250,35 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       const result = await geminiService.translateText(text, sourceLanguage, targetLanguage, selectedModel);
       setTranslatedText(result);
+      appendHistory({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        originalText: text,
+        translatedText: result,
+        sourceLanguage,
+        targetLanguage,
+        timestamp: Date.now()
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel, appendHistory]);
 
   const clearError = () => {
     setError(null);
   };
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, []);
+
+  const restoreHistoryEntry = useCallback((entry: HistoryEntry) => {
+    setOriginalText(entry.originalText);
+    setTranslatedText(entry.translatedText);
+    setSourceLanguage(entry.sourceLanguage);
+    setTargetLanguage(entry.targetLanguage);
+  }, []);
 
   const value: AppContextType = {
     originalText,
@@ -240,6 +290,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     theme,
     isProcessing,
     error,
+    history,
     setOriginalText,
     setSourceLanguage,
     setTargetLanguage,
@@ -249,6 +300,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     processImage,
     translateText,
     clearError,
+    clearHistory,
+    restoreHistoryEntry,
     selectedModel,
     availableModels,
     setModel: setSelectedModel
