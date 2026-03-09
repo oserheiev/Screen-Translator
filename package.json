@@ -13,7 +13,8 @@
     "dev": "concurrently \"npm run watch\" \"electron .\"",
     "package": "electron-builder build --mac --win",
     "package:mac": "electron-builder build --mac",
-    "package:win": "electron-builder build --win"
+    "package:win": "electron-builder build --win",
+    "release": "npm run build && electron-builder --publish always"
   },
   "keywords": [
     "electron",
@@ -27,6 +28,7 @@
   "dependencies": {
     "@google/genai": "^0.13.0",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.3.9",
     "markdown-to-jsx": "^9.3.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -58,7 +60,7 @@
       "icon": "assets/icons/icon.png"
     },
     "win": {
-      "target": "dir",
+      "target": "nsis",
       "icon": "assets/icons/icon.png"
     },
     "files": [
@@ -69,6 +71,11 @@
     ],
     "directories": {
       "buildResources": "assets"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "oserheiev",
+      "repo": "Screen-Translator"
     }
   }
 }

@@ -3,6 +3,8 @@ import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, TranslationResult, Theme, HistoryEntry } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
 
+export type UpdateStatus = 'idle' | 'available' | 'downloading' | 'ready' | 'error';
+
 interface AppContextType {
   originalText: string;
   translatedText: string;
@@ -28,6 +30,11 @@ interface AppContextType {
   selectedModel: string;
   availableModels: string[];
   setModel: (model: string) => void;
+  updateStatus: UpdateStatus;
+  updateVersion: string | null;
+  updateProgress: number;
+  handleDownloadUpdate: () => void;
+  handleInstallUpdate: () => void;
 }
 
 const defaultContext: AppContextType = {
@@ -54,7 +61,12 @@ const defaultContext: AppContextType = {
   restoreHistoryEntry: () => { },
   selectedModel: 'gemini-2.5-flash',
   availableModels: [],
-  setModel: () => { }
+  setModel: () => { },
+  updateStatus: 'idle',
+  updateVersion: null,
+  updateProgress: 0,
+  handleDownloadUpdate: () => { },
+  handleInstallUpdate: () => { }
 };
 
 export const AppContext = createContext<AppContextType>(defaultContext);
@@ -81,6 +93,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
+  const [updateVersion, setUpdateVersion] = useState<string | null>(null);
+  const [updateProgress, setUpdateProgress] = useState(0);
 
   const { getSettings, saveSettings, showWindow, getPlatform, isElectronAvailable } = useElectronIpc();
 
@@ -185,6 +201,39 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     fetchModels();
   }, [geminiService, apiKey, selectedModel]);
+
+  useEffect(() => {
+    if (!isElectronAvailable) return;
+
+    const removeUpdateAvailable = window.electron.on('update-available', (info: { version: string; downloaded?: boolean }) => {
+      setUpdateVersion(info.version);
+      setUpdateStatus(info.downloaded ? 'ready' : 'available');
+    });
+
+    const removeUpdateProgress = window.electron.on('update-progress', (percent: number) => {
+      setUpdateProgress(percent);
+      setUpdateStatus('downloading');
+    });
+
+    const removeUpdateError = window.electron.on('update-error', () => {
+      setUpdateStatus('error');
+    });
+
+    return () => {
+      removeUpdateAvailable();
+      removeUpdateProgress();
+      removeUpdateError();
+    };
+  }, [isElectronAvailable]);
+
+  const handleDownloadUpdate = useCallback(() => {
+    window.electron.updater.download();
+    setUpdateStatus('downloading');
+  }, []);
+
+  const handleInstallUpdate = useCallback(() => {
+    window.electron.updater.install();
+  }, []);
 
   const appendHistory = useCallback((entry: HistoryEntry) => {
     setHistory(prev => [entry, ...prev].slice(0, 30));
@@ -304,7 +353,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     restoreHistoryEntry,
     selectedModel,
     availableModels,
-    setModel: setSelectedModel
+    setModel: setSelectedModel,
+    updateStatus,
+    updateVersion,
+    updateProgress,
+    handleDownloadUpdate,
+    handleInstallUpdate
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

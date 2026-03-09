@@ -56,6 +56,11 @@ export interface ElectronAPI {
   shell: {
     openExternal: (url: string) => Promise<void>;
   };
+  updater: {
+    check: () => Promise<void>;
+    download: () => Promise<void>;
+    install: () => Promise<void>;
+  };
   on: (
     channel: string,
     callback: (...args: any[]) => void

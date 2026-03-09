@@ -59,9 +59,14 @@ contextBridge.exposeInMainWorld(
       get: () => ipcRenderer.invoke('get-history'),
       save: (history: any[]) => ipcRenderer.invoke('save-history', history)
     },
+    updater: {
+      check: () => ipcRenderer.invoke('check-for-updates'),
+      download: () => ipcRenderer.invoke('download-update'),
+      install: () => ipcRenderer.invoke('install-update')
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
-      const validChannels = ['image-captured', 'capture-error', 'permission-error'];
+      const validChannels = ['image-captured', 'capture-error', 'permission-error', 'update-available', 'update-progress', 'update-error'];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
         const subscription = (_event: any, ...args: any[]) => callback(...args);

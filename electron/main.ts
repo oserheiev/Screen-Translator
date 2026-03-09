@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, system
 import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
+import { autoUpdater } from 'electron-updater';
 import { Settings } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 
@@ -72,6 +73,9 @@ function createWindow() {
 
   // Set up IPC handlers
   setupIpcHandlers();
+
+  // Set up auto-updater
+  setupAutoUpdater();
 }
 
 function createTray() {
@@ -344,6 +348,64 @@ function showAllCaptureWindows() {
       }, 300);
     }
   });
+}
+
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-available', (info) => {
+    mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_AVAILABLE, {
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      downloaded: false
+    });
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_PROGRESS, Math.round(progress.percent));
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_AVAILABLE, {
+      version: info.version,
+      downloaded: true
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, err.message);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CHECK_FOR_UPDATES, async () => {
+    try {
+      await autoUpdater.checkForUpdates();
+    } catch (err) {
+      mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, String(err));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DOWNLOAD_UPDATE, async () => {
+    if (process.platform === 'darwin') {
+      shell.openExternal('https://github.com/oserheiev/Screen-Translator/releases/latest');
+      return;
+    }
+    try {
+      await autoUpdater.downloadUpdate();
+    } catch (err) {
+      mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, String(err));
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.INSTALL_UPDATE, () => {
+    autoUpdater.quitAndInstall();
+  });
+
+  // Check on startup, then every 4 hours
+  autoUpdater.checkForUpdates().catch(() => {/* ignore startup errors */});
+  setInterval(() => {
+    autoUpdater.checkForUpdates().catch(() => {/* ignore */});
+  }, 4 * 60 * 60 * 1000);
 }
 
 function setupIpcHandlers() {
