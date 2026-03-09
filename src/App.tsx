@@ -58,7 +58,12 @@ const App: React.FC = () => {
     restoreHistoryEntry,
     selectedModel,
     availableModels,
-    setModel
+    setModel,
+    updateStatus,
+    updateVersion,
+    updateProgress,
+    handleDownloadUpdate,
+    handleInstallUpdate
   } = useAppContext();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -129,6 +134,21 @@ const App: React.FC = () => {
           </div>
           <div className="header-right">
             <div className="model-pill">{modelLabel}</div>
+            {updateStatus === 'available' && (
+              <button className="update-pill" onClick={handleDownloadUpdate} title={`Update to v${updateVersion}`}>
+                ↑ v{updateVersion}
+              </button>
+            )}
+            {updateStatus === 'downloading' && (
+              <button className="update-pill update-pill--downloading" disabled>
+                {updateProgress > 0 ? `${updateProgress}%` : '↓ Downloading…'}
+              </button>
+            )}
+            {updateStatus === 'ready' && (
+              <button className="update-pill update-pill--ready" onClick={handleInstallUpdate} title="Restart to install update">
+                ↺ Restart
+              </button>
+            )}
             <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title="Settings">
               <GearIcon />
             </button>

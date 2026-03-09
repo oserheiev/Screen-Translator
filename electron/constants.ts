@@ -34,4 +34,10 @@ export const IPC_CHANNELS = {
     OPEN_EXTERNAL: 'open-external',
     GET_HISTORY: 'get-history',
     SAVE_HISTORY: 'save-history',
+    CHECK_FOR_UPDATES: 'check-for-updates',
+    DOWNLOAD_UPDATE: 'download-update',
+    INSTALL_UPDATE: 'install-update',
+    UPDATE_AVAILABLE: 'update-available',
+    UPDATE_PROGRESS: 'update-progress',
+    UPDATE_ERROR: 'update-error',
 } as const;
