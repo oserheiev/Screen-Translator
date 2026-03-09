@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: npm-logs-win
-          path: ~\AppData\Local\npm-cache\_logs\
+          path: C:\npm\cache\_logs\
 
       - name: Build & publish Windows
         env:
