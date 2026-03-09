@@ -63,7 +63,8 @@ const App: React.FC = () => {
     updateVersion,
     updateProgress,
     handleDownloadUpdate,
-    handleInstallUpdate
+    handleInstallUpdate,
+    appVersion
   } = useAppContext();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -104,7 +105,7 @@ const App: React.FC = () => {
   };
 
   const modelLabel = selectedModel
-    ? `⚡ ${selectedModel.replace('models/', '').replace('gemini-', 'Gemini ').replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}`
+    ? `⚡ ${selectedModel.replace('models/', '').replace('gemini-', 'Gemini ').replace('-', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}`
     : '⚡ Gemini Flash';
 
   return (
@@ -113,7 +114,7 @@ const App: React.FC = () => {
       <div className={`history-panel-wrapper${isHistoryOpen ? ' open' : ''}`}>
         <HistoryPanel
           entries={history}
-          onSelect={(entry) => { restoreHistoryEntry(entry); }}
+          onSelect={(entry: any) => { restoreHistoryEntry(entry); }}
           onClear={clearHistory}
         />
       </div>
@@ -126,11 +127,11 @@ const App: React.FC = () => {
             <button
               className={`header-icon-btn${isHistoryOpen ? ' active' : ''}`}
               title="History"
-              onClick={() => setIsHistoryOpen(o => !o)}
+              onClick={() => setIsHistoryOpen((o: boolean) => !o)}
             >
               <ClockIcon />
             </button>
-            <h1 className="header-title">Screen Translator</h1>
+            <h1 className="header-title">Screen Translator <span className="app-version">v{appVersion}</span></h1>
           </div>
           <div className="header-right">
             <div className="model-pill">{modelLabel}</div>

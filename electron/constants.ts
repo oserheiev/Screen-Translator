@@ -40,4 +40,5 @@ export const IPC_CHANNELS = {
     UPDATE_AVAILABLE: 'update-available',
     UPDATE_PROGRESS: 'update-progress',
     UPDATE_ERROR: 'update-error',
+    GET_VERSION: 'get-version',
 } as const;

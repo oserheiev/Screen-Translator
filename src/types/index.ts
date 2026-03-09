@@ -62,6 +62,9 @@ export interface ElectronAPI {
     download: () => Promise<void>;
     install: () => Promise<void>;
   };
+  app: {
+    getVersion: () => Promise<string>;
+  };
   on: (
     channel: string,
     callback: (...args: any[]) => void

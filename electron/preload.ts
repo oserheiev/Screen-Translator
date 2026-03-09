@@ -64,6 +64,9 @@ contextBridge.exposeInMainWorld(
       download: () => ipcRenderer.invoke('download-update'),
       install: () => ipcRenderer.invoke('install-update')
     },
+    app: {
+      getVersion: () => ipcRenderer.invoke('get-version')
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
       const validChannels = ['image-captured', 'capture-error', 'permission-error', 'update-available', 'update-progress', 'update-error'];

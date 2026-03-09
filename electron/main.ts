@@ -561,6 +561,10 @@ function setupIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.SAVE_HISTORY, (_, history: any[]) => {
     store.set('history', history);
   });
+
+  ipcMain.handle(IPC_CHANNELS.GET_VERSION, () => {
+    return app.getVersion();
+  });
 }
 
 // App lifecycle events

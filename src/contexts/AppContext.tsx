@@ -35,6 +35,7 @@ interface AppContextType {
   updateProgress: number;
   handleDownloadUpdate: () => void;
   handleInstallUpdate: () => void;
+  appVersion: string;
 }
 
 const defaultContext: AppContextType = {
@@ -66,7 +67,8 @@ const defaultContext: AppContextType = {
   updateVersion: null,
   updateProgress: 0,
   handleDownloadUpdate: () => { },
-  handleInstallUpdate: () => { }
+  handleInstallUpdate: () => { },
+  appVersion: '1.0.0'
 };
 
 export const AppContext = createContext<AppContextType>(defaultContext);
@@ -77,7 +79,7 @@ interface AppProviderProps {
   children: React.ReactNode;
 }
 
-export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProviderProps) => {
   const [originalText, setOriginalText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [sourceLanguage, setSourceLanguage] = useState<SupportedLanguage>('Auto');
@@ -97,6 +99,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [updateProgress, setUpdateProgress] = useState(0);
+  const [appVersion, setAppVersion] = useState('1.0.0');
 
   const { getSettings, saveSettings, showWindow, getPlatform, isElectronAvailable } = useElectronIpc();
 
@@ -124,6 +127,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
           const savedHistory = await window.electron.history.get();
           setHistory(savedHistory || []);
+
+          const version = await window.electron.app.getVersion();
+          if (version) setAppVersion(version);
+
           historyLoadedRef.current = true;
         }
       } catch (error) {
@@ -236,7 +243,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, []);
 
   const appendHistory = useCallback((entry: HistoryEntry) => {
-    setHistory(prev => [entry, ...prev].slice(0, 30));
+    setHistory((prev: HistoryEntry[]) => [entry, ...prev].slice(0, 30));
   }, []);
 
   const processImage = useCallback(async (imageData: string) => {
@@ -358,7 +365,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     updateVersion,
     updateProgress,
     handleDownloadUpdate,
-    handleInstallUpdate
+    handleInstallUpdate,
+    appVersion
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
