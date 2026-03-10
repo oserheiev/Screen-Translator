@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLanguage } from '../types';
-import { APP_LANGUAGES } from '../i18n';
+import { APP_LANGUAGES, NATIVE_LANGUAGE_NAMES } from '../i18n';
 import { useLocale } from '../i18n/useLocale';
 
 interface SettingsModalProps {
@@ -120,7 +120,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
                 >
                   {APP_LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{lang}</option>
+                    <option key={lang} value={lang}>{NATIVE_LANGUAGE_NAMES[lang]}</option>
                   ))}
                 </select>
               </div>

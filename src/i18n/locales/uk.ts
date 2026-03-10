@@ -52,6 +52,22 @@ const uk: LocaleStrings = {
   translation: 'Переклад',
 
   apiKeyNotSet: 'API-ключ не вказано. Будь ласка, задайте ваш API-ключ Gemini у налаштуваннях.',
+
+  languageNames: {
+    'Auto': 'Авто',
+    'English': 'Англійська',
+    'Russian': 'Російська',
+    'Ukrainian': 'Українська',
+    'Spanish': 'Іспанська',
+    'French': 'Французька',
+    'German': 'Німецька',
+    'Italian': 'Італійська',
+    'Portuguese': 'Португальська',
+    'Chinese (Simplified)': 'Китайська (спрощена)',
+    'Japanese': 'Японська',
+    'Korean': 'Корейська',
+    'Polish': 'Польська',
+  },
 };
 
 export default uk;

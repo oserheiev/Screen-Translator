@@ -52,6 +52,22 @@ const ja: LocaleStrings = {
   translation: '翻訳',
 
   apiKeyNotSet: 'APIキーが設定されていません。設定からGemini APIキーを入力してください。',
+
+  languageNames: {
+    'Auto': '自動',
+    'English': '英語',
+    'Russian': 'ロシア語',
+    'Ukrainian': 'ウクライナ語',
+    'Spanish': 'スペイン語',
+    'French': 'フランス語',
+    'German': 'ドイツ語',
+    'Italian': 'イタリア語',
+    'Portuguese': 'ポルトガル語',
+    'Chinese (Simplified)': '中国語（簡体字）',
+    'Japanese': '日本語',
+    'Korean': '韓国語',
+    'Polish': 'ポーランド語',
+  },
 };
 
 export default ja;

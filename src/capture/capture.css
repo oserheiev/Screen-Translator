@@ -51,6 +51,8 @@ html {
   font-size: 14px;
   font-weight: 500;
   z-index: 10001;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
 }
 
 .capture-error {

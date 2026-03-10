@@ -52,6 +52,22 @@ const zh: LocaleStrings = {
   translation: '译文',
 
   apiKeyNotSet: '未设置 API 密钥。请在设置中配置您的 Gemini API 密钥。',
+
+  languageNames: {
+    'Auto': '自动',
+    'English': '英语',
+    'Russian': '俄语',
+    'Ukrainian': '乌克兰语',
+    'Spanish': '西班牙语',
+    'French': '法语',
+    'German': '德语',
+    'Italian': '意大利语',
+    'Portuguese': '葡萄牙语',
+    'Chinese (Simplified)': '中文（简体）',
+    'Japanese': '日语',
+    'Korean': '韩语',
+    'Polish': '波兰语',
+  },
 };
 
 export default zh;

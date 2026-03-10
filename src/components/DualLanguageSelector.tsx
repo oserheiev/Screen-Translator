@@ -1,15 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { SupportedLanguage } from '../types';
+import { useLocale } from '../i18n/useLocale';
 
 interface CustomSelectProps {
   value: SupportedLanguage;
   options: SupportedLanguage[];
   onChange: (value: SupportedLanguage) => void;
+  getLabel: (lang: SupportedLanguage) => string;
   disabled?: boolean;
   ariaLabel?: string;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, disabled, ariaLabel }) => {
+const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, getLabel, disabled, ariaLabel }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,7 +41,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, d
         disabled={disabled}
         type="button"
       >
-        {value}
+        {getLabel(value)}
       </button>
       {isOpen && (
         <div className="custom-select-dropdown">
@@ -50,7 +52,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, d
               onClick={() => { onChange(option); setIsOpen(false); }}
               type="button"
             >
-              {option}
+              {getLabel(option)}
             </button>
           ))}
         </div>
@@ -74,6 +76,9 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
   onTargetLanguageChange,
   disabled = false
 }) => {
+  const t = useLocale();
+  const getLabel = useCallback((lang: SupportedLanguage) => t.languageNames[lang] ?? lang, [t]);
+
   const supportedLanguages: SupportedLanguage[] = [
     'Auto',
     'English',
@@ -105,6 +110,7 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
         value={sourceLanguage}
         options={supportedLanguages}
         onChange={onSourceLanguageChange}
+        getLabel={getLabel}
         disabled={disabled}
         ariaLabel="Source language"
       />
@@ -122,6 +128,7 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
         value={targetLanguage}
         options={targetLanguages}
         onChange={onTargetLanguageChange}
+        getLabel={getLabel}
         disabled={disabled}
         ariaLabel="Target language"
       />

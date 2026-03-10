@@ -52,6 +52,22 @@ const ko: LocaleStrings = {
   translation: '번역',
 
   apiKeyNotSet: 'API 키가 설정되지 않았습니다. 설정에서 Gemini API 키를 입력해 주세요.',
+
+  languageNames: {
+    'Auto': '자동',
+    'English': '영어',
+    'Russian': '러시아어',
+    'Ukrainian': '우크라이나어',
+    'Spanish': '스페인어',
+    'French': '프랑스어',
+    'German': '독일어',
+    'Italian': '이탈리아어',
+    'Portuguese': '포르투갈어',
+    'Chinese (Simplified)': '중국어(간체)',
+    'Japanese': '일본어',
+    'Korean': '한국어',
+    'Polish': '폴란드어',
+  },
 };
 
 export default ko;

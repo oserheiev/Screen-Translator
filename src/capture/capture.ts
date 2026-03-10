@@ -1,5 +1,6 @@
 import './capture.css';
 import { ElectronAPI } from '../types';
+import { CaptureLocale, getCaptureLocale } from './captureLocales';
 
 // Add types for the window object
 declare global {
@@ -37,6 +38,7 @@ class ScreenCapture {
     private overlay: HTMLElement;
     private selectionArea: HTMLElement;
     private instructions: HTMLElement;
+    private locale: CaptureLocale = getCaptureLocale('English');
 
     constructor() {
         this.overlay = document.getElementById('captureOverlay')!;
@@ -50,6 +52,7 @@ class ScreenCapture {
         // Optimize event handlers by binding them once
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseMoveProximity = this.handleMouseMoveProximity.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
 
@@ -60,10 +63,14 @@ class ScreenCapture {
         try {
             console.log('Initializing optimized multi-monitor screen capture');
 
-            // Start display detection and screenshot capture in parallel for better performance
+            // Run display detection, screenshot preload, and locale loading in parallel
             await Promise.all([
                 this.detectCurrentDisplay(),
-                this.preloadScreenshotCapture()
+                this.preloadScreenshotCapture(),
+                window.electron.settings.get().then(
+                    s => { this.locale = getCaptureLocale(s.appLanguage ?? 'English'); },
+                    () => { /* fallback to English */ }
+                ),
             ]);
 
             // Setup UI and events immediately
@@ -329,6 +336,7 @@ class ScreenCapture {
         // Use pre-bound event handlers for better performance
         this.overlay.addEventListener('mousedown', this.handleMouseDown as EventListener, { passive: false });
         this.overlay.addEventListener('mousemove', this.handleMouseMove as EventListener, { passive: true });
+        this.overlay.addEventListener('mousemove', this.handleMouseMoveProximity as EventListener, { passive: true });
         this.overlay.addEventListener('mouseup', (this.handleMouseUp as unknown) as EventListener, { passive: false });
         document.addEventListener('keydown', (this.handleKeyDown as unknown) as EventListener, { passive: false });
 
@@ -361,11 +369,9 @@ class ScreenCapture {
     displayInstructions() {
         const displayInfo = this.currentDisplay ?
             ` (Display ${this.currentDisplay.id})` : '';
-        this.instructions.textContent = `Click and drag to select an area${displayInfo}. Press ESC to cancel.`;
+        this.instructions.textContent = this.locale.instruction + displayInfo;
 
-        // Make instructions more visible with better styling
         this.instructions.style.opacity = '1';
-        this.instructions.style.transition = 'opacity 0.2s ease-in-out';
         this.instructions.style.display = '';
     }
 
@@ -384,6 +390,14 @@ class ScreenCapture {
 
         this.endPoint = { x: e.clientX, y: e.clientY };
         this.updateSelectionArea();
+    }
+
+    handleMouseMoveProximity(e: MouseEvent) {
+        const rect = this.instructions.getBoundingClientRect();
+        const near =
+            e.clientX >= rect.left - 20 && e.clientX <= rect.right + 20 &&
+            e.clientY >= rect.top - 20 && e.clientY <= rect.bottom + 20;
+        this.instructions.style.opacity = near ? '0' : '1';
     }
 
     async handleMouseUp(e: MouseEvent) {
@@ -406,7 +420,7 @@ class ScreenCapture {
         }
 
         try {
-            this.instructions.textContent = 'Processing capture...';
+            this.instructions.textContent = this.locale.processing;
             const imageData = await this.captureSelectedArea(selection);
             await this.sendCaptureResult(imageData);
         } catch (error) {
@@ -531,8 +545,8 @@ class ScreenCapture {
         errorElement.innerHTML = `
       <p>${message}</p>
       <div>
-        <button id="close-btn">Close</button>
-        <button id="retry-btn">Try Again</button>
+        <button id="close-btn">${this.locale.close}</button>
+        <button id="retry-btn">${this.locale.tryAgain}</button>
       </div>
     `;
 
@@ -548,7 +562,7 @@ class ScreenCapture {
 
     async retry() {
         if (this.retryCount >= this.maxRetries) {
-            this.showError('Maximum retry attempts reached. Please close and try again.');
+            this.showError(this.locale.maxRetries);
             return;
         }
 
@@ -563,7 +577,7 @@ class ScreenCapture {
 
         // Reset state
         this.cleanup();
-        this.instructions.textContent = 'Initializing screen capture...';
+        this.instructions.textContent = this.locale.initializing;
 
         // Wait a moment before retrying
         await new Promise(resolve => setTimeout(resolve, 500));

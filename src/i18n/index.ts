@@ -1,4 +1,4 @@
-import { AppLanguage } from '../types';
+import { AppLanguage, SupportedLanguage } from '../types';
 
 export interface LocaleStrings {
   // App header / toolbar
@@ -59,6 +59,9 @@ export interface LocaleStrings {
 
   // AppContext errors
   apiKeyNotSet: string;
+
+  // DualLanguageSelector
+  languageNames: Record<SupportedLanguage, string>;
 }
 
 import en from './locales/en';
@@ -90,6 +93,21 @@ const localeMap: Record<AppLanguage, LocaleStrings> = {
 };
 
 export const APP_LANGUAGES = Object.keys(localeMap) as AppLanguage[];
+
+export const NATIVE_LANGUAGE_NAMES: Record<AppLanguage, string> = {
+  'English': '🇬🇧 English',
+  'Russian': '🇷🇺 Русский',
+  'Ukrainian': '🇺🇦 Українська',
+  'Spanish': '🇪🇸 Español',
+  'French': '🇫🇷 Français',
+  'German': '🇩🇪 Deutsch',
+  'Italian': '🇮🇹 Italiano',
+  'Portuguese': '🇵🇹 Português',
+  'Chinese (Simplified)': '🇨🇳 中文（简体）',
+  'Japanese': '🇯🇵 日本語',
+  'Korean': '🇰🇷 한국어',
+  'Polish': '🇵🇱 Polski',
+};
 
 export function getLocale(lang: AppLanguage): LocaleStrings {
   return localeMap[lang] ?? en;

@@ -52,6 +52,22 @@ const de: LocaleStrings = {
   translation: 'Übersetzung',
 
   apiKeyNotSet: 'API-Schlüssel nicht gesetzt. Bitte lege deinen Gemini-API-Schlüssel in den Einstellungen fest.',
+
+  languageNames: {
+    'Auto': 'Auto',
+    'English': 'Englisch',
+    'Russian': 'Russisch',
+    'Ukrainian': 'Ukrainisch',
+    'Spanish': 'Spanisch',
+    'French': 'Französisch',
+    'German': 'Deutsch',
+    'Italian': 'Italienisch',
+    'Portuguese': 'Portugiesisch',
+    'Chinese (Simplified)': 'Chinesisch (vereinfacht)',
+    'Japanese': 'Japanisch',
+    'Korean': 'Koreanisch',
+    'Polish': 'Polnisch',
+  },
 };
 
 export default de;
