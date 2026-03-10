@@ -23,7 +23,8 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     'Portuguese',
     'Chinese (Simplified)',
     'Japanese',
-    'Korean'
+    'Korean',
+    'Polish'
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

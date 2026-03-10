@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocale } from '../i18n/useLocale';
 
 interface PermissionModalProps {
   platform: string;
@@ -7,6 +8,7 @@ interface PermissionModalProps {
 }
 
 const PermissionModal: React.FC<PermissionModalProps> = ({ platform, onOpenSettings, onClose }) => {
+  const t = useLocale();
   const isMac = platform === 'darwin';
   const isWindows = platform === 'win32';
 
@@ -14,44 +16,40 @@ const PermissionModal: React.FC<PermissionModalProps> = ({ platform, onOpenSetti
     <div className="modal-overlay">
       <div className="modal-content permission-modal">
         <div className="modal-header">
-          <h2>Screen Recording Permission</h2>
+          <h2>{t.permissionTitle}</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
 
-        <p className="modal-subtitle">
-          Screen Translator needs permission to record your screen in order to capture text.
-        </p>
+        <p className="modal-subtitle">{t.permissionDescription}</p>
 
         {isMac && (
           <ol className="permission-steps">
-            <li>Click <strong>Open Settings</strong> below</li>
-            <li>Find <strong>Screen Translator</strong> in the list</li>
-            <li>Enable the toggle next to it</li>
-            <li>Restart the app</li>
+            <li>{t.permissionMacStep1}</li>
+            <li>{t.permissionMacStep2}</li>
+            <li>{t.permissionMacStep3}</li>
+            <li>{t.permissionMacStep4}</li>
           </ol>
         )}
 
         {isWindows && (
           <ol className="permission-steps">
-            <li>Click <strong>Open Settings</strong> below</li>
-            <li>Enable <strong>Screen recording</strong> for this app</li>
-            <li>Restart the app</li>
+            <li>{t.permissionWinStep1}</li>
+            <li>{t.permissionWinStep2}</li>
+            <li>{t.permissionWinStep3}</li>
           </ol>
         )}
 
         {!isMac && !isWindows && (
-          <p className="permission-steps">
-            Please grant screen recording permission in your system settings, then restart the app.
-          </p>
+          <p className="permission-steps">{t.permissionGeneric}</p>
         )}
 
         <div className="modal-footer">
           <button type="button" className="cancel-button" onClick={onClose}>
-            Close
+            {t.close}
           </button>
           {(isMac || isWindows) && (
             <button type="button" className="save-button" onClick={onOpenSettings}>
-              Open Settings
+              {t.openSettings}
             </button>
           )}
         </div>

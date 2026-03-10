@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import GeminiService from '../services/gemini.service';
-import { SupportedLanguage, TranslationResult, Theme, HistoryEntry } from '../types';
+import { SupportedLanguage, TranslationResult, Theme, HistoryEntry, AppLanguage } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
+import { getLocale } from '../i18n';
 
 export type UpdateStatus = 'idle' | 'available' | 'downloading' | 'ready' | 'error';
 
@@ -30,6 +31,8 @@ interface AppContextType {
   selectedModel: string;
   availableModels: string[];
   setModel: (model: string) => void;
+  appLanguage: AppLanguage;
+  setAppLanguage: (language: AppLanguage) => void;
   updateStatus: UpdateStatus;
   updateVersion: string | null;
   updateProgress: number;
@@ -63,6 +66,8 @@ const defaultContext: AppContextType = {
   selectedModel: 'gemini-2.5-flash',
   availableModels: [],
   setModel: () => { },
+  appLanguage: 'English',
+  setAppLanguage: () => { },
   updateStatus: 'idle',
   updateVersion: null,
   updateProgress: 0,
@@ -95,6 +100,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
 
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [appLanguage, setAppLanguage] = useState<AppLanguage>('English');
 
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
@@ -123,6 +129,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
             }
             if (settings.theme) setTheme(settings.theme as Theme);
             if (settings.model) setSelectedModel(settings.model);
+            if (settings.appLanguage) setAppLanguage(settings.appLanguage as AppLanguage);
           }
 
           const savedHistory = await window.electron.history.get();
@@ -153,7 +160,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
             targetLanguage,
             hotkey,
             theme,
-            model: selectedModel
+            model: selectedModel,
+            appLanguage
           });
         }
       } catch (error) {
@@ -162,7 +170,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     };
 
     save();
-  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, saveSettings, isElectronAvailable]);
+  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, appLanguage, saveSettings, isElectronAvailable]);
 
   // Persist history whenever it changes (after initial load)
   useEffect(() => {
@@ -251,7 +259,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
 
     if (!geminiService) {
       console.error('No geminiService available');
-      setError('API key not set. Please set your Gemini API key in settings.');
+      setError(getLocale(appLanguage).apiKeyNotSet);
       return;
     }
 
@@ -283,11 +291,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
       setIsProcessing(false);
       console.log('Image processing completed');
     }
-  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showWindow, appendHistory]);
+  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showWindow, appendHistory, appLanguage]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
-      setError('API key not set. Please set your Gemini API key in settings.');
+      setError(getLocale(appLanguage).apiKeyNotSet);
       return;
     }
 
@@ -319,7 +327,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel, appendHistory]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel, appendHistory, appLanguage]);
 
   const clearError = () => {
     setError(null);
@@ -361,6 +369,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     selectedModel,
     availableModels,
     setModel: setSelectedModel,
+    appLanguage,
+    setAppLanguage,
     updateStatus,
     updateVersion,
     updateProgress,

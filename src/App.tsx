@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useElectronIpc } from './hooks/useElectronIpc';
+import { useLocale } from './i18n/useLocale';
 import TextDisplay from './components/TextDisplay';
 import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
@@ -59,6 +60,8 @@ const App: React.FC = () => {
     selectedModel,
     availableModels,
     setModel,
+    appLanguage,
+    setAppLanguage,
     updateStatus,
     updateVersion,
     updateProgress,
@@ -67,6 +70,7 @@ const App: React.FC = () => {
     appVersion
   } = useAppContext();
 
+  const t = useLocale();
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isFirstRun, setIsFirstRun] = useState<boolean>(true);
@@ -126,7 +130,7 @@ const App: React.FC = () => {
           <div className="header-left">
             <button
               className={`header-icon-btn${isHistoryOpen ? ' active' : ''}`}
-              title="History"
+              title={t.historyTooltip}
               onClick={() => setIsHistoryOpen((o: boolean) => !o)}
             >
               <ClockIcon />
@@ -142,15 +146,15 @@ const App: React.FC = () => {
             )}
             {updateStatus === 'downloading' && (
               <button className="update-pill update-pill--downloading" disabled>
-                {updateProgress > 0 ? `${updateProgress}%` : '↓ Downloading…'}
+                {updateProgress > 0 ? `${updateProgress}%` : t.downloadingUpdate}
               </button>
             )}
             {updateStatus === 'ready' && (
-              <button className="update-pill update-pill--ready" onClick={handleInstallUpdate} title="Restart to install update">
-                ↺ Restart
+              <button className="update-pill update-pill--ready" onClick={handleInstallUpdate} title={t.restartButton}>
+                {t.restartButton}
               </button>
             )}
-            <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title="Settings">
+            <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title={t.settingsTooltip}>
               <GearIcon />
             </button>
           </div>
@@ -174,9 +178,9 @@ const App: React.FC = () => {
                 disabled={!originalText || isProcessing}
               >
                 {isProcessing ? (
-                  <><div className="btn-spinner" /> Translating...</>
+                  <><div className="btn-spinner" /> {t.translatingButton}</>
                 ) : (
-                  <><ChevronIcon /> Translate</>
+                  <><ChevronIcon /> {t.translateButton}</>
                 )}
               </button>
               <div className="split-btn-divider" />
@@ -184,7 +188,7 @@ const App: React.FC = () => {
                 className="split-btn-capture"
                 onClick={handleCapture}
                 disabled={isProcessing}
-                title="Capture screen"
+                title={t.captureTooltip}
               >
                 <CameraIcon />
               </button>
@@ -220,9 +224,11 @@ const App: React.FC = () => {
             hotkey={hotkey}
             availableModels={availableModels}
             selectedModel={selectedModel}
+            appLanguage={appLanguage}
             onApiKeyChange={setApiKey}
             onHotkeyChange={setHotkey}
             onModelChange={setModel}
+            onAppLanguageChange={setAppLanguage}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
@@ -249,9 +255,11 @@ const App: React.FC = () => {
             hotkey={hotkey}
             availableModels={availableModels}
             selectedModel={selectedModel}
+            appLanguage={appLanguage}
             onApiKeyChange={setApiKey}
             onHotkeyChange={setHotkey}
             onModelChange={setModel}
+            onAppLanguageChange={setAppLanguage}
             onClose={() => setIsFirstRun(false)}
             isFirstRun={true}
           />

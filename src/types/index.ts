@@ -1,5 +1,19 @@
 export type Theme = 'light' | 'dark' | 'system';
 
+export type AppLanguage =
+  | 'English'
+  | 'Russian'
+  | 'Ukrainian'
+  | 'Spanish'
+  | 'French'
+  | 'German'
+  | 'Italian'
+  | 'Portuguese'
+  | 'Chinese (Simplified)'
+  | 'Japanese'
+  | 'Korean'
+  | 'Polish';
+
 export interface HistoryEntry {
   id: string;
   originalText: string;
@@ -18,6 +32,7 @@ export interface ElectronAPI {
       hotkey: string;
       theme: Theme;
       model: string;
+      appLanguage: AppLanguage;
     }>;
     save: (settings: {
       apiKey?: string;
@@ -26,6 +41,7 @@ export interface ElectronAPI {
       hotkey?: string;
       theme?: Theme;
       model?: string;
+      appLanguage?: AppLanguage;
     }) => Promise<boolean>;
   };
   history: {
@@ -88,7 +104,8 @@ export type SupportedLanguage =
   | 'Portuguese'
   | 'Chinese (Simplified)'
   | 'Japanese'
-  | 'Korean';
+  | 'Korean'
+  | 'Polish';
 
 declare global {
   interface Window {

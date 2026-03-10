@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ClipboardService from '../services/clipboard.service';
 import Markdown from 'markdown-to-jsx';
+import { useLocale } from '../i18n/useLocale';
 
 interface TranslationDisplayProps {
   text: string;
@@ -21,6 +22,7 @@ const CheckIcon = () => (
 );
 
 const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, isLoading = false }) => {
+  const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
 
@@ -36,7 +38,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, isLoading
   return (
     <div className="translation-panel">
       <div className="panel-header">
-        <span className="panel-label">Translation</span>
+        <span className="panel-label">{t.translation}</span>
         <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
           {isCopied ? <CheckIcon /> : <CopyIcon />}
         </button>

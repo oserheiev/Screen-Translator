@@ -1,0 +1,96 @@
+import { AppLanguage } from '../types';
+
+export interface LocaleStrings {
+  // App header / toolbar
+  historyTooltip: string;
+  settingsTooltip: string;
+  translateButton: string;
+  translatingButton: string;
+  captureTooltip: string;
+  restartButton: string;
+  downloadingUpdate: string;
+
+  // SettingsModal
+  welcome: string;
+  welcomeSubtitle: string;
+  settings: string;
+  apiKeyRequired: string;
+  geminiApiKey: string;
+  apiKeyPlaceholder: string;
+  getApiKeyLink: string;
+  globalHotkey: string;
+  hotkeyPlaceholder: string;
+  hotkeyHelp: string;
+  model: string;
+  loadingModel: string;
+  appLanguageLabel: string;
+  cancel: string;
+  save: string;
+  getStarted: string;
+
+  // PermissionModal
+  permissionTitle: string;
+  permissionDescription: string;
+  permissionMacStep1: string;
+  permissionMacStep2: string;
+  permissionMacStep3: string;
+  permissionMacStep4: string;
+  permissionWinStep1: string;
+  permissionWinStep2: string;
+  permissionWinStep3: string;
+  permissionGeneric: string;
+  close: string;
+  openSettings: string;
+
+  // HistoryPanel
+  recentHistory: string;
+  noHistory: string;
+  clearHistory: string;
+  today: string;
+  yesterday: string;
+
+  // TextDisplay
+  sourceText: string;
+  paste: string;
+  typePlaceholder: string;
+
+  // TranslationDisplay
+  translation: string;
+
+  // AppContext errors
+  apiKeyNotSet: string;
+}
+
+import en from './locales/en';
+import ru from './locales/ru';
+import uk from './locales/uk';
+import es from './locales/es';
+import fr from './locales/fr';
+import de from './locales/de';
+import it from './locales/it';
+import pt from './locales/pt';
+import zh from './locales/zh';
+import ja from './locales/ja';
+import ko from './locales/ko';
+import pl from './locales/pl';
+
+const localeMap: Record<AppLanguage, LocaleStrings> = {
+  English: en,
+  Russian: ru,
+  Ukrainian: uk,
+  Spanish: es,
+  French: fr,
+  German: de,
+  Italian: it,
+  Portuguese: pt,
+  'Chinese (Simplified)': zh,
+  Japanese: ja,
+  Korean: ko,
+  Polish: pl,
+};
+
+export const APP_LANGUAGES = Object.keys(localeMap) as AppLanguage[];
+
+export function getLocale(lang: AppLanguage): LocaleStrings {
+  return localeMap[lang] ?? en;
+}

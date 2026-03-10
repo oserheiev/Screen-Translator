@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HistoryEntry } from '../types';
+import { useLocale } from '../i18n/useLocale';
 
 interface HistoryPanelProps {
   entries: HistoryEntry[];
@@ -7,21 +8,22 @@ interface HistoryPanelProps {
   onClear: () => void;
 }
 
-function formatTimestamp(ts: number): string {
+function formatTimestamp(ts: number, today: string, yesterday: string): string {
   const date = new Date(ts);
   const now = new Date();
   const hh = date.getHours().toString().padStart(2, '0');
   const mm = date.getMinutes().toString().padStart(2, '0');
   const time = `${hh}:${mm}`;
 
-  if (date.toDateString() === now.toDateString()) return `Today, ${time}`;
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`;
+  if (date.toDateString() === now.toDateString()) return `${today}, ${time}`;
+  const prev = new Date(now);
+  prev.setDate(now.getDate() - 1);
+  if (date.toDateString() === prev.toDateString()) return `${yesterday}, ${time}`;
   return `${date.toLocaleDateString()} ${time}`;
 }
 
 const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear }) => {
+  const t = useLocale();
   const [selectedId, setSelectedId] = useState<string | null>(
     entries.length > 0 ? entries[0].id : null
   );
@@ -43,13 +45,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear 
   return (
     <div className="history-panel">
       <div className="history-panel-header">
-        <span className="history-panel-label">Recent History</span>
+        <span className="history-panel-label">{t.recentHistory}</span>
         <div className="history-panel-divider" />
       </div>
 
       <div className="history-panel-list">
         {entries.length === 0 && (
-          <div className="history-panel-empty">No history yet</div>
+          <div className="history-panel-empty">{t.noHistory}</div>
         )}
         {entries.map((entry) => (
           <button
@@ -61,7 +63,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear 
             <span className="history-item-text">
               {entry.originalText.trim().slice(0, 40)}{entry.originalText.trim().length > 40 ? '...' : ''}
             </span>
-            <span className="history-item-time">{formatTimestamp(entry.timestamp)}</span>
+            <span className="history-item-time">{formatTimestamp(entry.timestamp, t.today, t.yesterday)}</span>
           </button>
         ))}
       </div>
@@ -69,7 +71,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear 
       {entries.length > 0 && (
         <div className="history-panel-footer">
           <button className="history-clear-btn" onClick={onClear} type="button">
-            🗑 Clear All History
+            {t.clearHistory}
           </button>
         </div>
       )}

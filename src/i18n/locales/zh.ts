@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const zh: LocaleStrings = {
+  historyTooltip: '历史记录',
+  settingsTooltip: '设置',
+  translateButton: '翻译',
+  translatingButton: '翻译中...',
+  captureTooltip: '截取屏幕',
+  restartButton: '↺ 重启',
+  downloadingUpdate: '↓ 下载中…',
+
+  welcome: '欢迎使用 Screen Translator',
+  welcomeSubtitle: '首先，请在下方输入您的 Gemini API 密钥。它用于文字识别和翻译。',
+  settings: '设置',
+  apiKeyRequired: 'API 密钥为必填项',
+  geminiApiKey: 'Gemini API 密钥',
+  apiKeyPlaceholder: '请输入您的 Gemini API 密钥',
+  getApiKeyLink: '获取 Gemini API 密钥 →',
+  globalHotkey: '全局快捷键',
+  hotkeyPlaceholder: '点击此处，然后按下快捷键',
+  hotkeyHelp: '点击输入框并按下所需的键盘组合',
+  model: '模型',
+  loadingModel: '加载中或不可用',
+  appLanguageLabel: '应用语言',
+  cancel: '取消',
+  save: '保存',
+  getStarted: '开始使用',
+
+  permissionTitle: '屏幕录制权限',
+  permissionDescription: 'Screen Translator 需要屏幕录制权限以捕获文字。',
+  permissionMacStep1: '点击下方的"打开设置"',
+  permissionMacStep2: '在列表中找到 Screen Translator',
+  permissionMacStep3: '启用旁边的开关',
+  permissionMacStep4: '重启应用',
+  permissionWinStep1: '点击下方的"打开设置"',
+  permissionWinStep2: '为此应用启用屏幕录制',
+  permissionWinStep3: '重启应用',
+  permissionGeneric: '请在系统设置中授予屏幕录制权限，然后重启应用。',
+  close: '关闭',
+  openSettings: '打开设置',
+
+  recentHistory: '最近历史',
+  noHistory: '暂无历史记录',
+  clearHistory: '🗑 清除所有历史',
+  today: '今天',
+  yesterday: '昨天',
+
+  sourceText: '原文',
+  paste: '粘贴',
+  typePlaceholder: '输入或粘贴以进行翻译...',
+
+  translation: '译文',
+
+  apiKeyNotSet: '未设置 API 密钥。请在设置中配置您的 Gemini API 密钥。',
+};
+
+export default zh;

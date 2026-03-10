@@ -3,8 +3,24 @@ import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
-import { Settings } from './types';
+import { Settings, AppLanguage } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
+
+function detectAppLanguage(locale: string): AppLanguage {
+  const l = locale.toLowerCase();
+  if (l.startsWith('ru')) return 'Russian';
+  if (l.startsWith('uk')) return 'Ukrainian';
+  if (l.startsWith('es')) return 'Spanish';
+  if (l.startsWith('fr')) return 'French';
+  if (l.startsWith('de')) return 'German';
+  if (l.startsWith('it')) return 'Italian';
+  if (l.startsWith('pt')) return 'Portuguese';
+  if (l.startsWith('zh')) return 'Chinese (Simplified)';
+  if (l.startsWith('ja')) return 'Japanese';
+  if (l.startsWith('ko')) return 'Korean';
+  if (l.startsWith('pl')) return 'Polish';
+  return 'English';
+}
 
 // Initialize the settings store
 const store = new Store<Settings>({
@@ -14,7 +30,8 @@ const store = new Store<Settings>({
     targetLanguage: 'English',
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
     theme: 'system',
-    model: 'gemini-2.5-flash'
+    model: 'gemini-2.5-flash',
+    appLanguage: 'English'
   }
 });
 
@@ -430,7 +447,8 @@ function setupIpcHandlers() {
       targetLanguage: store.get('targetLanguage'),
       hotkey: store.get('hotkey'),
       theme: store.get('theme'),
-      model: store.get('model')
+      model: store.get('model'),
+      appLanguage: store.get('appLanguage')
     };
   });
 
@@ -444,6 +462,7 @@ function setupIpcHandlers() {
     }
     if (settings.theme !== undefined) store.set('theme', settings.theme);
     if (settings.model !== undefined) store.set('model', settings.model);
+    if (settings.appLanguage !== undefined) store.set('appLanguage', settings.appLanguage);
     return true;
   });
 
@@ -569,6 +588,10 @@ function setupIpcHandlers() {
 
 // App lifecycle events
 app.on('ready', () => {
+  // Auto-detect system language on first run
+  if (!store.has('appLanguage')) {
+    store.set('appLanguage', detectAppLanguage(app.getLocale()));
+  }
   createWindow();
 });
 

@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const pt: LocaleStrings = {
+  historyTooltip: 'Histórico',
+  settingsTooltip: 'Configurações',
+  translateButton: 'Traduzir',
+  translatingButton: 'Traduzindo...',
+  captureTooltip: 'Capturar tela',
+  restartButton: '↺ Reiniciar',
+  downloadingUpdate: '↓ Baixando…',
+
+  welcome: 'Bem-vindo ao Screen Translator',
+  welcomeSubtitle: 'Para começar, insira sua chave API do Gemini abaixo. Ela é usada para reconhecimento e tradução de texto.',
+  settings: 'Configurações',
+  apiKeyRequired: 'A chave API é obrigatória',
+  geminiApiKey: 'Chave API Gemini',
+  apiKeyPlaceholder: 'Insira sua chave API Gemini',
+  getApiKeyLink: 'Obter uma chave API Gemini →',
+  globalHotkey: 'Atalho global',
+  hotkeyPlaceholder: 'Clique aqui, depois pressione o atalho',
+  hotkeyHelp: 'Clique no campo e pressione a combinação de teclas desejada',
+  model: 'Modelo',
+  loadingModel: 'Carregando ou indisponível',
+  appLanguageLabel: 'Idioma do app',
+  cancel: 'Cancelar',
+  save: 'Salvar',
+  getStarted: 'Começar',
+
+  permissionTitle: 'Permissão de gravação de tela',
+  permissionDescription: 'O Screen Translator precisa de permissão para gravar sua tela e capturar texto.',
+  permissionMacStep1: 'Clique em Abrir configurações abaixo',
+  permissionMacStep2: 'Encontre o Screen Translator na lista',
+  permissionMacStep3: 'Ative o botão ao lado',
+  permissionMacStep4: 'Reinicie o app',
+  permissionWinStep1: 'Clique em Abrir configurações abaixo',
+  permissionWinStep2: 'Ative a gravação de tela para este app',
+  permissionWinStep3: 'Reinicie o app',
+  permissionGeneric: 'Conceda permissão de gravação de tela nas configurações do sistema e reinicie o app.',
+  close: 'Fechar',
+  openSettings: 'Abrir configurações',
+
+  recentHistory: 'Histórico recente',
+  noHistory: 'Sem histórico ainda',
+  clearHistory: '🗑 Limpar todo o histórico',
+  today: 'Hoje',
+  yesterday: 'Ontem',
+
+  sourceText: 'Texto de origem',
+  paste: 'COLAR',
+  typePlaceholder: 'Digite ou cole para traduzir...',
+
+  translation: 'Tradução',
+
+  apiKeyNotSet: 'Chave API não definida. Por favor, configure sua chave API Gemini nas configurações.',
+};
+
+export default pt;

@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
+import { AppLanguage } from '../types';
+import { APP_LANGUAGES } from '../i18n';
+import { useLocale } from '../i18n/useLocale';
 
 interface SettingsModalProps {
   apiKey: string;
   hotkey: string;
   availableModels: string[];
   selectedModel: string;
+  appLanguage: AppLanguage;
   onApiKeyChange: (key: string) => void;
   onHotkeyChange: (hotkey: string) => void;
   onModelChange: (model: string) => void;
+  onAppLanguageChange: (language: AppLanguage) => void;
   onClose: () => void;
   isFirstRun?: boolean;
 }
@@ -17,26 +22,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   hotkey,
   availableModels,
   selectedModel,
+  appLanguage,
   onApiKeyChange,
   onHotkeyChange,
   onModelChange,
+  onAppLanguageChange,
   onClose,
   isFirstRun = false
 }) => {
+  const t = useLocale();
   const [key, setKey] = useState(apiKey);
   const [currentHotkey, setCurrentHotkey] = useState(hotkey);
   const [currentModel, setCurrentModel] = useState(selectedModel);
+  const [currentLanguage, setCurrentLanguage] = useState<AppLanguage>(appLanguage);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!key.trim()) {
-      setError('API key is required');
+      setError(t.apiKeyRequired);
       return;
     }
     onApiKeyChange(key.trim());
     onHotkeyChange(currentHotkey);
     onModelChange(currentModel);
+    onAppLanguageChange(currentLanguage);
     onClose();
   };
 
@@ -44,49 +54,47 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>{isFirstRun ? 'Welcome to Screen Translator' : 'Settings'}</h2>
+          <h2>{isFirstRun ? t.welcome : t.settings}</h2>
           {!isFirstRun && (
             <button className="close-button" onClick={onClose}>×</button>
           )}
         </div>
 
         {isFirstRun && (
-          <p className="modal-subtitle">
-            To get started, enter your Gemini API key below. It's used for text recognition and translation.
-          </p>
+          <p className="modal-subtitle">{t.welcomeSubtitle}</p>
         )}
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="api-key">Gemini API Key</label>
+            <label htmlFor="api-key">{t.geminiApiKey}</label>
             <input
               id="api-key"
               type="text"
               value={key}
               onChange={e => { setKey(e.target.value); setError(''); }}
-              placeholder="Enter your Gemini API key"
+              placeholder={t.apiKeyPlaceholder}
             />
             <a
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Get a Gemini API key →
+              {t.getApiKeyLink}
             </a>
           </div>
 
           {!isFirstRun && (
             <>
               <div className="form-group">
-                <label htmlFor="hotkey">Global Hotkey</label>
+                <label htmlFor="hotkey">{t.globalHotkey}</label>
                 <input
                   id="hotkey"
                   type="text"
                   value={currentHotkey}
                   readOnly
-                  placeholder="Click here, then press your shortcut"
+                  placeholder={t.hotkeyPlaceholder}
                   onKeyDown={e => {
                     e.preventDefault();
                     const parts: string[] = [];
@@ -101,11 +109,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     if (parts.length > 1) setCurrentHotkey(parts.join('+'));
                   }}
                 />
-                <small className="form-help">Click the field and press your desired key combination</small>
+                <small className="form-help">{t.hotkeyHelp}</small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="model">Model</label>
+                <label htmlFor="app-language">{t.appLanguageLabel}</label>
+                <select
+                  id="app-language"
+                  value={currentLanguage}
+                  onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
+                >
+                  {APP_LANGUAGES.map(lang => (
+                    <option key={lang} value={lang}>{lang}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="model">{t.model}</label>
                 <select
                   id="model"
                   value={currentModel}
@@ -117,7 +138,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       <option key={model} value={model}>{model}</option>
                     ))
                   ) : (
-                    <option value={currentModel}>{currentModel} (Loading or Unavailable)</option>
+                    <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
                   )}
                 </select>
               </div>
@@ -127,11 +148,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="modal-footer">
             {!isFirstRun && (
               <button type="button" className="cancel-button" onClick={onClose}>
-                Cancel
+                {t.cancel}
               </button>
             )}
             <button type="submit" className="save-button">
-              {isFirstRun ? 'Get Started' : 'Save'}
+              {isFirstRun ? t.getStarted : t.save}
             </button>
           </div>
         </form>

@@ -13,10 +13,26 @@ export type SupportedLanguage =
   | 'Portuguese'
   | 'Chinese (Simplified)'
   | 'Japanese'
-  | 'Korean';
+  | 'Korean'
+  | 'Polish';
 
 // Define theme type
 export type Theme = 'light' | 'dark' | 'system';
+
+// Define app UI language type (all supported languages except 'Auto')
+export type AppLanguage =
+  | 'English'
+  | 'Russian'
+  | 'Ukrainian'
+  | 'Spanish'
+  | 'French'
+  | 'German'
+  | 'Italian'
+  | 'Portuguese'
+  | 'Chinese (Simplified)'
+  | 'Japanese'
+  | 'Korean'
+  | 'Polish';
 
 // Define the settings interface
 export interface Settings {
@@ -26,6 +42,7 @@ export interface Settings {
   hotkey: string;
   theme: Theme;
   model: string;
+  appLanguage: AppLanguage;
   history?: any[];
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ClipboardService from '../services/clipboard.service';
+import { useLocale } from '../i18n/useLocale';
 
 interface TextDisplayProps {
   text: string;
@@ -21,6 +22,7 @@ const CheckIcon = () => (
 );
 
 const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = false }) => {
+  const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
 
@@ -53,10 +55,10 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
   return (
     <div className={`source-panel${disabled ? ' disabled' : ''}`}>
       <div className="panel-header">
-        <span className="panel-label">Source Text</span>
+        <span className="panel-label">{t.sourceText}</span>
         <div className="panel-actions">
           <button className="paste-btn" onClick={handlePaste} disabled={disabled}>
-            PASTE
+            {t.paste}
           </button>
           <button className="copy-icon-btn" onClick={handleCopy} disabled={!text || disabled}>
             {isCopied ? <CheckIcon /> : <CopyIcon />}
@@ -71,7 +73,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
           disabled={disabled}
         />
         {!text && (
-          <span className="source-placeholder">Type or paste to translate...</span>
+          <span className="source-placeholder">{t.typePlaceholder}</span>
         )}
       </div>
     </div>

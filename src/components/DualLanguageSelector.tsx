@@ -86,7 +86,8 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
     'Portuguese',
     'Chinese (Simplified)',
     'Japanese',
-    'Korean'
+    'Korean',
+    'Polish'
   ];
 
   const targetLanguages = supportedLanguages.filter(lang => lang !== 'Auto');

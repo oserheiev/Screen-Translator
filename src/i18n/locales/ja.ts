@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const ja: LocaleStrings = {
+  historyTooltip: '履歴',
+  settingsTooltip: '設定',
+  translateButton: '翻訳',
+  translatingButton: '翻訳中...',
+  captureTooltip: '画面をキャプチャ',
+  restartButton: '↺ 再起動',
+  downloadingUpdate: '↓ ダウンロード中…',
+
+  welcome: 'Screen Translatorへようこそ',
+  welcomeSubtitle: 'はじめに、下のフィールドにGemini APIキーを入力してください。テキスト認識と翻訳に使用されます。',
+  settings: '設定',
+  apiKeyRequired: 'APIキーは必須です',
+  geminiApiKey: 'Gemini APIキー',
+  apiKeyPlaceholder: 'Gemini APIキーを入力',
+  getApiKeyLink: 'Gemini APIキーを取得 →',
+  globalHotkey: 'グローバルホットキー',
+  hotkeyPlaceholder: 'ここをクリックして、ショートカットを押す',
+  hotkeyHelp: 'フィールドをクリックして、希望のキー組み合わせを押してください',
+  model: 'モデル',
+  loadingModel: '読み込み中または利用不可',
+  appLanguageLabel: 'アプリの言語',
+  cancel: 'キャンセル',
+  save: '保存',
+  getStarted: 'はじめる',
+
+  permissionTitle: '画面録画の許可',
+  permissionDescription: 'Screen Translatorはテキストをキャプチャするために画面録画の許可が必要です。',
+  permissionMacStep1: '下の「設定を開く」をクリック',
+  permissionMacStep2: 'リストからScreen Translatorを見つける',
+  permissionMacStep3: '隣のトグルを有効にする',
+  permissionMacStep4: 'アプリを再起動する',
+  permissionWinStep1: '下の「設定を開く」をクリック',
+  permissionWinStep2: 'このアプリの画面録画を有効にする',
+  permissionWinStep3: 'アプリを再起動する',
+  permissionGeneric: 'システム設定で画面録画の許可を付与してから、アプリを再起動してください。',
+  close: '閉じる',
+  openSettings: '設定を開く',
+
+  recentHistory: '最近の履歴',
+  noHistory: '履歴はまだありません',
+  clearHistory: '🗑 履歴をすべて削除',
+  today: '今日',
+  yesterday: '昨日',
+
+  sourceText: '原文',
+  paste: '貼り付け',
+  typePlaceholder: '翻訳するテキストを入力または貼り付け...',
+
+  translation: '翻訳',
+
+  apiKeyNotSet: 'APIキーが設定されていません。設定からGemini APIキーを入力してください。',
+};
+
+export default ja;

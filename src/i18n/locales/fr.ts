@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const fr: LocaleStrings = {
+  historyTooltip: 'Historique',
+  settingsTooltip: 'Paramètres',
+  translateButton: 'Traduire',
+  translatingButton: 'Traduction...',
+  captureTooltip: "Capturer l'écran",
+  restartButton: '↺ Redémarrer',
+  downloadingUpdate: '↓ Téléchargement…',
+
+  welcome: 'Bienvenue dans Screen Translator',
+  welcomeSubtitle: "Pour commencer, entrez votre clé API Gemini ci-dessous. Elle est utilisée pour la reconnaissance et la traduction de texte.",
+  settings: 'Paramètres',
+  apiKeyRequired: 'La clé API est requise',
+  geminiApiKey: 'Clé API Gemini',
+  apiKeyPlaceholder: 'Entrez votre clé API Gemini',
+  getApiKeyLink: 'Obtenir une clé API Gemini →',
+  globalHotkey: 'Raccourci clavier global',
+  hotkeyPlaceholder: 'Cliquez ici, puis appuyez sur votre raccourci',
+  hotkeyHelp: 'Cliquez dans le champ et appuyez sur la combinaison souhaitée',
+  model: 'Modèle',
+  loadingModel: 'Chargement ou indisponible',
+  appLanguageLabel: "Langue de l'app",
+  cancel: 'Annuler',
+  save: 'Enregistrer',
+  getStarted: 'Commencer',
+
+  permissionTitle: "Permission d'enregistrement d'écran",
+  permissionDescription: "Screen Translator a besoin d'une permission pour enregistrer votre écran afin de capturer du texte.",
+  permissionMacStep1: 'Cliquez sur Ouvrir les paramètres ci-dessous',
+  permissionMacStep2: 'Trouvez Screen Translator dans la liste',
+  permissionMacStep3: "Activez le bouton à côté",
+  permissionMacStep4: "Redémarrez l'app",
+  permissionWinStep1: 'Cliquez sur Ouvrir les paramètres ci-dessous',
+  permissionWinStep2: "Activez l'enregistrement d'écran pour cette app",
+  permissionWinStep3: "Redémarrez l'app",
+  permissionGeneric: "Veuillez accorder la permission d'enregistrement d'écran dans les paramètres système, puis redémarrez l'app.",
+  close: 'Fermer',
+  openSettings: 'Ouvrir les paramètres',
+
+  recentHistory: 'Historique récent',
+  noHistory: "Pas encore d'historique",
+  clearHistory: '🗑 Effacer tout l\'historique',
+  today: "Aujourd'hui",
+  yesterday: 'Hier',
+
+  sourceText: 'Texte source',
+  paste: 'COLLER',
+  typePlaceholder: 'Tapez ou collez pour traduire...',
+
+  translation: 'Traduction',
+
+  apiKeyNotSet: "Clé API non définie. Veuillez définir votre clé API Gemini dans les paramètres.",
+};
+
+export default fr;

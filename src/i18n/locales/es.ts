@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const es: LocaleStrings = {
+  historyTooltip: 'Historial',
+  settingsTooltip: 'Configuración',
+  translateButton: 'Traducir',
+  translatingButton: 'Traduciendo...',
+  captureTooltip: 'Capturar pantalla',
+  restartButton: '↺ Reiniciar',
+  downloadingUpdate: '↓ Descargando…',
+
+  welcome: 'Bienvenido a Screen Translator',
+  welcomeSubtitle: 'Para comenzar, ingresa tu clave API de Gemini a continuación. Se usa para el reconocimiento y la traducción de texto.',
+  settings: 'Configuración',
+  apiKeyRequired: 'La clave API es obligatoria',
+  geminiApiKey: 'Clave API de Gemini',
+  apiKeyPlaceholder: 'Ingresa tu clave API de Gemini',
+  getApiKeyLink: 'Obtener una clave API de Gemini →',
+  globalHotkey: 'Atajo de teclado global',
+  hotkeyPlaceholder: 'Haz clic aquí y luego presiona el atajo',
+  hotkeyHelp: 'Haz clic en el campo y presiona la combinación de teclas deseada',
+  model: 'Modelo',
+  loadingModel: 'Cargando o no disponible',
+  appLanguageLabel: 'Idioma de la app',
+  cancel: 'Cancelar',
+  save: 'Guardar',
+  getStarted: 'Comenzar',
+
+  permissionTitle: 'Permiso de grabación de pantalla',
+  permissionDescription: 'Screen Translator necesita permiso para grabar tu pantalla y capturar texto.',
+  permissionMacStep1: 'Haz clic en Abrir configuración abajo',
+  permissionMacStep2: 'Encuentra Screen Translator en la lista',
+  permissionMacStep3: 'Activa el interruptor junto a él',
+  permissionMacStep4: 'Reinicia la app',
+  permissionWinStep1: 'Haz clic en Abrir configuración abajo',
+  permissionWinStep2: 'Activa la grabación de pantalla para esta app',
+  permissionWinStep3: 'Reinicia la app',
+  permissionGeneric: 'Por favor, otorga permiso de grabación de pantalla en la configuración del sistema y reinicia la app.',
+  close: 'Cerrar',
+  openSettings: 'Abrir configuración',
+
+  recentHistory: 'Historial reciente',
+  noHistory: 'Sin historial todavía',
+  clearHistory: '🗑 Borrar todo el historial',
+  today: 'Hoy',
+  yesterday: 'Ayer',
+
+  sourceText: 'Texto fuente',
+  paste: 'PEGAR',
+  typePlaceholder: 'Escribe o pega para traducir...',
+
+  translation: 'Traducción',
+
+  apiKeyNotSet: 'Clave API no configurada. Por favor, establece tu clave API de Gemini en la configuración.',
+};
+
+export default es;

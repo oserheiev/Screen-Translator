@@ -1,0 +1,57 @@
+import { LocaleStrings } from '../index';
+
+const en: LocaleStrings = {
+  historyTooltip: 'History',
+  settingsTooltip: 'Settings',
+  translateButton: 'Translate',
+  translatingButton: 'Translating...',
+  captureTooltip: 'Capture screen',
+  restartButton: '↺ Restart',
+  downloadingUpdate: '↓ Downloading…',
+
+  welcome: 'Welcome to Screen Translator',
+  welcomeSubtitle: "To get started, enter your Gemini API key below. It's used for text recognition and translation.",
+  settings: 'Settings',
+  apiKeyRequired: 'API key is required',
+  geminiApiKey: 'Gemini API Key',
+  apiKeyPlaceholder: 'Enter your Gemini API key',
+  getApiKeyLink: 'Get a Gemini API key →',
+  globalHotkey: 'Global Hotkey',
+  hotkeyPlaceholder: 'Click here, then press your shortcut',
+  hotkeyHelp: 'Click the field and press your desired key combination',
+  model: 'Model',
+  loadingModel: 'Loading or Unavailable',
+  appLanguageLabel: 'App Language',
+  cancel: 'Cancel',
+  save: 'Save',
+  getStarted: 'Get Started',
+
+  permissionTitle: 'Screen Recording Permission',
+  permissionDescription: 'Screen Translator needs permission to record your screen in order to capture text.',
+  permissionMacStep1: 'Click Open Settings below',
+  permissionMacStep2: 'Find Screen Translator in the list',
+  permissionMacStep3: 'Enable the toggle next to it',
+  permissionMacStep4: 'Restart the app',
+  permissionWinStep1: 'Click Open Settings below',
+  permissionWinStep2: 'Enable Screen recording for this app',
+  permissionWinStep3: 'Restart the app',
+  permissionGeneric: 'Please grant screen recording permission in your system settings, then restart the app.',
+  close: 'Close',
+  openSettings: 'Open Settings',
+
+  recentHistory: 'Recent History',
+  noHistory: 'No history yet',
+  clearHistory: '🗑 Clear All History',
+  today: 'Today',
+  yesterday: 'Yesterday',
+
+  sourceText: 'Source Text',
+  paste: 'PASTE',
+  typePlaceholder: 'Type or paste to translate...',
+
+  translation: 'Translation',
+
+  apiKeyNotSet: 'API key not set. Please set your Gemini API key in settings.',
+};
+
+export default en;
