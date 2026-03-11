@@ -479,7 +479,7 @@ body {
   background: transparent;
   outline: none;
   font-family: inherit;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.5;
   color: #000000;
   padding: 0;
@@ -498,7 +498,7 @@ body {
 /* ── Translation content ── */
 .translation-content {
   flex: 1;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.5;
   color: #000000;
   overflow-y: auto;
@@ -534,7 +534,7 @@ body {
 }
 
 .skeleton-line {
-  height: 22px;
+  height: 18px;
   background: #CCCCCC;
   border-radius: 6px;
   filter: blur(4px);
@@ -1181,10 +1181,10 @@ body.alert-mode {
   /* Scale down text so side-by-side narrow panels stay readable */
   .source-textarea,
   .translation-content {
-    font-size: 18px;
+    font-size: 16px;
   }
   .skeleton-line {
-    height: 18px;
+    height: 16px;
   }
   .panel-header {
     margin-bottom: 14px;
@@ -1239,7 +1239,7 @@ body.alert-mode {
   }
   .source-textarea,
   .translation-content {
-    font-size: 20px;
+    font-size: 18px;
   }
   .translation-skeleton-overlay {
     padding: 64px 24px 20px;
@@ -1288,13 +1288,13 @@ body.alert-mode {
   }
   .source-textarea,
   .translation-content {
-    font-size: 16px;
+    font-size: 15px;
   }
   .translation-skeleton-overlay {
     padding: 52px 16px 16px;
   }
   .skeleton-line {
-    height: 16px;
+    height: 15px;
   }
 }
 
@@ -1315,6 +1315,6 @@ body.alert-mode {
   }
   .source-textarea,
   .translation-content {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
