@@ -4,7 +4,7 @@ A desktop app that lets you capture any region of your screen and instantly tran
 
 ## How it works
 
-Press the global hotkey, draw a selection over any text on screen — in a game, image, video, PDF, or any window — and get the original text plus its translation in seconds.
+Press the global hotkey, draw a selection over any text on screen — in a game, image, video, PDF, or any window — and get the original text plus its translation in seconds for FREE.
 
 <img width="980" height="712" alt="image" src="https://github.com/user-attachments/assets/513ca6bd-594d-4acb-a033-3a999aa76e6d" />
 
@@ -13,6 +13,7 @@ Press the global hotkey, draw a selection over any text on screen — in a game,
 - **Hotkey capture** — trigger from anywhere with a customizable global shortcut (default `Ctrl+Alt+T`)
 - **Multi-display support** — works across all connected monitors
 - **OCR + translation in one step** — powered by Google Gemini (no separate OCR service needed)
+- **Model Selector** - select your favorite Gemini model with a FREE quota
 - **any languages** — Any language supported by LLM is in your hands now
 - **Auto-detect source language** — no need to specify what you're translating from
 - **Translation history** — browse and restore past translations
