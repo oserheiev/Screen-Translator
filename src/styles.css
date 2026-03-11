@@ -167,9 +167,14 @@ body {
 
 /* ── Language selector inside toolbar ── */
 .lang-selector-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 8px;
+}
+
+.lang-selector-group .custom-select {
+  width: 100%;
 }
 
 .lang-pill {
@@ -479,7 +484,7 @@ body {
   background: transparent;
   outline: none;
   font-family: inherit;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.5;
   color: #000000;
   padding: 0;
@@ -498,10 +503,11 @@ body {
 /* ── Translation content ── */
 .translation-content {
   flex: 1;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.5;
   color: #000000;
   overflow-y: auto;
+  overflow-x: hidden;
   overflow-wrap: break-word;
   word-break: break-word;
   min-height: 0;
@@ -534,7 +540,7 @@ body {
 }
 
 .skeleton-line {
-  height: 22px;
+  height: 18px;
   background: #CCCCCC;
   border-radius: 6px;
   filter: blur(4px);
@@ -571,11 +577,13 @@ body {
 .modal-content {
   background: #ffffff;
   border-radius: 24px;
-  padding: 32px;
+  padding: 0;
   width: 480px;
   max-width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   color: #000000;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
@@ -584,7 +592,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  flex-shrink: 0;
+  padding: 28px 32px 16px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 32px;
+  min-height: 0;
 }
 
 .modal-header h2 {
@@ -631,8 +648,11 @@ body {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 28px;
+  flex-shrink: 0;
+  padding: 16px 32px 28px;
   gap: 10px;
+  background: #ffffff;
+  border-top: 1px solid #F0F0F0;
 }
 
 .form-group {
@@ -932,6 +952,33 @@ body.alert-mode {
   flex-shrink: 0;
 }
 
+.history-panel-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #888888;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.history-close-btn:hover {
+  color: #000000;
+  background: #F0F0F0;
+}
+
 .history-panel-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -1037,6 +1084,9 @@ body.alert-mode {
   border: none;
   outline: none;
   cursor: pointer;
+  min-width: 0;
+  width: 100%;
+  justify-content: center;
 }
 
 .custom-select-trigger:disabled {
@@ -1054,7 +1104,8 @@ body.alert-mode {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
   min-width: 160px;
   z-index: 500;
-  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -1090,4 +1141,190 @@ body.alert-mode {
 
 .header-icon-btn.active svg {
   stroke: #ffffff;
+}
+
+/* ── Responsive: history overlay on medium screens (≤ 900px) ── */
+@media (max-width: 900px) {
+  .app-shell {
+    position: relative;
+  }
+  .history-panel-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .history-panel-wrapper.open {
+    pointer-events: auto;
+  }
+  .history-panel {
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ── Responsive: ≤ 700px — "narrowing" ── */
+@media (max-width: 700px) {
+  .app-container {
+    padding: 24px 28px;
+  }
+  .app-header {
+    margin-bottom: 16px;
+  }
+  .toolbar-row {
+    margin-bottom: 16px;
+  }
+  .panels-row {
+    gap: 16px;
+  }
+  .toolbar-pill {
+    padding: 8px 8px 8px 16px;
+    gap: 16px;
+  }
+  .lang-pill {
+    padding: 8px 12px;
+  }
+  .lang-pill select {
+    min-width: 60px;
+  }
+  /* Scale down text so side-by-side narrow panels stay readable */
+  .source-textarea,
+  .translation-content {
+    font-size: 16px;
+  }
+  .skeleton-line {
+    height: 16px;
+  }
+  .panel-header {
+    margin-bottom: 14px;
+  }
+}
+
+/* ── Responsive: ≤ 560px — "compact" ── */
+@media (max-width: 560px) {
+  .app-container {
+    padding: 16px 20px;
+  }
+  .app-header {
+    margin-bottom: 12px;
+  }
+  .toolbar-row {
+    margin-bottom: 12px;
+  }
+  .model-pill {
+    display: none;
+  }
+  /* Toolbar stacks vertically */
+  .toolbar-pill {
+    flex-direction: column;
+    border-radius: 20px;
+    padding: 10px;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+  }
+  .toolbar-divider {
+    display: none;
+  }
+  .split-btn {
+    width: 100%;
+  }
+  .split-btn-translate {
+    flex: 1;
+    justify-content: center;
+  }
+  /* Panels stack vertically — each gets full width so text can be a bit larger again */
+  .panels-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .source-panel,
+  .translation-panel {
+    padding: 20px 24px;
+  }
+  .panel-header {
+    margin-bottom: 12px;
+  }
+  .source-textarea,
+  .translation-content {
+    font-size: 18px;
+  }
+  .translation-skeleton-overlay {
+    padding: 64px 24px 20px;
+  }
+  /* History panel: full-screen at compact size (overrides 900px overlay) */
+  .history-panel-wrapper {
+    width: 100%;
+    overflow: hidden;
+    transition: none; /* width no longer animates; transform on inner panel handles it */
+  }
+  .history-panel-wrapper.open {
+    width: 100%;
+  }
+  .history-panel {
+    width: 100%;
+    box-shadow: none;
+  }
+}
+
+/* ── Responsive: ≤ 420px — "minimal" ── */
+@media (max-width: 420px) {
+  .modal-header {
+    padding: 20px 20px 12px;
+  }
+  .modal-body {
+    padding: 16px 20px;
+  }
+  .modal-footer {
+    padding: 12px 20px 20px;
+  }
+  .app-container {
+    padding: 12px 14px;
+  }
+  .header-title {
+    font-size: 18px;
+  }
+  .app-version {
+    font-size: 12px;
+  }
+  .source-panel,
+  .translation-panel {
+    padding: 16px;
+  }
+  .panel-header {
+    margin-bottom: 10px;
+  }
+  .source-textarea,
+  .translation-content {
+    font-size: 15px;
+  }
+  .translation-skeleton-overlay {
+    padding: 52px 16px 16px;
+  }
+  .skeleton-line {
+    height: 15px;
+  }
+}
+
+/* ── Responsive: height ≤ 480px — "short window" ── */
+@media (max-height: 480px) {
+  .app-container {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .app-header {
+    margin-bottom: 12px;
+  }
+  .toolbar-row {
+    margin-bottom: 12px;
+  }
+  .panel-header {
+    margin-bottom: 10px;
+  }
+  .source-textarea,
+  .translation-content {
+    font-size: 16px;
+  }
 }

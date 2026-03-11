@@ -1,6 +1,8 @@
 export const WINDOW_CONFIG = {
     WIDTH: 800,
     HEIGHT: 600,
+    MIN_WIDTH: 400,
+    MIN_HEIGHT: 600,
     ICON_PATH: '../../assets/icons/icon.png',
     INDEX_HTML_PATH: '../index.html',
     CAPTURE_HTML_PATH: '../capture.html',

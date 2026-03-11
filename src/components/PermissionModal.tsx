@@ -20,28 +20,30 @@ const PermissionModal: React.FC<PermissionModalProps> = ({ platform, onOpenSetti
           <button className="close-button" onClick={onClose}>×</button>
         </div>
 
-        <p className="modal-subtitle">{t.permissionDescription}</p>
+        <div className="modal-body">
+          <p className="modal-subtitle">{t.permissionDescription}</p>
 
-        {isMac && (
-          <ol className="permission-steps">
-            <li>{t.permissionMacStep1}</li>
-            <li>{t.permissionMacStep2}</li>
-            <li>{t.permissionMacStep3}</li>
-            <li>{t.permissionMacStep4}</li>
-          </ol>
-        )}
+          {isMac && (
+            <ol className="permission-steps">
+              <li>{t.permissionMacStep1}</li>
+              <li>{t.permissionMacStep2}</li>
+              <li>{t.permissionMacStep3}</li>
+              <li>{t.permissionMacStep4}</li>
+            </ol>
+          )}
 
-        {isWindows && (
-          <ol className="permission-steps">
-            <li>{t.permissionWinStep1}</li>
-            <li>{t.permissionWinStep2}</li>
-            <li>{t.permissionWinStep3}</li>
-          </ol>
-        )}
+          {isWindows && (
+            <ol className="permission-steps">
+              <li>{t.permissionWinStep1}</li>
+              <li>{t.permissionWinStep2}</li>
+              <li>{t.permissionWinStep3}</li>
+            </ol>
+          )}
 
-        {!isMac && !isWindows && (
-          <p className="permission-steps">{t.permissionGeneric}</p>
-        )}
+          {!isMac && !isWindows && (
+            <p className="permission-steps">{t.permissionGeneric}</p>
+          )}
+        </div>
 
         <div className="modal-footer">
           <button type="button" className="cancel-button" onClick={onClose}>
