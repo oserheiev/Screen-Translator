@@ -6,6 +6,8 @@ A desktop app that lets you capture any region of your screen and instantly tran
 
 Press the global hotkey, draw a selection over any text on screen — in a game, image, video, PDF, or any window — and get the original text plus its translation in seconds.
 
+<img width="980" height="712" alt="image" src="https://github.com/user-attachments/assets/513ca6bd-594d-4acb-a033-3a999aa76e6d" />
+
 ## Features
 
 - **Hotkey capture** — trigger from anywhere with a customizable global shortcut (default `Ctrl+Alt+T`)
