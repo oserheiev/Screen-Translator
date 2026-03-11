@@ -488,27 +488,25 @@ class ScreenCapture {
 
         console.log(`Scaled selection: ${scaledSelection.width}x${scaledSelection.height} at ${scaledSelection.x},${scaledSelection.y}`);
 
-        // Create high-quality canvas
-        const pixelRatio = window.devicePixelRatio || 1;
+        // Create canvas sized to the source image pixels (not CSS pixels)
+        // This ensures the output matches exactly what was selected in the screenshot
         const canvas = document.createElement('canvas');
-        canvas.width = selection.width * pixelRatio;
-        canvas.height = selection.height * pixelRatio;
+        canvas.width = Math.round(scaledSelection.width);
+        canvas.height = Math.round(scaledSelection.height);
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
             throw new Error('Failed to get canvas context');
         }
 
-        // Configure high-quality rendering
-        ctx.scale(pixelRatio, pixelRatio);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Draw the selected area
+        // Draw the selected area at native image resolution
         ctx.drawImage(
             this.imageElement,
             scaledSelection.x, scaledSelection.y, scaledSelection.width, scaledSelection.height,
-            0, 0, selection.width, selection.height
+            0, 0, Math.round(scaledSelection.width), Math.round(scaledSelection.height)
         );
 
         const dataURL = canvas.toDataURL('image/png', 1.0);

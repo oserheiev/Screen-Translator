@@ -8,6 +8,9 @@ const ru: LocaleStrings = {
   captureTooltip: 'Захват экрана',
   restartButton: '↺ Перезапустить',
   downloadingUpdate: '↓ Загрузка…',
+  trayCapture: 'Захват экрана',
+  trayOpen: 'Открыть',
+  trayQuit: 'Выйти',
 
   welcome: 'Добро пожаловать в Screen Translator',
   welcomeSubtitle: 'Для начала введите ваш API-ключ Gemini ниже. Он используется для распознавания и перевода текста.',

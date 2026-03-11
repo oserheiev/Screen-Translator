@@ -8,6 +8,9 @@ const uk: LocaleStrings = {
   captureTooltip: 'Захопити екран',
   restartButton: '↺ Перезапустити',
   downloadingUpdate: '↓ Завантаження…',
+  trayCapture: 'Захопити екран',
+  trayOpen: 'Відкрити',
+  trayQuit: 'Вийти',
 
   welcome: 'Ласкаво просимо до Screen Translator',
   welcomeSubtitle: 'Для початку введіть ваш API-ключ Gemini нижче. Він використовується для розпізнавання та перекладу тексту.',

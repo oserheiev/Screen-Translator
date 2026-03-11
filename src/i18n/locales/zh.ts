@@ -8,6 +8,9 @@ const zh: LocaleStrings = {
   captureTooltip: '截取屏幕',
   restartButton: '↺ 重启',
   downloadingUpdate: '↓ 下载中…',
+  trayCapture: '截取屏幕',
+  trayOpen: '打开',
+  trayQuit: '退出',
 
   welcome: '欢迎使用 Screen Translator',
   welcomeSubtitle: '首先，请在下方输入您的 Gemini API 密钥。它用于文字识别和翻译。',

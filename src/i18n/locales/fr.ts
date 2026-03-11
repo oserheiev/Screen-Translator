@@ -8,6 +8,9 @@ const fr: LocaleStrings = {
   captureTooltip: "Capturer l'écran",
   restartButton: '↺ Redémarrer',
   downloadingUpdate: '↓ Téléchargement…',
+  trayCapture: "Capturer l'écran",
+  trayOpen: 'Ouvrir',
+  trayQuit: 'Quitter',
 
   welcome: 'Bienvenue dans Screen Translator',
   welcomeSubtitle: "Pour commencer, entrez votre clé API Gemini ci-dessous. Elle est utilisée pour la reconnaissance et la traduction de texte.",
@@ -52,6 +55,22 @@ const fr: LocaleStrings = {
   translation: 'Traduction',
 
   apiKeyNotSet: "Clé API non définie. Veuillez définir votre clé API Gemini dans les paramètres.",
+
+  languageNames: {
+    'Auto': 'Auto',
+    'English': 'Anglais',
+    'Russian': 'Russe',
+    'Ukrainian': 'Ukrainien',
+    'Spanish': 'Espagnol',
+    'French': 'Français',
+    'German': 'Allemand',
+    'Italian': 'Italien',
+    'Portuguese': 'Portugais',
+    'Chinese (Simplified)': 'Chinois (simplifié)',
+    'Japanese': 'Japonais',
+    'Korean': 'Coréen',
+    'Polish': 'Polonais',
+  },
 };
 
 export default fr;

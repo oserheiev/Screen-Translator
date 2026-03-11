@@ -8,6 +8,9 @@ const ko: LocaleStrings = {
   captureTooltip: '화면 캡처',
   restartButton: '↺ 재시작',
   downloadingUpdate: '↓ 다운로드 중…',
+  trayCapture: '화면 캡처',
+  trayOpen: '열기',
+  trayQuit: '종료',
 
   welcome: 'Screen Translator에 오신 것을 환영합니다',
   welcomeSubtitle: '시작하려면 아래에 Gemini API 키를 입력하세요. 텍스트 인식 및 번역에 사용됩니다.',

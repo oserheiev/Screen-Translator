@@ -8,6 +8,9 @@ const ja: LocaleStrings = {
   captureTooltip: '画面をキャプチャ',
   restartButton: '↺ 再起動',
   downloadingUpdate: '↓ ダウンロード中…',
+  trayCapture: '画面をキャプチャ',
+  trayOpen: '開く',
+  trayQuit: '終了',
 
   welcome: 'Screen Translatorへようこそ',
   welcomeSubtitle: 'はじめに、下のフィールドにGemini APIキーを入力してください。テキスト認識と翻訳に使用されます。',

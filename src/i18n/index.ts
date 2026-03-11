@@ -10,6 +10,11 @@ export interface LocaleStrings {
   restartButton: string;
   downloadingUpdate: string;
 
+  // Tray context menu
+  trayCapture: string;
+  trayOpen: string;
+  trayQuit: string;
+
   // SettingsModal
   welcome: string;
   welcomeSubtitle: string;

@@ -8,6 +8,9 @@ const de: LocaleStrings = {
   captureTooltip: 'Bildschirm aufnehmen',
   restartButton: '↺ Neustart',
   downloadingUpdate: '↓ Herunterladen…',
+  trayCapture: 'Bildschirm aufnehmen',
+  trayOpen: 'Öffnen',
+  trayQuit: 'Beenden',
 
   welcome: 'Willkommen bei Screen Translator',
   welcomeSubtitle: 'Gib zunächst deinen Gemini-API-Schlüssel unten ein. Er wird für Texterkennung und Übersetzung verwendet.',

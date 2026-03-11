@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "strict": true,
     "sourceMap": true,
+    "rootDir": "..",
     "outDir": "../build/electron",
     "baseUrl": ".",
     "paths": {
@@ -19,6 +20,9 @@
     "declarationMap": true
   },
   "include": [
-    "**/*"
+    "**/*",
+    "../src/i18n/index.ts",
+    "../src/i18n/locales/**/*",
+    "../src/types/**/*"
   ]
 }

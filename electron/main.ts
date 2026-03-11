@@ -5,6 +5,18 @@ import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import { Settings, AppLanguage } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
+import { getLocale } from '../src/i18n/index';
+
+// Enforce single application instance
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+}
+
+function getTrayLabels() {
+  const lang = store?.get('appLanguage') ?? 'English';
+  return getLocale(lang as AppLanguage);
+}
 
 function detectAppLanguage(locale: string): AppLanguage {
   const l = locale.toLowerCase();
@@ -97,6 +109,36 @@ function createWindow() {
   setupAutoUpdater();
 }
 
+function buildTrayMenu() {
+  const labels = getTrayLabels();
+  return Menu.buildFromTemplate([
+    {
+      label: labels.trayCapture,
+      click: () => startScreenCapture()
+    },
+    {
+      label: labels.trayOpen,
+      click: () => mainWindow?.show()
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: labels.trayQuit,
+      click: () => {
+        app.quitting = true;
+        app.quit();
+      }
+    }
+  ]);
+}
+
+function updateTrayMenu() {
+  if (tray && !tray.isDestroyed()) {
+    tray.setContextMenu(buildTrayMenu());
+  }
+}
+
 function createTray() {
   if (!mainWindow) return;
 
@@ -109,30 +151,8 @@ function createTray() {
   }
 
   tray = new Tray(iconPath);
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Capture Screen',
-      click: () => startScreenCapture()
-    },
-    {
-      label: 'Open',
-      click: () => mainWindow?.show()
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Quit',
-      click: () => {
-        app.quitting = true;
-        app.quit();
-      }
-    }
-  ]);
-
   tray.setToolTip('Screen Translator');
-  tray.setContextMenu(contextMenu);
+  tray.setContextMenu(buildTrayMenu());
 
   tray.on('click', () => {
     if (mainWindow?.isVisible()) {
@@ -464,7 +484,10 @@ function setupIpcHandlers() {
     }
     if (settings.theme !== undefined) store.set('theme', settings.theme);
     if (settings.model !== undefined) store.set('model', settings.model);
-    if (settings.appLanguage !== undefined) store.set('appLanguage', settings.appLanguage);
+    if (settings.appLanguage !== undefined) {
+      store.set('appLanguage', settings.appLanguage);
+      updateTrayMenu(); // Rebuild tray menu in new language
+    }
     return true;
   });
 
@@ -595,6 +618,15 @@ app.on('ready', () => {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
   createWindow();
+});
+
+// On second-instance attempt: focus/restore the existing window
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  }
 });
 
 app.on('window-all-closed', () => {
