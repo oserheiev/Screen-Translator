@@ -502,6 +502,7 @@ body {
   line-height: 1.5;
   color: #000000;
   overflow-y: auto;
+  overflow-x: hidden;
   overflow-wrap: break-word;
   word-break: break-word;
   min-height: 0;
