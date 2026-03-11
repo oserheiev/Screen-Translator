@@ -120,6 +120,8 @@ const App: React.FC = () => {
           entries={history}
           onSelect={(entry: any) => { restoreHistoryEntry(entry); }}
           onClear={clearHistory}
+          onClose={() => setIsHistoryOpen(false)}
+          closeOnSelect={window.innerWidth <= 560}
         />
       </div>
 

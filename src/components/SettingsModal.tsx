@@ -53,6 +53,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content">
+
+        {/* Fixed header — never scrolls */}
         <div className="modal-header">
           <h2>{isFirstRun ? t.welcome : t.settings}</h2>
           {!isFirstRun && (
@@ -60,102 +62,107 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
         </div>
 
-        {isFirstRun && (
-          <p className="modal-subtitle">{t.welcomeSubtitle}</p>
-        )}
-
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="api-key">{t.geminiApiKey}</label>
-            <input
-              id="api-key"
-              type="text"
-              value={key}
-              onChange={e => { setKey(e.target.value); setError(''); }}
-              placeholder={t.apiKeyPlaceholder}
-            />
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t.getApiKeyLink}
-            </a>
-          </div>
-
-          {!isFirstRun && (
-            <>
-              <div className="form-group">
-                <label htmlFor="hotkey">{t.globalHotkey}</label>
-                <input
-                  id="hotkey"
-                  type="text"
-                  value={currentHotkey}
-                  readOnly
-                  placeholder={t.hotkeyPlaceholder}
-                  onKeyDown={e => {
-                    e.preventDefault();
-                    const parts: string[] = [];
-                    if (e.metaKey) parts.push('Command');
-                    if (e.ctrlKey) parts.push('Ctrl');
-                    if (e.altKey) parts.push('Alt');
-                    if (e.shiftKey) parts.push('Shift');
-                    const key = e.key;
-                    if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
-                      parts.push(key.length === 1 ? key.toUpperCase() : key);
-                    }
-                    if (parts.length > 1) setCurrentHotkey(parts.join('+'));
-                  }}
-                />
-                <small className="form-help">{t.hotkeyHelp}</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="app-language">{t.appLanguageLabel}</label>
-                <select
-                  id="app-language"
-                  value={currentLanguage}
-                  onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
-                >
-                  {APP_LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{NATIVE_LANGUAGE_NAMES[lang]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="model">{t.model}</label>
-                <select
-                  id="model"
-                  value={currentModel}
-                  onChange={e => setCurrentModel(e.target.value)}
-                  disabled={availableModels.length === 0}
-                >
-                  {availableModels.length > 0 ? (
-                    availableModels.map(model => (
-                      <option key={model} value={model}>{model}</option>
-                    ))
-                  ) : (
-                    <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
-                  )}
-                </select>
-              </div>
-            </>
+        {/* Scrollable body */}
+        <div className="modal-body">
+          {isFirstRun && (
+            <p className="modal-subtitle">{t.welcomeSubtitle}</p>
           )}
 
-          <div className="modal-footer">
+          {error && <div className="error-message">{error}</div>}
+
+          <form id="settings-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="api-key">{t.geminiApiKey}</label>
+              <input
+                id="api-key"
+                type="text"
+                value={key}
+                onChange={e => { setKey(e.target.value); setError(''); }}
+                placeholder={t.apiKeyPlaceholder}
+              />
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t.getApiKeyLink}
+              </a>
+            </div>
+
             {!isFirstRun && (
-              <button type="button" className="cancel-button" onClick={onClose}>
-                {t.cancel}
-              </button>
+              <>
+                <div className="form-group">
+                  <label htmlFor="hotkey">{t.globalHotkey}</label>
+                  <input
+                    id="hotkey"
+                    type="text"
+                    value={currentHotkey}
+                    readOnly
+                    placeholder={t.hotkeyPlaceholder}
+                    onKeyDown={e => {
+                      e.preventDefault();
+                      const parts: string[] = [];
+                      if (e.metaKey) parts.push('Command');
+                      if (e.ctrlKey) parts.push('Ctrl');
+                      if (e.altKey) parts.push('Alt');
+                      if (e.shiftKey) parts.push('Shift');
+                      const key = e.key;
+                      if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
+                        parts.push(key.length === 1 ? key.toUpperCase() : key);
+                      }
+                      if (parts.length > 1) setCurrentHotkey(parts.join('+'));
+                    }}
+                  />
+                  <small className="form-help">{t.hotkeyHelp}</small>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="app-language">{t.appLanguageLabel}</label>
+                  <select
+                    id="app-language"
+                    value={currentLanguage}
+                    onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
+                  >
+                    {APP_LANGUAGES.map(lang => (
+                      <option key={lang} value={lang}>{NATIVE_LANGUAGE_NAMES[lang]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="model">{t.model}</label>
+                  <select
+                    id="model"
+                    value={currentModel}
+                    onChange={e => setCurrentModel(e.target.value)}
+                    disabled={availableModels.length === 0}
+                  >
+                    {availableModels.length > 0 ? (
+                      availableModels.map(model => (
+                        <option key={model} value={model}>{model}</option>
+                      ))
+                    ) : (
+                      <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
+                    )}
+                  </select>
+                </div>
+              </>
             )}
-            <button type="submit" className="save-button">
-              {isFirstRun ? t.getStarted : t.save}
+          </form>
+        </div>
+
+        {/* Fixed footer — never scrolls */}
+        <div className="modal-footer">
+          {!isFirstRun && (
+            <button type="button" className="cancel-button" onClick={onClose}>
+              {t.cancel}
             </button>
-          </div>
-        </form>
+          )}
+          <button type="submit" form="settings-form" className="save-button">
+            {isFirstRun ? t.getStarted : t.save}
+          </button>
+        </div>
+
       </div>
     </div>
   );

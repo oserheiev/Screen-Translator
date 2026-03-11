@@ -6,6 +6,8 @@ interface HistoryPanelProps {
   entries: HistoryEntry[];
   onSelect: (entry: HistoryEntry) => void;
   onClear: () => void;
+  onClose?: () => void;
+  closeOnSelect?: boolean;
 }
 
 function formatTimestamp(ts: number, today: string, yesterday: string): string {
@@ -22,7 +24,7 @@ function formatTimestamp(ts: number, today: string, yesterday: string): string {
   return `${date.toLocaleDateString()} ${time}`;
 }
 
-const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear }) => {
+const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear, onClose, closeOnSelect }) => {
   const t = useLocale();
   const [selectedId, setSelectedId] = useState<string | null>(
     entries.length > 0 ? entries[0].id : null
@@ -38,6 +40,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear 
   const handleSelect = (entry: HistoryEntry) => {
     setSelectedId(entry.id);
     onSelect(entry);
+    if (closeOnSelect) onClose?.();
   };
 
   const effectiveSelectedId = selectedId ?? (entries[0]?.id ?? null);
@@ -45,7 +48,12 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear 
   return (
     <div className="history-panel">
       <div className="history-panel-header">
-        <span className="history-panel-label">{t.recentHistory}</span>
+        <div className="history-panel-title-row">
+          <span className="history-panel-label">{t.recentHistory}</span>
+          {onClose && (
+            <button className="history-close-btn" onClick={onClose} type="button">×</button>
+          )}
+        </div>
         <div className="history-panel-divider" />
       </div>
 
