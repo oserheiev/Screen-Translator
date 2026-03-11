@@ -71,6 +71,7 @@ const App: React.FC = () => {
   } = useAppContext();
 
   const t = useLocale();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isFirstRun, setIsFirstRun] = useState<boolean>(true);
@@ -81,6 +82,12 @@ const App: React.FC = () => {
       setIsFirstRun(false);
     }
   }, [apiKey]);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { startCapture, onImageCaptured } = useElectronIpc();
 
@@ -121,7 +128,7 @@ const App: React.FC = () => {
           onSelect={(entry: any) => { restoreHistoryEntry(entry); }}
           onClear={clearHistory}
           onClose={() => setIsHistoryOpen(false)}
-          closeOnSelect={window.innerWidth <= 560}
+          closeOnSelect={windowWidth <= 560}
         />
       </div>
 

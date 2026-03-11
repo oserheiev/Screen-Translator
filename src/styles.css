@@ -1133,6 +1133,27 @@ body.alert-mode {
   stroke: #ffffff;
 }
 
+/* ── Responsive: history overlay on medium screens (≤ 900px) ── */
+@media (max-width: 900px) {
+  .app-shell {
+    position: relative;
+  }
+  .history-panel-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .history-panel-wrapper.open {
+    pointer-events: auto;
+  }
+  .history-panel {
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+  }
+}
+
 /* ── Responsive: ≤ 700px — "narrowing" ── */
 @media (max-width: 700px) {
   .app-container {
@@ -1167,27 +1188,6 @@ body.alert-mode {
   }
   .panel-header {
     margin-bottom: 14px;
-  }
-}
-
-/* ── Responsive: history overlay on medium screens (≤ 900px) ── */
-@media (max-width: 900px) {
-  .app-shell {
-    position: relative;
-  }
-  .history-panel-wrapper {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 10;
-    pointer-events: none;
-  }
-  .history-panel-wrapper.open {
-    pointer-events: auto;
-  }
-  .history-panel {
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
   }
 }
 
