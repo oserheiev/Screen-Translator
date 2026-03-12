@@ -47,31 +47,30 @@ const store = new Store<Settings>({
   }
 });
 
-// Base64 helpers for API key obfuscation
+// Base64 obfuscation for API key storage.
+// NOTE: Base64 is NOT encryption — it only prevents the key from being
+// immediately readable in the config file (casual obfuscation).
 function encodeApiKey(plain: string): string {
   return Buffer.from(plain).toString('base64');
 }
 
 function decodeApiKey(encoded: string): string {
-  return Buffer.from(encoded, 'base64').toString('utf-8');
-}
-
-function isBase64Encoded(value: string): boolean {
   try {
-    const decoded = Buffer.from(value, 'base64').toString('utf-8');
-    return Buffer.from(decoded).toString('base64') === value;
+    return Buffer.from(encoded, 'base64').toString('utf-8');
   } catch {
-    return false;
+    return encoded;
   }
 }
 
-// Migrate plain-text API key from previous versions to Base64
+// Migrate plain-text API key from previous versions to Base64.
+// Uses an explicit flag to avoid false positives with keys that happen to be valid Base64.
 function migrateApiKey() {
+  if ((store as any).get('apiKeyMigrated')) return;
   const raw = store.get('apiKey');
-  if (!raw) return;
-  if (!isBase64Encoded(raw)) {
+  if (raw) {
     store.set('apiKey', encodeApiKey(raw));
   }
+  (store as any).set('apiKeyMigrated', true);
 }
 
 migrateApiKey();
@@ -492,8 +491,9 @@ function setupIpcHandlers() {
   });
 
   ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, () => {
+    const storedKey = store.get('apiKey');
     return {
-      apiKey: store.get('apiKey') ? decodeApiKey(store.get('apiKey')) : '',
+      apiKey: storedKey ? decodeApiKey(storedKey) : '',
       sourceLanguage: store.get('sourceLanguage'),
       targetLanguage: store.get('targetLanguage'),
       hotkey: store.get('hotkey'),
