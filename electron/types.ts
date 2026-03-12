@@ -42,7 +42,7 @@ export interface Settings {
   hotkey: string;
   theme: Theme;
   model: string;
-  appLanguage: AppLanguage;
+  appLanguage?: AppLanguage;
   history?: any[];
 }
 
