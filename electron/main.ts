@@ -42,8 +42,7 @@ const store = new Store<Settings>({
     targetLanguage: 'English',
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
     theme: 'system',
-    model: 'gemini-2.5-flash',
-    appLanguage: 'English'
+    model: 'gemini-2.5-flash'
   }
 });
 
@@ -642,8 +641,7 @@ function setupIpcHandlers() {
 
 // App lifecycle events
 app.on('ready', () => {
-  // Auto-detect system language on first run
-  if (!store.has('appLanguage')) {
+  if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
   createWindow();
