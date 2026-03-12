@@ -225,17 +225,23 @@ class ScreenCapture {
     }
 
     async getMediaStream(source: Electron.DesktopCapturerSource): Promise<MediaStream> {
-        // Use proper Electron desktop capture constraints format
+        // Calculate physical pixel dimensions to match the actual screen resolution.
+        // On scaled displays (e.g. Windows 150%), CSS pixels differ from physical pixels.
+        // Requesting exact physical dimensions prevents green padding artifacts.
+        const dpr = window.devicePixelRatio || 1;
+        const physicalWidth = Math.round(window.screen.width * dpr);
+        const physicalHeight = Math.round(window.screen.height * dpr);
+
         const constraints: any = {
             audio: false,
             video: {
                 mandatory: {
                     chromeMediaSource: 'desktop',
                     chromeMediaSourceId: source.id,
-                    minWidth: 1280,
-                    maxWidth: 3840,
-                    minHeight: 720,
-                    maxHeight: 2160,
+                    minWidth: physicalWidth,
+                    maxWidth: physicalWidth,
+                    minHeight: physicalHeight,
+                    maxHeight: physicalHeight,
                     maxFrameRate: 1
                 }
             }
