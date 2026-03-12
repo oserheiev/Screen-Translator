@@ -47,6 +47,34 @@ const store = new Store<Settings>({
   }
 });
 
+// Base64 obfuscation for API key storage.
+// NOTE: Base64 is NOT encryption — it only prevents the key from being
+// immediately readable in the config file (casual obfuscation).
+function encodeApiKey(plain: string): string {
+  return Buffer.from(plain).toString('base64');
+}
+
+function decodeApiKey(encoded: string): string {
+  try {
+    return Buffer.from(encoded, 'base64').toString('utf-8');
+  } catch {
+    return encoded;
+  }
+}
+
+// Migrate plain-text API key from previous versions to Base64.
+// Uses an explicit flag to avoid false positives with keys that happen to be valid Base64.
+function migrateApiKey() {
+  if ((store as any).get('apiKeyMigrated')) return;
+  const raw = store.get('apiKey');
+  if (raw) {
+    store.set('apiKey', encodeApiKey(raw));
+  }
+  (store as any).set('apiKeyMigrated', true);
+}
+
+migrateApiKey();
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureWindows: Map<number, BrowserWindow> = new Map();
@@ -463,8 +491,9 @@ function setupIpcHandlers() {
   });
 
   ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, () => {
+    const storedKey = store.get('apiKey');
     return {
-      apiKey: store.get('apiKey'),
+      apiKey: storedKey ? decodeApiKey(storedKey) : '',
       sourceLanguage: store.get('sourceLanguage'),
       targetLanguage: store.get('targetLanguage'),
       hotkey: store.get('hotkey'),
@@ -475,7 +504,7 @@ function setupIpcHandlers() {
   });
 
   ipcMain.handle(IPC_CHANNELS.SAVE_SETTINGS, (_, settings: Partial<Settings>) => {
-    if (settings.apiKey !== undefined) store.set('apiKey', settings.apiKey);
+    if (settings.apiKey !== undefined) store.set('apiKey', settings.apiKey ? encodeApiKey(settings.apiKey) : '');
     if (settings.sourceLanguage !== undefined) store.set('sourceLanguage', settings.sourceLanguage);
     if (settings.targetLanguage !== undefined) store.set('targetLanguage', settings.targetLanguage);
     if (settings.hotkey !== undefined) {
