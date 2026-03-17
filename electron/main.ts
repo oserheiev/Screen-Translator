@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, systemPreferences, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, Tray, Menu, systemPreferences, shell } from 'electron';
+import { keyboardHook } from './keyboardHook';
 import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
@@ -198,21 +199,10 @@ function registerGlobalShortcut() {
     return;
   }
 
-  globalShortcut.unregisterAll();
-
-  try {
-    const success = globalShortcut.register(hotkey, () => {
-      startScreenCapture();
-    });
-
-    if (!success) {
-      console.error('Failed to register global shortcut - hotkey may be in use:', hotkey);
-    } else {
-      console.log('Successfully registered global shortcut:', hotkey);
-    }
-  } catch (error) {
-    console.error('Failed to register global shortcut:', error);
-  }
+  keyboardHook.unregisterAll();
+  keyboardHook.registerHotkey(hotkey, () => {
+    startScreenCapture();
+  });
 }
 
 async function requestScreenCapturePermission(): Promise<boolean> {
@@ -644,6 +634,7 @@ app.on('ready', () => {
   if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
+  keyboardHook.start();
   createWindow();
 });
 
@@ -672,7 +663,7 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   app.quitting = true;
-  globalShortcut.unregisterAll();
+  keyboardHook.stop();
 });
 
 declare global {
