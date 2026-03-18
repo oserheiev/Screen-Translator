@@ -42,6 +42,13 @@ const fr: LocaleStrings = {
   close: 'Fermer',
   openSettings: 'Ouvrir les paramètres',
 
+  accessibilityPermissionTitle: "Permission d'accessibilité requise",
+  accessibilityPermissionDescription: "Screen Translator a besoin de la permission d'accessibilité pour enregistrer le raccourci clavier global. Sans elle, le raccourci ne fonctionnera pas.",
+  accessibilityPermissionStep1: 'Cliquez sur Ouvrir les paramètres ci-dessous',
+  accessibilityPermissionStep2: "Trouvez Screen Translator dans la liste Accessibilité et activez le bouton",
+  accessibilityPermissionStep3: "Redémarrez l'application",
+  accessibilityWarningTooltip: "Raccourci indisponible — cliquez pour accorder la permission d'accessibilité",
+
   recentHistory: 'Historique récent',
   noHistory: "Pas encore d'historique",
   clearHistory: '🗑 Effacer tout l\'historique',

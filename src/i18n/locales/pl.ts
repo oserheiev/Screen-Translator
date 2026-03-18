@@ -42,6 +42,13 @@ const pl: LocaleStrings = {
   close: 'Zamknij',
   openSettings: 'Otwórz ustawienia',
 
+  accessibilityPermissionTitle: 'Wymagane uprawnienie ułatwień dostępu',
+  accessibilityPermissionDescription: 'Screen Translator potrzebuje uprawnienia ułatwień dostępu, aby zarejestrować globalny skrót klawiszowy. Bez niego skrót nie będzie działał.',
+  accessibilityPermissionStep1: 'Kliknij Otwórz ustawienia poniżej',
+  accessibilityPermissionStep2: 'Znajdź Screen Translator na liście Ułatwienia dostępu i włącz przełącznik',
+  accessibilityPermissionStep3: 'Uruchom ponownie aplikację',
+  accessibilityWarningTooltip: 'Skrót niedostępny — kliknij, aby przyznać uprawnienie ułatwień dostępu',
+
   recentHistory: 'Ostatnia historia',
   noHistory: 'Brak historii',
   clearHistory: '🗑 Wyczyść całą historię',

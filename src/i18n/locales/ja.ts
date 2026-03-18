@@ -42,6 +42,13 @@ const ja: LocaleStrings = {
   close: '閉じる',
   openSettings: '設定を開く',
 
+  accessibilityPermissionTitle: 'アクセシビリティ権限が必要です',
+  accessibilityPermissionDescription: 'Screen Translator はグローバルホットキーを登録するためにアクセシビリティ権限が必要です。権限がないとホットキーが機能しません。',
+  accessibilityPermissionStep1: '下の「設定を開く」をクリックしてください',
+  accessibilityPermissionStep2: 'アクセシビリティリストで Screen Translator を見つけてトグルを有効にしてください',
+  accessibilityPermissionStep3: 'アプリを再起動してください',
+  accessibilityWarningTooltip: 'ホットキーが無効です — クリックしてアクセシビリティ権限を付与してください',
+
   recentHistory: '最近の履歴',
   noHistory: '履歴はまだありません',
   clearHistory: '🗑 履歴をすべて削除',

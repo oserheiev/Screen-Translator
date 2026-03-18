@@ -27,6 +27,9 @@ const KEY_MAP: Record<string, number> = {
   f4: UiohookKey.F4, f5: UiohookKey.F5, f6: UiohookKey.F6,
   f7: UiohookKey.F7, f8: UiohookKey.F8, f9: UiohookKey.F9,
   f10: UiohookKey.F10, f11: UiohookKey.F11, f12: UiohookKey.F12,
+  f13: UiohookKey.F13, f14: UiohookKey.F14, f15: UiohookKey.F15,
+  f16: UiohookKey.F16, f17: UiohookKey.F17, f18: UiohookKey.F18,
+  f19: UiohookKey.F19, f20: UiohookKey.F20,
   ' ': UiohookKey.Space,
   tab: UiohookKey.Tab,
   enter: UiohookKey.Enter,
@@ -43,6 +46,30 @@ const KEY_MAP: Record<string, number> = {
   arrowleft: UiohookKey.ArrowLeft,
   arrowright: UiohookKey.ArrowRight,
   printscreen: UiohookKey.PrintScreen,
+  // Punctuation and symbols (DOM KeyboardEvent.key names)
+  ';': UiohookKey.Semicolon,
+  '=': UiohookKey.Equal,
+  ',': UiohookKey.Comma,
+  '-': UiohookKey.Minus,
+  '.': UiohookKey.Period,
+  '/': UiohookKey.Slash,
+  '`': UiohookKey.Backquote,
+  '[': UiohookKey.BracketLeft,
+  '\\': UiohookKey.Backslash,
+  ']': UiohookKey.BracketRight,
+  "'": UiohookKey.Quote,
+  // Numpad
+  'numpad0': UiohookKey.Numpad0, 'numpad1': UiohookKey.Numpad1,
+  'numpad2': UiohookKey.Numpad2, 'numpad3': UiohookKey.Numpad3,
+  'numpad4': UiohookKey.Numpad4, 'numpad5': UiohookKey.Numpad5,
+  'numpad6': UiohookKey.Numpad6, 'numpad7': UiohookKey.Numpad7,
+  'numpad8': UiohookKey.Numpad8, 'numpad9': UiohookKey.Numpad9,
+  'numpadmultiply': UiohookKey.NumpadMultiply,
+  'numpadadd': UiohookKey.NumpadAdd,
+  'numpadsubtract': UiohookKey.NumpadSubtract,
+  'numpaddecimal': UiohookKey.NumpadDecimal,
+  'numpaddivide': UiohookKey.NumpadDivide,
+  'numpadenter': UiohookKey.NumpadEnter,
 };
 
 function parseHotkey(hotkeyString: string): ParsedHotkey | null {
@@ -79,13 +106,14 @@ class KeyboardHookService {
   private throttleMs = 500;
   private keydownHandler: ((event: UiohookKeyboardEvent) => void) | null = null;
 
-  start(): void {
-    if (this.started) return;
+  start(): boolean {
+    if (this.started) return true;
 
     if (process.platform === 'darwin') {
-      const trusted = systemPreferences.isTrustedAccessibilityClient(true);
+      const trusted = systemPreferences.isTrustedAccessibilityClient(false);
       if (!trusted) {
-        console.warn('Accessibility permission not granted. Keyboard hook may not work on macOS.');
+        console.warn('Accessibility permission not granted. Keyboard hook will not start on macOS.');
+        return false;
       }
     }
 
@@ -106,10 +134,17 @@ class KeyboardHookService {
       }
     };
 
-    uIOhook.on('keydown', this.keydownHandler);
-    uIOhook.start();
-    this.started = true;
-    console.log('Keyboard hook started');
+    try {
+      uIOhook.on('keydown', this.keydownHandler);
+      uIOhook.start();
+      this.started = true;
+      console.log('Keyboard hook started');
+      return true;
+    } catch (error) {
+      console.error('Failed to start keyboard hook:', error);
+      this.keydownHandler = null;
+      return false;
+    }
   }
 
   stop(): void {
@@ -123,15 +158,17 @@ class KeyboardHookService {
     console.log('Keyboard hook stopped');
   }
 
-  registerHotkey(hotkeyString: string, callback: () => void): void {
+  registerHotkey(hotkeyString: string, callback: () => void): boolean {
     this.parsedHotkey = parseHotkey(hotkeyString);
     this.callback = callback;
 
     if (!this.parsedHotkey) {
       console.error('Failed to parse hotkey:', hotkeyString);
-    } else {
-      console.log('Registered keyboard hook hotkey:', hotkeyString);
+      return false;
     }
+
+    console.log('Registered keyboard hook hotkey:', hotkeyString);
+    return true;
   }
 
   unregisterAll(): void {

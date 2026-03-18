@@ -42,6 +42,13 @@ const ko: LocaleStrings = {
   close: '닫기',
   openSettings: '설정 열기',
 
+  accessibilityPermissionTitle: '손쉬운 사용 권한 필요',
+  accessibilityPermissionDescription: 'Screen Translator는 전역 단축키를 등록하기 위해 손쉬운 사용 권한이 필요합니다. 이 권한이 없으면 단축키가 작동하지 않습니다.',
+  accessibilityPermissionStep1: '아래의 설정 열기를 클릭하세요',
+  accessibilityPermissionStep2: '손쉬운 사용 목록에서 Screen Translator를 찾아 토글을 활성화하세요',
+  accessibilityPermissionStep3: '앱을 재시작하세요',
+  accessibilityWarningTooltip: '단축키 사용 불가 — 클릭하여 손쉬운 사용 권한을 부여하세요',
+
   recentHistory: '최근 기록',
   noHistory: '기록이 없습니다',
   clearHistory: '🗑 기록 모두 지우기',

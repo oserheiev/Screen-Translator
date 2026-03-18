@@ -64,6 +64,9 @@
       "target": "nsis",
       "icon": "assets/icons/icon.png"
     },
+    "asarUnpack": [
+      "**/uiohook-napi/**"
+    ],
     "files": [
       "build/**/*",
       "assets/**/*",

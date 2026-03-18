@@ -3,14 +3,47 @@ import { useLocale } from '../i18n/useLocale';
 
 interface PermissionModalProps {
   platform: string;
+  type?: 'screen' | 'accessibility';
   onOpenSettings: () => void;
   onClose: () => void;
 }
 
-const PermissionModal: React.FC<PermissionModalProps> = ({ platform, onOpenSettings, onClose }) => {
+const PermissionModal: React.FC<PermissionModalProps> = ({ platform, type = 'screen', onOpenSettings, onClose }) => {
   const t = useLocale();
   const isMac = platform === 'darwin';
   const isWindows = platform === 'win32';
+
+  if (type === 'accessibility') {
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content permission-modal">
+          <div className="modal-header">
+            <h2>{t.accessibilityPermissionTitle}</h2>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
+
+          <div className="modal-body">
+            <p className="modal-subtitle">{t.accessibilityPermissionDescription}</p>
+
+            <ol className="permission-steps">
+              <li>{t.accessibilityPermissionStep1}</li>
+              <li>{t.accessibilityPermissionStep2}</li>
+              <li>{t.accessibilityPermissionStep3}</li>
+            </ol>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="cancel-button" onClick={onClose}>
+              {t.close}
+            </button>
+            <button type="button" className="save-button" onClick={onOpenSettings}>
+              {t.openSettings}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay">

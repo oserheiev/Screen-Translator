@@ -33,7 +33,7 @@ export interface LocaleStrings {
   save: string;
   getStarted: string;
 
-  // PermissionModal
+  // PermissionModal — screen recording
   permissionTitle: string;
   permissionDescription: string;
   permissionMacStep1: string;
@@ -46,6 +46,14 @@ export interface LocaleStrings {
   permissionGeneric: string;
   close: string;
   openSettings: string;
+
+  // PermissionModal — accessibility (macOS hotkey)
+  accessibilityPermissionTitle: string;
+  accessibilityPermissionDescription: string;
+  accessibilityPermissionStep1: string;
+  accessibilityPermissionStep2: string;
+  accessibilityPermissionStep3: string;
+  accessibilityWarningTooltip: string;
 
   // HistoryPanel
   recentHistory: string;

@@ -42,6 +42,13 @@ const it: LocaleStrings = {
   close: 'Chiudi',
   openSettings: 'Apri impostazioni',
 
+  accessibilityPermissionTitle: 'Autorizzazione Accessibilità Richiesta',
+  accessibilityPermissionDescription: 'Screen Translator richiede l\'autorizzazione Accessibilità per registrare il tasto di scelta rapida globale. Senza di essa, il tasto non funzionerà.',
+  accessibilityPermissionStep1: 'Fai clic su Apri Impostazioni in basso',
+  accessibilityPermissionStep2: 'Trova Screen Translator nell\'elenco Accessibilità e abilita l\'interruttore',
+  accessibilityPermissionStep3: 'Riavvia l\'app',
+  accessibilityWarningTooltip: 'Tasto rapido non disponibile — fai clic per concedere l\'autorizzazione Accessibilità',
+
   recentHistory: 'Cronologia recente',
   noHistory: 'Nessuna cronologia',
   clearHistory: '🗑 Cancella tutta la cronologia',

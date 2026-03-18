@@ -42,6 +42,13 @@ const zh: LocaleStrings = {
   close: '关闭',
   openSettings: '打开设置',
 
+  accessibilityPermissionTitle: '需要辅助功能权限',
+  accessibilityPermissionDescription: 'Screen Translator 需要辅助功能权限才能注册全局热键。没有此权限，热键将无法使用。',
+  accessibilityPermissionStep1: '点击下方"打开设置"',
+  accessibilityPermissionStep2: '在"辅助功能"列表中找到 Screen Translator 并启用开关',
+  accessibilityPermissionStep3: '重启应用',
+  accessibilityWarningTooltip: '快捷键不可用 — 点击以授予辅助功能权限',
+
   recentHistory: '最近历史',
   noHistory: '暂无历史记录',
   clearHistory: '🗑 清除所有历史',
