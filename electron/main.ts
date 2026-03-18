@@ -240,6 +240,18 @@ async function requestScreenCapturePermission(): Promise<boolean> {
   return true;
 }
 
+function findSourceForDisplay(display: Electron.Display, sources: Electron.DesktopCapturerSource[]): Electron.DesktopCapturerSource | null {
+  const screenSources = sources.filter((s: any) => s.id.startsWith('screen:'));
+  const match = screenSources.find((source: any) => {
+    if (source.id.includes(display.id.toString())) return true;
+    // @ts-ignore - display_id may be present on some platforms
+    if (source.display_id === `screen:${display.id}:0`) return true;
+    if (source.name && source.name.includes(display.id.toString())) return true;
+    return false;
+  });
+  return match || screenSources[0] || null;
+}
+
 async function startScreenCapture() {
   if (isCapturing) return;
   isCapturing = true;
@@ -257,6 +269,29 @@ async function startScreenCapture() {
   console.log(`Found ${displays.length} displays`);
 
   try {
+    // Capture screenshots in main process before creating overlay windows.
+    // This avoids getUserMedia/video stream overhead and is faster.
+    // Each display gets its own getSources() call with the exact physical pixel dimensions
+    // so thumbnails are never upscaled or aspect-ratio-constrained by another display's size.
+    const { desktopCapturer } = require('electron');
+
+    const screenshotsByDisplayId = new Map<number, string>();
+    await Promise.all(displays.map(async (display) => {
+      const physWidth = Math.round(display.bounds.width * display.scaleFactor);
+      const physHeight = Math.round(display.bounds.height * display.scaleFactor);
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: physWidth, height: physHeight }
+      });
+      const source = findSourceForDisplay(display, sources);
+      if (source) {
+        screenshotsByDisplayId.set(display.id, source.thumbnail.toDataURL());
+        console.log(`Captured screenshot for display ${display.id} at ${physWidth}x${physHeight}`);
+      } else {
+        console.warn(`No source found for display ${display.id}`);
+      }
+    }));
+
     const windowCreationPromises = displays.map(async (display) => {
       const window = await createCaptureWindowForDisplay(display);
       captureWindows.set(display.id, window);
@@ -266,10 +301,23 @@ async function startScreenCapture() {
     const windowResults = await Promise.all(windowCreationPromises);
 
     const setupPromises = windowResults.map(async ({ window, displayId }) => {
-      const [_] = await Promise.all([
-        loadCaptureInterfaceForWindow(window),
-        Promise.resolve(setupCaptureWindowEvents(window, displayId))
-      ]);
+      await loadCaptureInterfaceForWindow(window);
+      setupCaptureWindowEvents(window, displayId);
+
+      // Send pre-captured screenshot along with display bounds to the window renderer
+      const screenshot = screenshotsByDisplayId.get(displayId);
+      const display = displays.find(d => d.id === displayId)!;
+      if (screenshot) {
+        window.webContents.send(IPC_CHANNELS.SCREENSHOT_READY, {
+          dataUrl: screenshot,
+          displayId,
+          displayX: display.bounds.x,
+          displayY: display.bounds.y,
+        });
+      } else {
+        console.error(`No screenshot available for display ${displayId}`);
+        window.webContents.send(IPC_CHANNELS.CAPTURE_ERROR, 'Failed to capture screenshot for this display');
+      }
     });
 
     await Promise.all(setupPromises);
