@@ -1,6 +1,6 @@
 {
   "name": "screen-translator",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A desktop application that allows you to capture text from any of your screens and translate it between multiple languages",
   "main": "build/electron/main.js",
   "type": "commonjs",
@@ -43,7 +43,6 @@
     "css-loader": "^6.10.0",
     "electron": "39.7.0",
     "electron-builder": "^25.0.0",
-    "dmg-license": "^1.0.11",
     "html-webpack-plugin": "^5.6.0",
     "process": "^0.11.10",
     "style-loader": "^3.3.4",
@@ -51,6 +50,9 @@
     "typescript": "^5.4.2",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4"
+  },
+  "optionalDependencies": {
+    "dmg-license": "^1.0.11"
   },
   "build": {
     "appId": "com.screentranslator.app",
