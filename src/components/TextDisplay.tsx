@@ -6,6 +6,7 @@ interface TextDisplayProps {
   text: string;
   onTextEdit?: (text: string) => void;
   disabled?: boolean;
+  isLoading?: boolean;
 }
 
 const CopyIcon = () => (
@@ -21,7 +22,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = false }) => {
+const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = false, isLoading = false }) => {
   const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
@@ -76,6 +77,13 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
           <span className="source-placeholder">{t.typePlaceholder}</span>
         )}
       </div>
+      {isLoading && (
+        <div className="translation-skeleton-overlay">
+          <div className="skeleton-line" />
+          <div className="skeleton-line" />
+          <div className="skeleton-line" />
+        </div>
+      )}
     </div>
   );
 };

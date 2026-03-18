@@ -52,6 +52,7 @@ const App: React.FC = () => {
     apiKey,
     hotkey,
     isProcessing,
+    isCaptureProcessing,
     error,
     history,
     setOriginalText,
@@ -247,6 +248,7 @@ const App: React.FC = () => {
             text={originalText}
             onTextEdit={setOriginalText}
             disabled={isProcessing}
+            isLoading={isCaptureProcessing}
           />
           <TranslationDisplay
             text={translatedText}

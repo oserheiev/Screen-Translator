@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, Tray, Menu, systemPreferences, shell } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, screen, Tray, Menu, systemPreferences, shell } from 'electron';
 import { keyboardHook } from './keyboardHook';
 import * as path from 'path';
 import * as url from 'url';
@@ -342,6 +342,8 @@ async function closeAllCaptureWindows() {
   if (isClosingWindows || captureWindows.size === 0) return;
   isClosingWindows = true;
 
+  globalShortcut.unregister('Escape');
+
   try {
     console.log(`Closing ${captureWindows.size} capture windows`);
     const windows = Array.from(captureWindows.values());
@@ -444,6 +446,8 @@ function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: numbe
 }
 
 function showAllCaptureWindows() {
+  globalShortcut.register('Escape', () => closeAllCaptureWindows());
+
   captureWindows.forEach((captureWindow, displayId) => {
     if (captureWindow && !captureWindow.isDestroyed()) {
       let shown = false;
