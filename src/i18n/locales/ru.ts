@@ -42,6 +42,13 @@ const ru: LocaleStrings = {
   close: 'Закрыть',
   openSettings: 'Открыть настройки',
 
+  accessibilityPermissionTitle: 'Требуется разрешение на доступ',
+  accessibilityPermissionDescription: 'Screen Translator требует разрешение «Универсальный доступ» для регистрации глобальной горячей клавиши. Без него горячая клавиша не будет работать.',
+  accessibilityPermissionStep1: 'Нажмите «Открыть настройки» ниже',
+  accessibilityPermissionStep2: 'Найдите Screen Translator в списке «Универсальный доступ» и включите переключатель',
+  accessibilityPermissionStep3: 'Перезапустите приложение',
+  accessibilityWarningTooltip: 'Горячая клавиша недоступна — нажмите, чтобы выдать разрешение',
+
   recentHistory: 'Недавняя история',
   noHistory: 'История пуста',
   clearHistory: '🗑 Очистить историю',

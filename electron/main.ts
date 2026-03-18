@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, Tray, Menu, systemPreferences, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, Tray, Menu, systemPreferences, shell } from 'electron';
+import { keyboardHook } from './keyboardHook';
 import * as path from 'path';
 import * as url from 'url';
 import Store from 'electron-store';
@@ -77,6 +78,7 @@ migrateApiKey();
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureWindows: Map<number, BrowserWindow> = new Map();
+let isCapturing = false;
 
 function createWindow() {
   // Create the browser window
@@ -198,20 +200,16 @@ function registerGlobalShortcut() {
     return;
   }
 
-  globalShortcut.unregisterAll();
+  keyboardHook.unregisterAll();
+  const registered = keyboardHook.registerHotkey(hotkey, () => {
+    startScreenCapture();
+  });
 
-  try {
-    const success = globalShortcut.register(hotkey, () => {
-      startScreenCapture();
-    });
-
-    if (!success) {
-      console.error('Failed to register global shortcut - hotkey may be in use:', hotkey);
-    } else {
-      console.log('Successfully registered global shortcut:', hotkey);
-    }
-  } catch (error) {
-    console.error('Failed to register global shortcut:', error);
+  if (!registered && mainWindow) {
+    mainWindow.webContents.send(
+      IPC_CHANNELS.CAPTURE_ERROR,
+      `Hotkey "${hotkey}" could not be registered: unknown key. Please update it in Settings.`
+    );
   }
 }
 
@@ -243,10 +241,13 @@ async function requestScreenCapturePermission(): Promise<boolean> {
 }
 
 async function startScreenCapture() {
+  if (isCapturing) return;
+  isCapturing = true;
   console.log('Starting screen capture...');
 
   const hasPermission = await requestScreenCapturePermission();
   if (!hasPermission) {
+    isCapturing = false;
     return;
   }
 
@@ -278,6 +279,7 @@ async function startScreenCapture() {
     console.log(`Initialized capture windows for ${captureWindows.size} displays`);
   } catch (error) {
     console.error('Failed to start screen capture:', error);
+    isCapturing = false;
     if (mainWindow) {
       mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
         `Failed to start screen capture: ${error instanceof Error ? error.message : String(error)}`
@@ -312,6 +314,7 @@ async function closeAllCaptureWindows() {
     }
   } finally {
     isClosingWindows = false;
+    isCapturing = false;
   }
 }
 
@@ -637,6 +640,7 @@ function setupIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.GET_VERSION, () => {
     return app.getVersion();
   });
+
 }
 
 // App lifecycle events
@@ -644,7 +648,14 @@ app.on('ready', () => {
   if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
+  const hookStarted = keyboardHook.start();
   createWindow();
+
+  if (!hookStarted && process.platform === 'darwin' && mainWindow) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      mainWindow?.webContents.send(IPC_CHANNELS.ACCESSIBILITY_ERROR);
+    });
+  }
 });
 
 // On second-instance attempt: focus/restore the existing window
@@ -672,7 +683,7 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   app.quitting = true;
-  globalShortcut.unregisterAll();
+  keyboardHook.stop();
 });
 
 declare global {

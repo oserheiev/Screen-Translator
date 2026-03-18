@@ -69,7 +69,7 @@ contextBridge.exposeInMainWorld(
     },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
-      const validChannels = ['image-captured', 'capture-error', 'permission-error', 'update-available', 'update-progress', 'update-error'];
+      const validChannels = ['image-captured', 'capture-error', 'permission-error', 'accessibility-error', 'update-available', 'update-progress', 'update-error'];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
         const subscription = (_event: any, ...args: any[]) => callback(...args);

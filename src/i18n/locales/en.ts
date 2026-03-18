@@ -42,6 +42,13 @@ const en: LocaleStrings = {
   close: 'Close',
   openSettings: 'Open Settings',
 
+  accessibilityPermissionTitle: 'Accessibility Permission Required',
+  accessibilityPermissionDescription: 'Screen Translator needs Accessibility permission to register the global hotkey. Without it, the hotkey will not work.',
+  accessibilityPermissionStep1: 'Click Open Settings below',
+  accessibilityPermissionStep2: 'Find Screen Translator in the Accessibility list and enable the toggle',
+  accessibilityPermissionStep3: 'Restart the app',
+  accessibilityWarningTooltip: 'Hotkey unavailable — click to grant Accessibility permission',
+
   recentHistory: 'Recent History',
   noHistory: 'No history yet',
   clearHistory: '🗑 Clear All History',

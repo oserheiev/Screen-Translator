@@ -36,6 +36,13 @@ const CameraIcon = () => (
   </svg>
 );
 
+const KeyboardWarningIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" />
+  </svg>
+);
+
 const App: React.FC = () => {
   const {
     originalText,
@@ -76,6 +83,8 @@ const App: React.FC = () => {
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isFirstRun, setIsFirstRun] = useState<boolean>(true);
   const [permissionPlatform, setPermissionPlatform] = useState<string | null>(null);
+  const [accessibilityDenied, setAccessibilityDenied] = useState<boolean>(false);
+  const [accessibilitySkipped, setAccessibilitySkipped] = useState<boolean>(false);
 
   useEffect(() => {
     if (apiKey) {
@@ -106,6 +115,16 @@ const App: React.FC = () => {
     });
     return () => { remove(); };
   }, []);
+
+  useEffect(() => {
+    const electron = (window as any).electron;
+    if (!electron?.on) return;
+    const remove = electron.on('accessibility-error', () => {
+      setAccessibilityDenied(true);
+    });
+    return () => { remove(); };
+  }, []);
+
 
   const handleCapture = async () => { await startCapture(); };
 
@@ -161,6 +180,15 @@ const App: React.FC = () => {
             {updateStatus === 'ready' && (
               <button className="update-pill update-pill--ready" onClick={handleInstallUpdate} title={t.restartButton}>
                 {t.restartButton}
+              </button>
+            )}
+            {accessibilitySkipped && (
+              <button
+                className="header-icon-btn header-icon-btn--warning"
+                title={t.accessibilityWarningTooltip}
+                onClick={() => setAccessibilityDenied(true)}
+              >
+                <KeyboardWarningIcon />
               </button>
             )}
             <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title={t.settingsTooltip}>
@@ -242,7 +270,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {/* Permission modal */}
+        {/* Permission modal — screen recording */}
         {permissionPlatform && (
           <PermissionModal
             platform={permissionPlatform}
@@ -254,6 +282,23 @@ const App: React.FC = () => {
               electron?.shell?.openExternal(url);
             }}
             onClose={() => setPermissionPlatform(null)}
+          />
+        )}
+
+        {/* Permission modal — accessibility (macOS hotkey) */}
+        {accessibilityDenied && (
+          <PermissionModal
+            platform="darwin"
+            type="accessibility"
+            onOpenSettings={() => {
+              const electron = (window as any).electron;
+              electron?.shell?.openExternal(
+                'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility'
+              );
+              setAccessibilityDenied(false);
+              setAccessibilitySkipped(true);
+            }}
+            onClose={() => { setAccessibilityDenied(false); setAccessibilitySkipped(true); }}
           />
         )}
 

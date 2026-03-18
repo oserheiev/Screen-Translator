@@ -42,6 +42,13 @@ const de: LocaleStrings = {
   close: 'Schließen',
   openSettings: 'Einstellungen öffnen',
 
+  accessibilityPermissionTitle: 'Bedienungshilfen-Berechtigung erforderlich',
+  accessibilityPermissionDescription: 'Screen Translator benötigt die Bedienungshilfen-Berechtigung, um den globalen Hotkey zu registrieren. Ohne sie funktioniert der Hotkey nicht.',
+  accessibilityPermissionStep1: 'Klicken Sie unten auf Einstellungen öffnen',
+  accessibilityPermissionStep2: 'Finden Sie Screen Translator in der Bedienungshilfen-Liste und aktivieren Sie den Schalter',
+  accessibilityPermissionStep3: 'Starten Sie die App neu',
+  accessibilityWarningTooltip: 'Hotkey nicht verfügbar — klicken, um Bedienungshilfen-Berechtigung zu erteilen',
+
   recentHistory: 'Verlauf',
   noHistory: 'Noch kein Verlauf',
   clearHistory: '🗑 Verlauf löschen',

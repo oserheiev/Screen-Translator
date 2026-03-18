@@ -42,6 +42,13 @@ const pt: LocaleStrings = {
   close: 'Fechar',
   openSettings: 'Abrir configurações',
 
+  accessibilityPermissionTitle: 'Permissão de Acessibilidade Necessária',
+  accessibilityPermissionDescription: 'Screen Translator precisa de permissão de Acessibilidade para registrar o atalho de teclado global. Sem ela, o atalho não funcionará.',
+  accessibilityPermissionStep1: 'Clique em Abrir Configurações abaixo',
+  accessibilityPermissionStep2: 'Encontre Screen Translator na lista de Acessibilidade e ative o botão',
+  accessibilityPermissionStep3: 'Reinicie o aplicativo',
+  accessibilityWarningTooltip: 'Atalho indisponível — clique para conceder permissão de Acessibilidade',
+
   recentHistory: 'Histórico recente',
   noHistory: 'Sem histórico ainda',
   clearHistory: '🗑 Limpar todo o histórico',

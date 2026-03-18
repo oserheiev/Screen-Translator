@@ -42,6 +42,13 @@ const uk: LocaleStrings = {
   close: 'Закрити',
   openSettings: 'Відкрити налаштування',
 
+  accessibilityPermissionTitle: 'Потрібен дозвіл на доступ',
+  accessibilityPermissionDescription: 'Screen Translator потребує дозволу «Спеціальні можливості» для реєстрації глобального скорочення клавіш. Без нього гаряча клавіша не працюватиме.',
+  accessibilityPermissionStep1: 'Натисніть «Відкрити налаштування» нижче',
+  accessibilityPermissionStep2: 'Знайдіть Screen Translator у списку «Спеціальні можливості» та увімкніть перемикач',
+  accessibilityPermissionStep3: 'Перезапустіть застосунок',
+  accessibilityWarningTooltip: 'Гаряча клавіша недоступна — натисніть, щоб надати дозвіл',
+
   recentHistory: 'Нещодавня історія',
   noHistory: 'Історія порожня',
   clearHistory: '🗑 Очистити історію',
