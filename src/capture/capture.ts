@@ -19,6 +19,13 @@ interface SelectionBounds extends Point {
     height: number;
 }
 
+interface ScreenshotPayload {
+    dataUrl: string;
+    displayId: number;
+    displayX: number;
+    displayY: number;
+}
+
 class ScreenCapture {
     private isSelecting: boolean = false;
     private isCompleting: boolean = false;
@@ -28,17 +35,14 @@ class ScreenCapture {
     private imageElement: HTMLImageElement | null = null;
     private retryCount: number = 0;
     private maxRetries: number = 3;
-    private currentDisplay: Electron.Display | null = null;
-    private allDisplays: Electron.Display[] = [];
+    private displayId: number = 0;
     private displayOffset: Point = { x: 0, y: 0 };
-    private cachedSources: Electron.DesktopCapturerSource[] | null = null;
-    private cachedScreens: Electron.Display[] | null = null;
     private animationFrame: number | null = null;
+    private locale: CaptureLocale = getCaptureLocale('English');
 
     private overlay: HTMLElement;
     private selectionArea: HTMLElement;
     private instructions: HTMLElement;
-    private locale: CaptureLocale = getCaptureLocale('English');
 
     constructor() {
         this.overlay = document.getElementById('captureOverlay')!;
@@ -61,268 +65,44 @@ class ScreenCapture {
 
     async init() {
         try {
-            console.log('Initializing optimized multi-monitor screen capture');
+            console.log('Initializing screen capture');
 
-            // Run display detection, screenshot preload, and locale loading in parallel
-            await Promise.all([
-                this.detectCurrentDisplay(),
-                this.preloadScreenshotCapture(),
+            const [, screenshotPayload] = await Promise.all([
                 window.electron.settings.get().then(
                     s => { this.locale = getCaptureLocale(s.appLanguage ?? 'English'); },
                     () => { /* fallback to English */ }
                 ),
+                this.waitForScreenshot(),
             ]);
 
-            // Setup UI and events immediately
+            this.displayId = screenshotPayload.displayId;
+            this.displayOffset = { x: screenshotPayload.displayX, y: screenshotPayload.displayY };
+            this.screenshotDataURL = screenshotPayload.dataUrl;
+
             this.setupEventListeners();
-
-            // Capture and display screenshot
-            await this.captureAndDisplayScreenshot();
-
+            this.displayScreenshot();
             this.displayInstructions();
             document.body.style.cursor = 'crosshair';
             window.electron.capture.ready();
 
-            console.log('Optimized multi-monitor screen capture initialized successfully');
+            console.log(`Screen capture initialized for display ${this.displayId}`);
         } catch (error) {
             console.error('Failed to initialize screen capture:', error);
             this.showError(`Failed to initialize screen capture: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
-    async preloadScreenshotCapture() {
-        // Pre-fetch sources and screens for faster capture
-        try {
-            const [sources, screens] = await Promise.all([
-                this.getSources(),
-                this.getScreens()
-            ]);
-            this.cachedSources = sources;
-            this.cachedScreens = screens;
-        } catch (error) {
-            console.warn('Failed to preload capture data:', error);
-        }
-    }
-
-    async captureAndDisplayScreenshot() {
-        await this.captureScreenshot();
-        this.displayScreenshot();
-    }
-
-    async detectCurrentDisplay() {
-        console.log('Detecting current display for multi-monitor setup');
-
-        // Use cached screens if available for better performance
-        this.allDisplays = this.cachedScreens || await this.getScreens();
-        console.log(`Found ${this.allDisplays.length} displays:`, this.allDisplays.map(d => ({ id: d.id, bounds: d.bounds })));
-
-        // Determine which display this capture window is on
-        const windowBounds = {
-            x: window.screenX,
-            y: window.screenY,
-            width: window.innerWidth,
-            height: window.innerHeight
-        };
-
-        console.log(`Window bounds: ${JSON.stringify(windowBounds)}`);
-
-        // Find the display that contains this window
-        this.currentDisplay = this.allDisplays.find(display =>
-            windowBounds.x >= display.bounds.x &&
-            windowBounds.x < display.bounds.x + display.bounds.width &&
-            windowBounds.y >= display.bounds.y &&
-            windowBounds.y < display.bounds.y + display.bounds.height
-        ) || null;
-
-        if (this.currentDisplay) {
-            console.log(`Current display: ${this.currentDisplay.id}, bounds: ${JSON.stringify(this.currentDisplay.bounds)}`);
-            // Calculate offset for coordinate mapping
-            this.displayOffset = {
-                x: this.currentDisplay.bounds.x,
-                y: this.currentDisplay.bounds.y
-            };
-        } else {
-            console.warn('Could not determine current display, using primary');
-            // @ts-ignore - Electron.Display type might not match exactly with what we get back if detection fails
-            this.currentDisplay = this.allDisplays.find((d: any) => d.primary) || this.allDisplays[0];
-            this.displayOffset = { x: 0, y: 0 };
-        }
-    }
-
-    async captureScreenshot() {
-        console.log('Capturing screenshot for current display');
-
-        // Use cached sources if available for better performance
-        const sources = this.cachedSources || await this.getSources();
-        const targetSource = this.findTargetSourceForCurrentDisplay(sources);
-
-        console.log(`Using source: ${targetSource.name} (${targetSource.id}) for display ${this.currentDisplay?.id}`);
-
-        const stream = await this.getMediaStream(targetSource);
-        const dataURL = await this.streamToDataURL(stream);
-
-        this.screenshotDataURL = dataURL;
-        this.cleanupStream(stream);
-
-        console.log('Screenshot captured successfully for current display');
-    }
-
-    async getSources(): Promise<Electron.DesktopCapturerSource[]> {
-        const sources = await window.electron.capture.getSources();
-        if (!sources || sources.length === 0) {
-            throw new Error('No screen sources available');
-        }
-        return sources;
-    }
-
-    async getScreens(): Promise<Electron.Display[]> {
-        const screens = await window.electron.capture.getScreens();
-        console.log(`Found ${screens ? screens.length : 0} screens`);
-        return screens || [];
-    }
-
-    findTargetSourceForCurrentDisplay(sources: Electron.DesktopCapturerSource[]): Electron.DesktopCapturerSource {
-        const screenSources = sources.filter((source: any) => source.id.startsWith('screen:'));
-        let targetSource = screenSources[0]; // Default to first screen source
-
-        if (this.currentDisplay && screenSources.length > 0) {
-            console.log(`Looking for source matching display ${this.currentDisplay.id}`);
-
-            // Try multiple matching strategies for different platforms
-            const matchingSource = screenSources.find((source: any) => {
-                // Strategy 1: Direct ID match
-                if (source.id.includes(this.currentDisplay!.id.toString())) {
-                    console.log(`Found source by ID match: ${source.id}`);
-                    return true;
-                }
-
-                // Strategy 2: Display ID format match
-                // @ts-ignore - Check for display_id property which might exist
-                if (source.display_id === `screen:${this.currentDisplay!.id}:0`) {
-                    // @ts-ignore
-                    console.log(`Found source by display_id match: ${source.display_id}`);
-                    return true;
-                }
-
-                // Strategy 3: Name-based matching (for some platforms)
-                if (source.name && source.name.includes(this.currentDisplay!.id.toString())) {
-                    console.log(`Found source by name match: ${source.name}`);
-                    return true;
-                }
-
-                return false;
-            });
-
-            if (matchingSource) {
-                targetSource = matchingSource;
-                console.log(`Successfully matched source for display ${this.currentDisplay.id}`);
-            } else {
-                console.warn(`No matching source found for display ${this.currentDisplay.id}, using default`);
-            }
-        }
-
-        return targetSource;
-    }
-
-    async getMediaStream(source: Electron.DesktopCapturerSource): Promise<MediaStream> {
-        // Calculate physical pixel dimensions to match the actual screen resolution.
-        // On scaled displays (e.g. Windows 150%), CSS pixels differ from physical pixels.
-        // Requesting exact physical dimensions prevents green padding artifacts.
-        const dpr = window.devicePixelRatio || 1;
-        const physicalWidth = Math.round(window.screen.width * dpr);
-        const physicalHeight = Math.round(window.screen.height * dpr);
-
-        const constraints: any = {
-            audio: false,
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'desktop',
-                    chromeMediaSourceId: source.id,
-                    minWidth: physicalWidth,
-                    maxWidth: physicalWidth,
-                    minHeight: physicalHeight,
-                    maxHeight: physicalHeight,
-                    maxFrameRate: 1
-                }
-            }
-        };
-
-        console.log('Getting media stream with Electron desktop constraints:', constraints);
-
-        // Add validation before getUserMedia call
-        if (!source || !source.id) {
-            throw new Error('Invalid screen source provided');
-        }
-
-        try {
-            return await navigator.mediaDevices.getUserMedia(constraints);
-        } catch (error) {
-            console.error('Failed to get media stream:', error);
-            throw new Error(`Screen capture failed: ${error instanceof Error ? error.message : String(error)}`);
-        }
-    }
-
-    async streamToDataURL(stream: MediaStream): Promise<string> {
+    waitForScreenshot(): Promise<ScreenshotPayload> {
         return new Promise((resolve, reject) => {
-            const video = document.createElement('video');
-            video.style.display = 'none';
-
             const timeout = setTimeout(() => {
-                this.cleanupVideo(video, stream);
-                reject(new Error('Video loading timeout'));
+                reject(new Error('Screenshot not received from main process'));
             }, 10000);
 
-            video.onloadedmetadata = async () => {
-                try {
-                    clearTimeout(timeout);
-                    await video.play();
-
-                    // Wait for first frame
-                    await new Promise(resolve => setTimeout(resolve, 200));
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        throw new Error('Failed to get canvas context');
-                    }
-
-                    ctx.drawImage(video, 0, 0);
-                    const dataURL = canvas.toDataURL('image/png', 1.0);
-
-                    this.cleanupVideo(video, stream);
-                    resolve(dataURL);
-                } catch (error) {
-                    this.cleanupVideo(video, stream);
-                    reject(error);
-                }
-            };
-
-            video.onerror = () => {
+            (window.electron.capture as any).onScreenshotReady((payload: ScreenshotPayload) => {
                 clearTimeout(timeout);
-                this.cleanupVideo(video, stream);
-                reject(new Error('Video loading failed'));
-            };
-
-            video.srcObject = stream;
+                resolve(payload);
+            });
         });
-    }
-
-    cleanupVideo(video: HTMLVideoElement, stream: MediaStream) {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-        if (video && video.parentNode) {
-            video.remove();
-        }
-    }
-
-    cleanupStream(stream: MediaStream) {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
     }
 
     displayScreenshot() {
@@ -337,7 +117,7 @@ class ScreenCapture {
     }
 
     setupEventListeners() {
-        console.log('Setting up optimized event listeners');
+        console.log('Setting up event listeners');
 
         // Use pre-bound event handlers for better performance
         this.overlay.addEventListener('mousedown', this.handleMouseDown as EventListener, { passive: false });
@@ -373,10 +153,8 @@ class ScreenCapture {
     }
 
     displayInstructions() {
-        const displayInfo = this.currentDisplay ?
-            ` (Display ${this.currentDisplay.id})` : '';
+        const displayInfo = this.displayId ? ` (Display ${this.displayId})` : '';
         this.instructions.textContent = this.locale.instruction + displayInfo;
-
         this.instructions.style.opacity = '1';
         this.instructions.style.display = '';
     }
@@ -422,6 +200,7 @@ class ScreenCapture {
         if (selection.width < 10 || selection.height < 10) {
             console.log('Selection too small, ignoring');
             this.selectionArea.style.display = 'none';
+            this.isCompleting = false;
             return;
         }
 
@@ -495,7 +274,6 @@ class ScreenCapture {
         console.log(`Scaled selection: ${scaledSelection.width}x${scaledSelection.height} at ${scaledSelection.x},${scaledSelection.y}`);
 
         // Create canvas sized to the source image pixels (not CSS pixels)
-        // This ensures the output matches exactly what was selected in the screenshot
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(scaledSelection.width);
         canvas.height = Math.round(scaledSelection.height);
@@ -508,7 +286,6 @@ class ScreenCapture {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Draw the selected area at native image resolution
         ctx.drawImage(
             this.imageElement,
             scaledSelection.x, scaledSelection.y, scaledSelection.width, scaledSelection.height,
@@ -556,10 +333,8 @@ class ScreenCapture {
 
         document.body.appendChild(errorElement);
 
-        // Add event listeners
         document.getElementById('close-btn')?.addEventListener('click', () => {
-             // In Electron, it's better to let main handle closure
-             this.cleanup();
+            this.cleanup();
         });
         document.getElementById('retry-btn')?.addEventListener('click', () => this.retry());
     }
@@ -573,17 +348,14 @@ class ScreenCapture {
         this.retryCount++;
         console.log(`Retrying capture (attempt ${this.retryCount}/${this.maxRetries})`);
 
-        // Remove error message
         const errorElement = document.querySelector('.capture-error');
         if (errorElement) {
             errorElement.remove();
         }
 
-        // Reset state
         this.cleanup();
         this.instructions.textContent = this.locale.initializing;
 
-        // Wait a moment before retrying
         await new Promise(resolve => setTimeout(resolve, 500));
 
         try {
@@ -600,6 +372,7 @@ class ScreenCapture {
         }
         this.screenshotDataURL = null;
         this.isSelecting = false;
+        this.isCompleting = false;
     }
 }
 
