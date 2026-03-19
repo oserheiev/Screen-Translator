@@ -50,6 +50,8 @@ export interface ElectronAPI {
       theme: Theme;
       model: string;
       appLanguage: AppLanguage;
+      showAlternatives?: boolean;
+      showContext?: boolean;
     }>;
     save: (settings: {
       apiKey?: string;

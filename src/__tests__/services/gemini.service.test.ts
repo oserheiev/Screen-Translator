@@ -137,7 +137,7 @@ describe('GeminiService', () => {
 
       const result = await service.translateText('Hello world', 'English', 'French', 'model');
 
-      expect(result).toBe('Bonjour le monde');
+      expect(result.translatedText).toBe('Bonjour le monde');
     });
 
     it('uses "detected language" when source is Auto', async () => {
@@ -147,6 +147,143 @@ describe('GeminiService', () => {
 
       const callArgs = mockGenerateContent.mock.calls[0][0];
       expect(callArgs.contents).toContain('detected language');
+    });
+  });
+
+  // ── processImage with extras ──────────────────────────────────────────────
+
+  describe('processImage with extras', () => {
+    const imageData = 'data:image/png;base64,ABC123';
+
+    it('returns alternatives when showAlternatives is true and response contains them', async () => {
+      const altGroup = { category: 'Nouns', items: [{ word: 'Hola', backTranslations: ['Hello'] }] };
+      mockGenerateContent.mockResolvedValue({
+        text: JSON.stringify({ originalText: 'Hello', translatedText: 'Hola', alternatives: [altGroup] }),
+      });
+
+      const result = await service.processImage(imageData, 'Auto', 'Spanish', 'model', { showAlternatives: true, showContext: false });
+
+      expect(result.alternatives).toEqual([altGroup]);
+    });
+
+    it('returns context when showContext is true and response contains it', async () => {
+      const ctx = { explanation: 'Informal greeting', tags: [{ label: 'Informal', applicable: true }] };
+      mockGenerateContent.mockResolvedValue({
+        text: JSON.stringify({ originalText: 'Hi', translatedText: 'Salut', context: ctx }),
+      });
+
+      const result = await service.processImage(imageData, 'Auto', 'French', 'model', { showAlternatives: false, showContext: true });
+
+      expect(result.context).toEqual(ctx);
+    });
+
+    it('omits alternatives from result when showAlternatives is false', async () => {
+      mockGenerateContent.mockResolvedValue({
+        text: '{"originalText":"Hi","translatedText":"Hola"}',
+      });
+
+      const result = await service.processImage(imageData, 'Auto', 'Spanish', 'model', { showAlternatives: false, showContext: false });
+
+      expect(result.alternatives).toBeUndefined();
+    });
+
+    it('includes "alternatives" keyword in prompt when showAlternatives is true', async () => {
+      mockGenerateContent.mockResolvedValue({
+        text: '{"originalText":"Hi","translatedText":"Hola","alternatives":[]}',
+      });
+
+      await service.processImage(imageData, 'Auto', 'Spanish', 'model', { showAlternatives: true, showContext: false });
+
+      const prompt = mockGenerateContent.mock.calls[0][0].contents[0].parts[0].text as string;
+      expect(prompt).toContain('alternatives');
+    });
+
+    it('includes "context" keyword in prompt when showContext is true', async () => {
+      mockGenerateContent.mockResolvedValue({
+        text: '{"originalText":"Hi","translatedText":"Hola","context":{}}',
+      });
+
+      await service.processImage(imageData, 'Auto', 'Spanish', 'model', { showAlternatives: false, showContext: true });
+
+      const prompt = mockGenerateContent.mock.calls[0][0].contents[0].parts[0].text as string;
+      expect(prompt).toContain('"context"');
+    });
+
+    it('instructs back-translations to use source language in prompt', async () => {
+      mockGenerateContent.mockResolvedValue({
+        text: '{"originalText":"Bonjour","translatedText":"Hello","alternatives":[]}',
+      });
+
+      await service.processImage(imageData, 'French', 'English', 'model', { showAlternatives: true, showContext: false });
+
+      const prompt = mockGenerateContent.mock.calls[0][0].contents[0].parts[0].text as string;
+      expect(prompt).toMatch(/source language.*French/i);
+    });
+  });
+
+  // ── translateText with extras ──────────────────────────────────────────────
+
+  describe('translateText with extras', () => {
+    it('switches to JSON mode and returns alternatives when showAlternatives is true', async () => {
+      const altGroup = { category: 'Nouns', items: [{ word: 'Salut', backTranslations: ['Hi'] }] };
+      mockGenerateContent.mockResolvedValue({
+        text: JSON.stringify({ translatedText: 'Bonjour', alternatives: [altGroup] }),
+      });
+
+      const result = await service.translateText('Hello', 'English', 'French', 'model', { showAlternatives: true, showContext: false });
+
+      expect(result.translatedText).toBe('Bonjour');
+      expect(result.alternatives).toEqual([altGroup]);
+    });
+
+    it('returns context when showContext is true', async () => {
+      const ctx = { explanation: 'Formal greeting', tags: [{ label: 'Formal', applicable: true }] };
+      mockGenerateContent.mockResolvedValue({
+        text: JSON.stringify({ translatedText: 'Bonjour', context: ctx }),
+      });
+
+      const result = await service.translateText('Hello', 'English', 'French', 'model', { showAlternatives: false, showContext: true });
+
+      expect(result.translatedText).toBe('Bonjour');
+      expect(result.context).toEqual(ctx);
+    });
+
+    it('returns plain text object without extras when both toggles are off', async () => {
+      mockGenerateContent.mockResolvedValue({ text: 'Bonjour' });
+
+      const result = await service.translateText('Hello', 'English', 'French', 'model', { showAlternatives: false, showContext: false });
+
+      expect(result.translatedText).toBe('Bonjour');
+      expect(result.alternatives).toBeUndefined();
+      expect(result.context).toBeUndefined();
+    });
+
+    it('uses array contents format when extras are requested', async () => {
+      mockGenerateContent.mockResolvedValue({
+        text: JSON.stringify({ translatedText: 'Bonjour', alternatives: [] }),
+      });
+
+      await service.translateText('Hello', 'English', 'French', 'model', { showAlternatives: true, showContext: false });
+
+      const callArgs = mockGenerateContent.mock.calls[0][0];
+      expect(Array.isArray(callArgs.contents)).toBe(true);
+    });
+
+    it('uses plain string contents format when no extras requested', async () => {
+      mockGenerateContent.mockResolvedValue({ text: 'Bonjour' });
+
+      await service.translateText('Hello', 'English', 'French', 'model');
+
+      const callArgs = mockGenerateContent.mock.calls[0][0];
+      expect(typeof callArgs.contents).toBe('string');
+    });
+
+    it('falls back to raw text as translatedText when JSON parsing fails with extras', async () => {
+      mockGenerateContent.mockResolvedValue({ text: 'not json but a translation' });
+
+      const result = await service.translateText('Hello', 'English', 'French', 'model', { showAlternatives: true, showContext: false });
+
+      expect(result.translatedText).toBe('not json but a translation');
     });
   });
 
