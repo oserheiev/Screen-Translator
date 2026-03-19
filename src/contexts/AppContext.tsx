@@ -362,20 +362,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
         selectedModel,
         { showAlternatives, showContext }
       );
-      const translatedStr = typeof result === 'string' ? result : String(result);
-      setTranslatedText(translatedStr);
-      const extrasData = (result as any).extras;
-      setAlternatives(extrasData?.alternatives ?? null);
-      setContextData(extrasData?.context ?? null);
+      setTranslatedText(result.translatedText);
+      setAlternatives(result.alternatives ?? null);
+      setContextData(result.context ?? null);
       appendHistory({
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         originalText: text,
-        translatedText: translatedStr,
+        translatedText: result.translatedText,
         sourceLanguage,
         targetLanguage,
         timestamp: Date.now(),
-        alternatives: extrasData?.alternatives,
-        context: extrasData?.context,
+        alternatives: result.alternatives,
+        context: result.context,
       });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

@@ -83,7 +83,7 @@ export class GeminiService {
     targetLanguage: string,
     modelName: string,
     extras?: ExtrasOptions
-  ): Promise<string & { extras?: TranslationExtras }> {
+  ): Promise<{ translatedText: string } & TranslationExtras> {
     try {
       const needsExtras = extras && (extras.showAlternatives || extras.showContext);
       const prompt = needsExtras
@@ -104,7 +104,7 @@ export class GeminiService {
         return this.parseTranslationWithExtras(responseText, extras!);
       }
 
-      return responseText as string & { extras?: TranslationExtras };
+      return { translatedText: responseText };
     } catch (error) {
       console.error('GeminiService.translateText error:', error);
       throw this.handleError(error);
@@ -192,22 +192,22 @@ export class GeminiService {
     return result;
   }
 
-  private parseTranslationWithExtras(text: string, extras: ExtrasOptions): string & { extras?: TranslationExtras } {
+  private parseTranslationWithExtras(text: string, extras: ExtrasOptions): { translatedText: string } & TranslationExtras {
     try {
       const parsed = this.parseJSONResponse<any>(text);
-      const translatedText: string & { extras?: TranslationExtras } = parsed.translatedText ?? text;
-      const translationExtras: TranslationExtras = {};
+      const result: { translatedText: string } & TranslationExtras = {
+        translatedText: parsed.translatedText ?? '',
+      };
       if (extras.showAlternatives && Array.isArray(parsed.alternatives)) {
-        translationExtras.alternatives = parsed.alternatives;
+        result.alternatives = parsed.alternatives;
       }
       if (extras.showContext && parsed.context) {
-        translationExtras.context = parsed.context;
+        result.context = parsed.context;
       }
-      (translatedText as any).extras = translationExtras;
-      return translatedText;
+      return result;
     } catch {
-      // If parsing fails, return raw text with no extras
-      return text as string & { extras?: TranslationExtras };
+      // If JSON parsing fails, surface the raw text so the user sees something
+      return { translatedText: text };
     }
   }
 
