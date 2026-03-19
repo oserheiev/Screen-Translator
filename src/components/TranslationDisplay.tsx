@@ -94,65 +94,67 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
         </div>
       </div>
 
-      <div className="translation-content">
-        {text && <Markdown>{text}</Markdown>}
-      </div>
+      <div className="translation-body">
+        <div className="translation-content">
+          {text && <Markdown>{text}</Markdown>}
+        </div>
 
-      {hasAlternatives && (
-        <div className="extras-section">
-          <div className="extras-section-header">
-            <span className="panel-label">Alternatives</span>
-            <button className="collapse-btn" onClick={() => setAltCollapsed(c => !c)}>
-              {altCollapsed ? '▸' : '▾'}
-            </button>
+        {hasAlternatives && (
+          <div className="extras-section">
+            <div className="extras-section-header">
+              <span className="panel-label">Alternatives</span>
+              <button className="collapse-btn" onClick={() => setAltCollapsed(c => !c)}>
+                {altCollapsed ? '▸' : '▾'}
+              </button>
+            </div>
+            {!altCollapsed && (
+              <div className="alt-groups">
+                {alternatives!.map(group => (
+                  <div key={group.category} className="alt-group">
+                    <div className="alt-category-label">{group.category}</div>
+                    <div className="alt-items">
+                      {group.items.map(item => (
+                        <div key={item.word} className="alt-item">
+                          <div className="alt-word">{item.word}</div>
+                          <div className="alt-back-translations">{item.backTranslations.join(', ')}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {!altCollapsed && (
-            <div className="alt-groups">
-              {alternatives!.map(group => (
-                <div key={group.category} className="alt-group">
-                  <div className="alt-category-label">{group.category}</div>
-                  <div className="alt-items">
-                    {group.items.map(item => (
-                      <div key={item.word} className="alt-item">
-                        <div className="alt-word">{item.word}</div>
-                        <div className="alt-back-translations">{item.backTranslations.join(', ')}</div>
-                      </div>
+        )}
+
+        {hasContext && (
+          <div className="extras-section">
+            <div className="extras-section-header">
+              <span className="panel-label">Context of Use</span>
+              <button className="collapse-btn" onClick={() => setCtxCollapsed(c => !c)}>
+                {ctxCollapsed ? '▸' : '▾'}
+              </button>
+            </div>
+            {!ctxCollapsed && (
+              <>
+                <p className="context-explanation">{contextData!.explanation}</p>
+                {contextData!.tags && contextData!.tags.length > 0 && (
+                  <div className="context-tags">
+                    {contextData!.tags.map(tag => (
+                      <span
+                        key={tag.label}
+                        className={`context-tag${tag.applicable ? '' : ' not-applicable'}`}
+                      >
+                        {tag.applicable ? '✓' : '✗'} {tag.label}
+                      </span>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {hasContext && (
-        <div className="extras-section">
-          <div className="extras-section-header">
-            <span className="panel-label">Context of Use</span>
-            <button className="collapse-btn" onClick={() => setCtxCollapsed(c => !c)}>
-              {ctxCollapsed ? '▸' : '▾'}
-            </button>
+                )}
+              </>
+            )}
           </div>
-          {!ctxCollapsed && (
-            <>
-              <p className="context-explanation">{contextData!.explanation}</p>
-              {contextData!.tags && contextData!.tags.length > 0 && (
-                <div className="context-tags">
-                  {contextData!.tags.map(tag => (
-                    <span
-                      key={tag.label}
-                      className={`context-tag${tag.applicable ? '' : ' not-applicable'}`}
-                    >
-                      {tag.applicable ? '✓' : '✗'} {tag.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {isLoading && (
         <div className="translation-skeleton-overlay">

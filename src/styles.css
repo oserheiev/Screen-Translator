@@ -625,17 +625,23 @@ body {
   padding: 4px 2px;
 }
 
+/* ── Translation body (scrollable wrapper for content + extras) ── */
+.translation-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ── Translation content ── */
 .translation-content {
-  flex: 1;
   font-size: 18px;
   line-height: 1.5;
   color: #000000;
-  overflow-y: auto;
-  overflow-x: hidden;
   overflow-wrap: break-word;
   word-break: break-word;
-  min-height: 0;
 }
 
 .translation-content p {
@@ -1368,6 +1374,13 @@ body.alert-mode {
   }
   .panel-header {
     margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .toggle-pill {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 10px;
   }
 }
 
@@ -1420,6 +1433,14 @@ body.alert-mode {
   .source-textarea,
   .translation-content {
     font-size: 18px;
+  }
+  .panel-header {
+    flex-wrap: nowrap;
+  }
+  .toggle-pill {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 11px;
   }
   .translation-skeleton-overlay {
     padding: 64px 24px 20px;
