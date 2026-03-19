@@ -135,7 +135,7 @@ export class GeminiService {
     prompt += '}. ';
 
     if (extras?.showAlternatives) {
-      prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
+      prompt += `For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. Back-translations must be written in the source language (${sourceLangText}). `;
     }
     if (extras?.showContext) {
       const lang = extras.appLanguage ?? 'English';
@@ -169,7 +169,7 @@ export class GeminiService {
     prompt += '}. ';
 
     if (extras.showAlternatives) {
-      prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
+      prompt += `For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. Back-translations must be written in the source language (${sourceLangText}). `;
     }
     if (extras.showContext) {
       const lang = extras.appLanguage ?? 'English';
