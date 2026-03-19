@@ -60,6 +60,10 @@ const pt: LocaleStrings = {
   typePlaceholder: 'Digite ou cole para traduzir...',
 
   translation: 'Tradução',
+  altToggleLabel: 'Alt.',
+  contextToggleLabel: 'Contexto',
+  alternatives: 'Alternativas',
+  contextOfUse: 'Contexto de uso',
 
   apiKeyNotSet: 'Chave API não definida. Por favor, configure sua chave API Gemini nas configurações.',
 

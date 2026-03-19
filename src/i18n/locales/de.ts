@@ -60,6 +60,10 @@ const de: LocaleStrings = {
   typePlaceholder: 'Tippe oder füge Text zum Übersetzen ein...',
 
   translation: 'Übersetzung',
+  altToggleLabel: 'Alt.',
+  contextToggleLabel: 'Kontext',
+  alternatives: 'Alternativen',
+  contextOfUse: 'Verwendungskontext',
 
   apiKeyNotSet: 'API-Schlüssel nicht gesetzt. Bitte lege deinen Gemini-API-Schlüssel in den Einstellungen fest.',
 

@@ -60,6 +60,10 @@ const zh: LocaleStrings = {
   typePlaceholder: '输入或粘贴以进行翻译...',
 
   translation: '译文',
+  altToggleLabel: '替换',
+  contextToggleLabel: '情境',
+  alternatives: '替换词',
+  contextOfUse: '使用情境',
 
   apiKeyNotSet: '未设置 API 密钥。请在设置中配置您的 Gemini API 密钥。',
 

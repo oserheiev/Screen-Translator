@@ -10,6 +10,7 @@ export interface TranslationExtras {
 export interface ExtrasOptions {
   showAlternatives: boolean;
   showContext: boolean;
+  appLanguage?: string;
 }
 
 export class GeminiService {
@@ -137,7 +138,8 @@ export class GeminiService {
       prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
     }
     if (extras?.showContext) {
-      prompt += 'For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). ';
+      const lang = extras.appLanguage ?? 'English';
+      prompt += `For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). Write the explanation and tag labels in ${lang}. `;
     }
 
     prompt += 'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
@@ -170,7 +172,8 @@ export class GeminiService {
       prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
     }
     if (extras.showContext) {
-      prompt += 'For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). ';
+      const lang = extras.appLanguage ?? 'English';
+      prompt += `For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). Write the explanation and tag labels in ${lang}. `;
     }
 
     prompt += 'Do not include markdown formatting for the JSON itself (like ```json).';

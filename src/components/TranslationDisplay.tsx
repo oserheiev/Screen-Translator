@@ -74,18 +74,18 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
             <button
               className={`toggle-pill${showAlternatives ? ' active' : ''}`}
               onClick={onToggleAlternatives}
-              title="Show alternative translations"
+              title={t.alternatives}
             >
-              <span>⚡</span> Alt
+              <span>⚡</span> {t.altToggleLabel}
             </button>
           )}
           {onToggleContext && (
             <button
               className={`toggle-pill${showContext ? ' active' : ''}`}
               onClick={onToggleContext}
-              title="Show context of use"
+              title={t.contextOfUse}
             >
-              <span>💡</span> Context
+              <span>💡</span> {t.contextToggleLabel}
             </button>
           )}
           <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
@@ -102,7 +102,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
         {hasAlternatives && (
           <div className="extras-section">
             <div className="extras-section-header">
-              <span className="panel-label">Alternatives</span>
+              <span className="panel-label">{t.alternatives}</span>
               <button className="collapse-btn" onClick={() => setAltCollapsed(c => !c)}>
                 {altCollapsed ? '▸' : '▾'}
               </button>
@@ -130,7 +130,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
         {hasContext && (
           <div className="extras-section">
             <div className="extras-section-header">
-              <span className="panel-label">Context of Use</span>
+              <span className="panel-label">{t.contextOfUse}</span>
               <button className="collapse-btn" onClick={() => setCtxCollapsed(c => !c)}>
                 {ctxCollapsed ? '▸' : '▾'}
               </button>

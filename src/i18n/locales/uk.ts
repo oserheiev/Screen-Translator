@@ -60,6 +60,10 @@ const uk: LocaleStrings = {
   typePlaceholder: 'Введіть або вставте текст для перекладу...',
 
   translation: 'Переклад',
+  altToggleLabel: 'Вар.',
+  contextToggleLabel: 'Контекст',
+  alternatives: 'Варіанти перекладу',
+  contextOfUse: 'Контекст вживання',
 
   apiKeyNotSet: 'API-ключ не вказано. Будь ласка, задайте ваш API-ключ Gemini у налаштуваннях.',
 

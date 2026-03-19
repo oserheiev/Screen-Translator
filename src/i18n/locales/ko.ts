@@ -60,6 +60,10 @@ const ko: LocaleStrings = {
   typePlaceholder: '번역할 텍스트를 입력하거나 붙여넣으세요...',
 
   translation: '번역',
+  altToggleLabel: '대안',
+  contextToggleLabel: '맥락',
+  alternatives: '대안어',
+  contextOfUse: '사용 맥락',
 
   apiKeyNotSet: 'API 키가 설정되지 않았습니다. 설정에서 Gemini API 키를 입력해 주세요.',
 

@@ -60,6 +60,10 @@ const ja: LocaleStrings = {
   typePlaceholder: '翻訳するテキストを入力または貼り付け...',
 
   translation: '翻訳',
+  altToggleLabel: '代替',
+  contextToggleLabel: '状況',
+  alternatives: '代替語',
+  contextOfUse: '使用状況',
 
   apiKeyNotSet: 'APIキーが設定されていません。設定からGemini APIキーを入力してください。',
 

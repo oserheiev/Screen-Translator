@@ -69,6 +69,10 @@ export interface LocaleStrings {
 
   // TranslationDisplay
   translation: string;
+  altToggleLabel: string;
+  contextToggleLabel: string;
+  alternatives: string;
+  contextOfUse: string;
 
   // AppContext errors
   apiKeyNotSet: string;

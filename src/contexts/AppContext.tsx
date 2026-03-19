@@ -308,7 +308,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
         sourceLanguage,
         targetLanguage,
         selectedModel,
-        { showAlternatives, showContext }
+        { showAlternatives, showContext, appLanguage }
       );
       setOriginalText(result.originalText);
       setTranslatedText(result.translatedText);
@@ -360,7 +360,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
         sourceLanguage,
         targetLanguage,
         selectedModel,
-        { showAlternatives, showContext }
+        { showAlternatives, showContext, appLanguage }
       );
       setTranslatedText(result.translatedText);
       setAlternatives(result.alternatives ?? null);
