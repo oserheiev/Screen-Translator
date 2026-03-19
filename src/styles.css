@@ -348,6 +348,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
   background: #F6F6F6;
   border-radius: 20px;
   border: 1px solid transparent;

@@ -44,4 +44,5 @@ export const IPC_CHANNELS = {
     UPDATE_ERROR: 'update-error',
     GET_VERSION: 'get-version',
     ACCESSIBILITY_ERROR: 'accessibility-error',
+    SCREENSHOT_READY: 'screenshot-ready',
 } as const;

@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "strict": true,
-    "sourceMap": false,
+    "inlineSourceMap": true,
     "declaration": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,

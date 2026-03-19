@@ -36,7 +36,10 @@ contextBridge.exposeInMainWorld(
         }
       },
       log: (message: string, ...args: any[]) => ipcRenderer.invoke('log-message', message, ...args),
-      ready: () => ipcRenderer.invoke('capture-ready')
+      ready: () => ipcRenderer.invoke('capture-ready'),
+      onScreenshotReady: (callback: (payload: { dataUrl: string; displayId: number; displayX: number; displayY: number }) => void) => {
+        ipcRenderer.once('screenshot-ready', (_event, payload) => callback(payload));
+      }
     },
     clipboard: {
       writeText: (text: string) => ipcRenderer.invoke('clipboard-write-text', text)

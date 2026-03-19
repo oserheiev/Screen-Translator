@@ -15,6 +15,7 @@ interface AppContextType {
   hotkey: string;
   theme: Theme;
   isProcessing: boolean;
+  isCaptureProcessing: boolean;
   error: string | null;
   history: HistoryEntry[];
   setOriginalText: (text: string) => void;
@@ -56,6 +57,7 @@ const defaultContext: AppContextType = {
   hotkey: 'Ctrl+Alt+T',
   theme: 'system',
   isProcessing: false,
+  isCaptureProcessing: false,
   error: null,
   history: [],
   setOriginalText: () => { },
@@ -105,6 +107,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   const [hotkey, setHotkey] = useState('Ctrl+Alt+T');
   const [theme, setTheme] = useState<Theme>('system');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCaptureProcessing, setIsCaptureProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -296,7 +299,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     await showWindow();
 
     setIsProcessing(true);
+    setIsCaptureProcessing(true);
     setError(null);
+    setOriginalText('');
     setTranslatedText('');
     setAlternatives(null);
     setContextData(null);
@@ -330,6 +335,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false);
+      setIsCaptureProcessing(false);
       console.log('Image processing completed');
     }
   }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showAlternatives, showContext, showWindow, appendHistory, appLanguage]);
@@ -408,6 +414,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     hotkey,
     theme,
     isProcessing,
+    isCaptureProcessing,
     error,
     history,
     setOriginalText,
