@@ -44,6 +44,8 @@ export interface Settings {
   model: string;
   appLanguage?: AppLanguage;
   history?: any[];
+  showAlternatives?: boolean;
+  showContext?: boolean;
 }
 
 // Create a type for the store with proper methods

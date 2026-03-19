@@ -14,6 +14,21 @@ export type AppLanguage =
   | 'Korean'
   | 'Polish';
 
+export interface Alternative {
+  word: string;
+  backTranslations: string[];
+}
+
+export interface AlternativeGroup {
+  category: string;
+  items: Alternative[];
+}
+
+export interface ContextData {
+  explanation: string;
+  tags: { label: string; applicable: boolean }[];
+}
+
 export interface HistoryEntry {
   id: string;
   originalText: string;
@@ -21,6 +36,8 @@ export interface HistoryEntry {
   sourceLanguage: SupportedLanguage;
   targetLanguage: SupportedLanguage;
   timestamp: number;
+  alternatives?: AlternativeGroup[];
+  context?: ContextData;
 }
 
 export interface ElectronAPI {
@@ -42,6 +59,8 @@ export interface ElectronAPI {
       theme?: Theme;
       model?: string;
       appLanguage?: AppLanguage;
+      showAlternatives?: boolean;
+      showContext?: boolean;
     }) => Promise<boolean>;
   };
   history: {

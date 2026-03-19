@@ -74,7 +74,13 @@ const App: React.FC = () => {
     updateProgress,
     handleDownloadUpdate,
     handleInstallUpdate,
-    appVersion
+    appVersion,
+    showAlternatives,
+    showContext,
+    alternatives,
+    contextData,
+    toggleAlternatives,
+    toggleContext,
   } = useAppContext();
 
   const t = useLocale();
@@ -251,6 +257,12 @@ const App: React.FC = () => {
           <TranslationDisplay
             text={translatedText}
             isLoading={isProcessing}
+            showAlternatives={showAlternatives}
+            showContext={showContext}
+            alternatives={alternatives}
+            contextData={contextData}
+            onToggleAlternatives={toggleAlternatives}
+            onToggleContext={toggleContext}
           />
         </div>
 

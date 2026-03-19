@@ -1,6 +1,16 @@
 import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
-import { TranslationResult } from '../types';
+import { TranslationResult, AlternativeGroup, ContextData } from '../types';
 import { CONFIG } from '../config';
+
+export interface TranslationExtras {
+  alternatives?: AlternativeGroup[];
+  context?: ContextData;
+}
+
+export interface ExtrasOptions {
+  showAlternatives: boolean;
+  showContext: boolean;
+}
 
 export class GeminiService {
   private ai: GoogleGenAI;
@@ -28,10 +38,16 @@ export class GeminiService {
     }
   }
 
-  async processImage(imageData: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<TranslationResult> {
+  async processImage(
+    imageData: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    modelName: string,
+    extras?: ExtrasOptions
+  ): Promise<TranslationResult & TranslationExtras> {
     try {
       const base64Image = this.extractBase64Image(imageData);
-      const prompt = this.createImagePrompt(sourceLanguage, targetLanguage);
+      const prompt = this.createImagePrompt(sourceLanguage, targetLanguage, extras);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
@@ -54,26 +70,41 @@ export class GeminiService {
         return this.extractTextFromResponse(result);
       });
 
-      return this.parseJSONResponse<TranslationResult>(responseText);
+      return this.parseImageResponse(responseText, extras);
     } catch (error) {
       console.error('GeminiService.processImage error:', error);
       throw this.handleError(error);
     }
   }
 
-  async translateText(text: string, sourceLanguage: string, targetLanguage: string, modelName: string): Promise<string> {
+  async translateText(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    modelName: string,
+    extras?: ExtrasOptions
+  ): Promise<string & { extras?: TranslationExtras }> {
     try {
-      const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
+      const needsExtras = extras && (extras.showAlternatives || extras.showContext);
+      const prompt = needsExtras
+        ? this.createTranslationPromptWithExtras(text, sourceLanguage, targetLanguage, extras!)
+        : this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
 
       const responseText = await this.executeWithRetry(async () => {
         const result = await this.ai.models.generateContent({
           model: modelName,
-          contents: prompt
+          contents: needsExtras
+            ? [{ role: 'user', parts: [{ text: prompt }] }]
+            : prompt
         });
         return this.extractTextFromResponse(result);
       });
 
-      return responseText;
+      if (needsExtras) {
+        return this.parseTranslationWithExtras(responseText, extras!);
+      }
+
+      return responseText as string & { extras?: TranslationExtras };
     } catch (error) {
       console.error('GeminiService.translateText error:', error);
       throw this.handleError(error);
@@ -88,18 +119,96 @@ export class GeminiService {
     return base64Image;
   }
 
-  private createImagePrompt(sourceLanguage: string, targetLanguage: string): string {
+  private createImagePrompt(sourceLanguage: string, targetLanguage: string, extras?: ExtrasOptions): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
-    return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
-      'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"}. ' +
-      'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
+    let prompt = `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
+      'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"';
+
+    if (extras?.showAlternatives) {
+      prompt += ', "alternatives": [{"category": "<POS e.g. Nouns/Verbs/Adjectives/Idioms>", "items": [{"word": "<alternative>", "backTranslations": ["<back-translation>"]}]}]';
+    }
+    if (extras?.showContext) {
+      prompt += ', "context": {"explanation": "<2-3 sentences on when/how this is used>", "tags": [{"label": "<situation>", "applicable": true}]}';
+    }
+
+    prompt += '}. ';
+
+    if (extras?.showAlternatives) {
+      prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
+    }
+    if (extras?.showContext) {
+      prompt += 'For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). ';
+    }
+
+    prompt += 'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
       'Do not include markdown formatting for the JSON itself (like ```json).';
+
+    return prompt;
   }
 
   private createTranslationPrompt(text: string, sourceLanguage: string, targetLanguage: string): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
     return `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
       'Return only the translated text string. Use Markdown to preserve any existing structure (lists, indentation).';
+  }
+
+  private createTranslationPromptWithExtras(text: string, sourceLanguage: string, targetLanguage: string, extras: ExtrasOptions): string {
+    const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
+    let prompt = `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
+      'Return output in strict JSON format: {"translatedText": "translated text"';
+
+    if (extras.showAlternatives) {
+      prompt += ', "alternatives": [{"category": "<POS e.g. Nouns/Verbs/Adjectives/Idioms>", "items": [{"word": "<alternative>", "backTranslations": ["<back-translation>"]}]}]';
+    }
+    if (extras.showContext) {
+      prompt += ', "context": {"explanation": "<2-3 sentences on when/how this is used>", "tags": [{"label": "<situation>", "applicable": true}]}';
+    }
+
+    prompt += '}. ';
+
+    if (extras.showAlternatives) {
+      prompt += 'For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. ';
+    }
+    if (extras.showContext) {
+      prompt += 'For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). ';
+    }
+
+    prompt += 'Do not include markdown formatting for the JSON itself (like ```json).';
+    return prompt;
+  }
+
+  private parseImageResponse(text: string, extras?: ExtrasOptions): TranslationResult & TranslationExtras {
+    const parsed = this.parseJSONResponse<any>(text);
+    const result: TranslationResult & TranslationExtras = {
+      originalText: parsed.originalText ?? '',
+      translatedText: parsed.translatedText ?? '',
+    };
+    if (extras?.showAlternatives && Array.isArray(parsed.alternatives)) {
+      result.alternatives = parsed.alternatives;
+    }
+    if (extras?.showContext && parsed.context) {
+      result.context = parsed.context;
+    }
+    return result;
+  }
+
+  private parseTranslationWithExtras(text: string, extras: ExtrasOptions): string & { extras?: TranslationExtras } {
+    try {
+      const parsed = this.parseJSONResponse<any>(text);
+      const translatedText: string & { extras?: TranslationExtras } = parsed.translatedText ?? text;
+      const translationExtras: TranslationExtras = {};
+      if (extras.showAlternatives && Array.isArray(parsed.alternatives)) {
+        translationExtras.alternatives = parsed.alternatives;
+      }
+      if (extras.showContext && parsed.context) {
+        translationExtras.context = parsed.context;
+      }
+      (translatedText as any).extras = translationExtras;
+      return translatedText;
+    } catch {
+      // If parsing fails, return raw text with no extras
+      return text as string & { extras?: TranslationExtras };
+    }
   }
 
   private extractTextFromResponse(result: GenerateContentResponse): string {

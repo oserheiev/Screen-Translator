@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ClipboardService from '../services/clipboard.service';
 import Markdown from 'markdown-to-jsx';
 import { useLocale } from '../i18n/useLocale';
+import { AlternativeGroup, ContextData } from '../types';
 
 interface TranslationDisplayProps {
   text: string;
   isLoading?: boolean;
+  showAlternatives?: boolean;
+  showContext?: boolean;
+  alternatives?: AlternativeGroup[] | null;
+  contextData?: ContextData | null;
+  onToggleAlternatives?: () => void;
+  onToggleContext?: () => void;
 }
 
 const CopyIcon = () => (
@@ -21,10 +28,30 @@ const CheckIcon = () => (
   </svg>
 );
 
-const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, isLoading = false }) => {
+const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
+  text,
+  isLoading = false,
+  showAlternatives = false,
+  showContext = false,
+  alternatives = null,
+  contextData = null,
+  onToggleAlternatives,
+  onToggleContext,
+}) => {
   const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
+  const [altCollapsed, setAltCollapsed] = useState(false);
+  const [ctxCollapsed, setCtxCollapsed] = useState(false);
   const clipboardService = new ClipboardService();
+
+  // Reset collapse state when new data arrives
+  useEffect(() => {
+    setAltCollapsed(false);
+  }, [alternatives]);
+
+  useEffect(() => {
+    setCtxCollapsed(false);
+  }, [contextData]);
 
   const handleCopy = async () => {
     if (!text) return;
@@ -35,22 +62,110 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ text, isLoading
     }
   };
 
+  const hasAlternatives = showAlternatives && alternatives && alternatives.length > 0;
+  const hasContext = showContext && contextData;
+
   return (
     <div className="translation-panel">
       <div className="panel-header">
         <span className="panel-label">{t.translation}</span>
-        <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
-          {isCopied ? <CheckIcon /> : <CopyIcon />}
-        </button>
+        <div className="panel-actions">
+          {onToggleAlternatives && (
+            <button
+              className={`toggle-pill${showAlternatives ? ' active' : ''}`}
+              onClick={onToggleAlternatives}
+              title="Show alternative translations"
+            >
+              <span>⚡</span> Alt
+            </button>
+          )}
+          {onToggleContext && (
+            <button
+              className={`toggle-pill${showContext ? ' active' : ''}`}
+              onClick={onToggleContext}
+              title="Show context of use"
+            >
+              <span>💡</span> Context
+            </button>
+          )}
+          <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
+            {isCopied ? <CheckIcon /> : <CopyIcon />}
+          </button>
+        </div>
       </div>
+
       <div className="translation-content">
         {text && <Markdown>{text}</Markdown>}
       </div>
+
+      {hasAlternatives && (
+        <div className="extras-section">
+          <div className="extras-section-header">
+            <span className="panel-label">Alternatives</span>
+            <button className="collapse-btn" onClick={() => setAltCollapsed(c => !c)}>
+              {altCollapsed ? '▸' : '▾'}
+            </button>
+          </div>
+          {!altCollapsed && (
+            <div className="alt-groups">
+              {alternatives!.map(group => (
+                <div key={group.category} className="alt-group">
+                  <div className="alt-category-label">{group.category}</div>
+                  <div className="alt-items">
+                    {group.items.map(item => (
+                      <div key={item.word} className="alt-item">
+                        <div className="alt-word">{item.word}</div>
+                        <div className="alt-back-translations">{item.backTranslations.join(', ')}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasContext && (
+        <div className="extras-section">
+          <div className="extras-section-header">
+            <span className="panel-label">Context of Use</span>
+            <button className="collapse-btn" onClick={() => setCtxCollapsed(c => !c)}>
+              {ctxCollapsed ? '▸' : '▾'}
+            </button>
+          </div>
+          {!ctxCollapsed && (
+            <>
+              <p className="context-explanation">{contextData!.explanation}</p>
+              {contextData!.tags && contextData!.tags.length > 0 && (
+                <div className="context-tags">
+                  {contextData!.tags.map(tag => (
+                    <span
+                      key={tag.label}
+                      className={`context-tag${tag.applicable ? '' : ' not-applicable'}`}
+                    >
+                      {tag.applicable ? '✓' : '✗'} {tag.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
       {isLoading && (
         <div className="translation-skeleton-overlay">
           <div className="skeleton-line" />
           <div className="skeleton-line" />
           <div className="skeleton-line" />
+          {(showAlternatives || showContext) && (
+            <>
+              <div className="skeleton-line" style={{ width: '40%', marginTop: '8px' }} />
+              <div className="skeleton-line" style={{ width: '60%' }} />
+              <div className="skeleton-line" style={{ width: '50%' }} />
+            </>
+          )}
         </div>
       )}
     </div>
