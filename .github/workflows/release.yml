@@ -43,8 +43,9 @@ jobs:
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Commit, tag, and push
+        env:
+          VERSION: ${{ steps.read_version.outputs.version }}
         run: |
-          VERSION=${{ steps.read_version.outputs.version }}
           if ! git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null 2>&1; then
             git add package.json package-lock.json
             git commit -m "chore: bump version to v${VERSION}"
@@ -54,8 +55,9 @@ jobs:
 
       - name: Collect changelog
         if: ${{ !cancelled() }}
+        env:
+          VERSION: ${{ steps.read_version.outputs.version }}
         run: |
-          VERSION=${{ steps.read_version.outputs.version }}
           prev=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
           git log "${prev}"..HEAD --pretty=format:"- %s" \
             | grep -v "^- chore: bump version" > release-notes.txt || true
@@ -63,8 +65,8 @@ jobs:
       - name: Create draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.read_version.outputs.version }}
         run: |
-          VERSION=${{ steps.read_version.outputs.version }}
           gh release view "v${VERSION}" 2>/dev/null || \
             gh release create "v${VERSION}" \
               --draft \
