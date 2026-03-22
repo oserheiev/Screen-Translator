@@ -240,16 +240,26 @@ async function requestScreenCapturePermission(): Promise<boolean> {
   return true;
 }
 
-function findSourceForDisplay(display: Electron.Display, sources: Electron.DesktopCapturerSource[]): Electron.DesktopCapturerSource | null {
-  const screenSources = sources.filter((s: any) => s.id.startsWith('screen:'));
+function findSourceForDisplay(display: Electron.Display, displayIndex: number, sources: Electron.DesktopCapturerSource[]): Electron.DesktopCapturerSource | null {
+  // Sort screen sources by their sequential index (screen:0:0, screen:1:0, ...)
+  const screenSources = sources
+    .filter((s: any) => s.id.startsWith('screen:'))
+    .sort((a: any, b: any) => {
+      const aIdx = parseInt(a.id.split(':')[1] ?? '0', 10);
+      const bIdx = parseInt(b.id.split(':')[1] ?? '0', 10);
+      return aIdx - bIdx;
+    });
+
   const match = screenSources.find((source: any) => {
     if (source.id.includes(display.id.toString())) return true;
-    // @ts-ignore - display_id may be present on some platforms
-    if (source.display_id === `screen:${display.id}:0`) return true;
+    // @ts-ignore - display_id may be present on some platforms (raw ID string)
+    if (source.display_id === display.id.toString()) return true;
     if (source.name && source.name.includes(display.id.toString())) return true;
     return false;
   });
-  return match || screenSources[0] || null;
+
+  // Positional fallback: match by display index (both APIs order displays left-to-right)
+  return match || screenSources[displayIndex] || screenSources[0] || null;
 }
 
 async function startScreenCapture() {
@@ -275,15 +285,21 @@ async function startScreenCapture() {
     // so thumbnails are never upscaled or aspect-ratio-constrained by another display's size.
     const { desktopCapturer } = require('electron');
 
+    // Sort displays left-to-right (then top-to-bottom) to match desktopCapturer source order
+    const sortedDisplays = [...displays].sort((a, b) =>
+      a.bounds.x !== b.bounds.x ? a.bounds.x - b.bounds.x : a.bounds.y - b.bounds.y
+    );
+
     const screenshotsByDisplayId = new Map<number, string>();
     await Promise.all(displays.map(async (display) => {
+      const displayIndex = sortedDisplays.findIndex(d => d.id === display.id);
       const physWidth = Math.round(display.bounds.width * display.scaleFactor);
       const physHeight = Math.round(display.bounds.height * display.scaleFactor);
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: physWidth, height: physHeight }
       });
-      const source = findSourceForDisplay(display, sources);
+      const source = findSourceForDisplay(display, displayIndex, sources);
       if (source) {
         screenshotsByDisplayId.set(display.id, source.thumbnail.toDataURL());
         console.log(`Captured screenshot for display ${display.id} at ${physWidth}x${physHeight}`);

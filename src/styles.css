@@ -428,6 +428,10 @@ body {
   background: #F6F6F6;
 }
 
+.toggle-pill svg {
+  flex-shrink: 0;
+}
+
 /* ── Extras sections (Alternatives + Context) ── */
 .extras-section {
   border-top: 1px solid #E2E2E2;
@@ -529,7 +533,9 @@ body {
 .paste-btn {
   display: flex;
   align-items: center;
-  height: 32px;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
   background: #E2E2E2;
   border: none;
   border-radius: 6px;
@@ -547,13 +553,18 @@ body {
   background: #D4D4D4;
 }
 
+.paste-btn svg {
+  display: none;
+  flex-shrink: 0;
+}
+
 /* ── Copy icon button (source panel) ── */
 .copy-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   background: #E2E2E2;
   border: none;
@@ -576,8 +587,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   background: #000000;
   border: none;
@@ -1380,8 +1391,33 @@ body.alert-mode {
   }
   .toggle-pill {
     height: 24px;
-    padding: 0 8px;
+    padding: 0 7px;
     font-size: 10px;
+  }
+  .pill-label {
+    display: none;
+  }
+  .copy-icon-btn,
+  .copy-icon-btn-dark {
+    width: 24px;
+    height: 24px;
+  }
+  .copy-icon-btn svg,
+  .copy-icon-btn-dark svg {
+    width: 14px;
+    height: 14px;
+  }
+  .paste-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    gap: 0;
+  }
+  .paste-btn svg {
+    display: block;
+  }
+  .paste-btn-label {
+    display: none;
   }
 }
 
@@ -1442,6 +1478,37 @@ body.alert-mode {
     height: 28px;
     padding: 0 12px;
     font-size: 11px;
+  }
+  .pill-label {
+    display: inline;
+  }
+  .paste-btn svg {
+    display: block;
+  }
+  .copy-icon-btn,
+  .copy-icon-btn-dark {
+    width: 28px;
+    height: 28px;
+  }
+  .copy-icon-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  .copy-icon-btn-dark svg {
+    width: 18px;
+    height: 18px;
+  }
+  .paste-btn {
+    width: auto;
+    height: 28px;
+    padding: 0 12px;
+    gap: 5px;
+  }
+  .paste-btn svg {
+    display: none;
+  }
+  .paste-btn-label {
+    display: inline;
   }
   .translation-skeleton-overlay {
     padding: 64px 24px 20px;

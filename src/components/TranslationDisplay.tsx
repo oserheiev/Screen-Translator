@@ -15,6 +15,23 @@ interface TranslationDisplayProps {
   onToggleContext?: () => void;
 }
 
+const AlternativesIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="13 2 13 9 22 9" />
+    <polyline points="11 22 11 15 2 15" />
+    <line x1="22" y1="2" x2="13" y2="9" />
+    <line x1="2" y1="22" x2="11" y2="15" />
+  </svg>
+);
+
+const ContextIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </svg>
+);
+
 const CopyIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -76,7 +93,8 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
               onClick={onToggleAlternatives}
               title={t.alternatives}
             >
-              <span>⚡</span> {t.altToggleLabel}
+              <AlternativesIcon />
+              <span className="pill-label">{t.altToggleLabel}</span>
             </button>
           )}
           {onToggleContext && (
@@ -85,7 +103,8 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
               onClick={onToggleContext}
               title={t.contextOfUse}
             >
-              <span>💡</span> {t.contextToggleLabel}
+              <ContextIcon />
+              <span className="pill-label">{t.contextToggleLabel}</span>
             </button>
           )}
           <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>

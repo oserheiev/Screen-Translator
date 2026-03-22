@@ -120,32 +120,48 @@ export class GeminiService {
     return base64Image;
   }
 
-  private createImagePrompt(sourceLanguage: string, targetLanguage: string, extras?: ExtrasOptions): string {
-    const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
-    let prompt = `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
-      'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"';
-
+  private buildExtrasSchema(extras?: ExtrasOptions): string {
+    let schema = '';
     if (extras?.showAlternatives) {
-      prompt += ', "alternatives": [{"category": "<POS e.g. Nouns/Verbs/Adjectives/Idioms>", "items": [{"word": "<alternative>", "backTranslations": ["<back-translation>"]}]}]';
+      schema += ', "alternatives": [{"category": "<POS e.g. Nouns/Verbs/Adjectives/Idioms>", "items": [{"word": "<alternative translation>", "backTranslations": ["<back-translation>"]}]}]';
     }
     if (extras?.showContext) {
-      prompt += ', "context": {"explanation": "<2-3 sentences on when/how this is used>", "tags": [{"label": "<situation>", "applicable": true}]}';
+      schema += ', "context": {"explanation": "<2-3 sentences on when/how this is used>", "tags": [{"label": "<situation>", "applicable": true}]}';
     }
+    return schema;
+  }
 
-    prompt += '}. ';
-
+  private buildExtrasInstructions(sourceLangText: string, extras?: ExtrasOptions): string {
+    let instructions = '';
     if (extras?.showAlternatives) {
-      prompt += `For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. Back-translations must be written in the source language (${sourceLangText}). `;
+      instructions += `For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. Back-translations must be written in the source language (${sourceLangText}). `;
     }
     if (extras?.showContext) {
       const lang = extras.appLanguage ?? 'English';
-      prompt += `For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). Write the explanation and tag labels in ${lang}. `;
+      instructions += `For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). Write the explanation and tag labels in ${lang}. `;
     }
+    return instructions;
+  }
 
-    prompt += 'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
+  private extractExtras(parsed: any, extras?: ExtrasOptions): TranslationExtras {
+    const result: TranslationExtras = {};
+    if (extras?.showAlternatives && Array.isArray(parsed.alternatives)) {
+      result.alternatives = parsed.alternatives;
+    }
+    if (extras?.showContext && parsed.context) {
+      result.context = parsed.context;
+    }
+    return result;
+  }
+
+  private createImagePrompt(sourceLanguage: string, targetLanguage: string, extras?: ExtrasOptions): string {
+    const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
+    return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
+      'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"' +
+      this.buildExtrasSchema(extras) + '}. ' +
+      this.buildExtrasInstructions(sourceLangText, extras) +
+      'Use Markdown formatting for the text content to preserve structure (lists, indentation, paragraphs). ' +
       'Do not include markdown formatting for the JSON itself (like ```json).';
-
-    return prompt;
   }
 
   private createTranslationPrompt(text: string, sourceLanguage: string, targetLanguage: string): string {
@@ -156,58 +172,29 @@ export class GeminiService {
 
   private createTranslationPromptWithExtras(text: string, sourceLanguage: string, targetLanguage: string, extras: ExtrasOptions): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'detected language' : sourceLanguage;
-    let prompt = `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
-      'Return output in strict JSON format: {"translatedText": "translated text"';
-
-    if (extras.showAlternatives) {
-      prompt += ', "alternatives": [{"category": "<POS e.g. Nouns/Verbs/Adjectives/Idioms>", "items": [{"word": "<alternative>", "backTranslations": ["<back-translation>"]}]}]';
-    }
-    if (extras.showContext) {
-      prompt += ', "context": {"explanation": "<2-3 sentences on when/how this is used>", "tags": [{"label": "<situation>", "applicable": true}]}';
-    }
-
-    prompt += '}. ';
-
-    if (extras.showAlternatives) {
-      prompt += `For "alternatives": group by part of speech (Nouns, Verbs, Adjectives, Idioms etc.), include only relevant categories, dictionary style with back-translations. Back-translations must be written in the source language (${sourceLangText}). `;
-    }
-    if (extras.showContext) {
-      const lang = extras.appLanguage ?? 'English';
-      prompt += `For "context": explain in 2-3 sentences when/how this word or phrase is used, then provide tags covering formality, register, and common situations (set applicable: true/false). Write the explanation and tag labels in ${lang}. `;
-    }
-
-    prompt += 'Do not include markdown formatting for the JSON itself (like ```json).';
-    return prompt;
+    return `Translate the following text "${text}" from ${sourceLangText} to ${targetLanguage}. ` +
+      'Return output in strict JSON format: {"translatedText": "translated text"' +
+      this.buildExtrasSchema(extras) + '}. ' +
+      this.buildExtrasInstructions(sourceLangText, extras) +
+      'Do not include markdown formatting for the JSON itself (like ```json).';
   }
 
   private parseImageResponse(text: string, extras?: ExtrasOptions): TranslationResult & TranslationExtras {
     const parsed = this.parseJSONResponse<any>(text);
-    const result: TranslationResult & TranslationExtras = {
+    return {
       originalText: parsed.originalText ?? '',
       translatedText: parsed.translatedText ?? '',
+      ...this.extractExtras(parsed, extras),
     };
-    if (extras?.showAlternatives && Array.isArray(parsed.alternatives)) {
-      result.alternatives = parsed.alternatives;
-    }
-    if (extras?.showContext && parsed.context) {
-      result.context = parsed.context;
-    }
-    return result;
   }
 
   private parseTranslationWithExtras(text: string, extras: ExtrasOptions): { translatedText: string } & TranslationExtras {
     try {
       const parsed = this.parseJSONResponse<any>(text);
-      const result: { translatedText: string } & TranslationExtras = {
+      return {
         translatedText: parsed.translatedText ?? '',
+        ...this.extractExtras(parsed, extras),
       };
-      if (extras.showAlternatives && Array.isArray(parsed.alternatives)) {
-        result.alternatives = parsed.alternatives;
-      }
-      if (extras.showContext && parsed.context) {
-        result.context = parsed.context;
-      }
-      return result;
     } catch {
       // If JSON parsing fails, surface the raw text so the user sees something
       return { translatedText: text };
