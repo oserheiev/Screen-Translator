@@ -34,7 +34,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Bump version
-        run: npm version ${{ inputs.bump }} --no-git-tag-version --ignore-scripts
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: npm version "$BUMP" --no-git-tag-version --ignore-scripts
 
       - name: Read new version
         id: read_version
@@ -55,8 +57,8 @@ jobs:
         run: |
           VERSION=${{ steps.read_version.outputs.version }}
           prev=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
-          git log ${prev}..HEAD --pretty=format:"- %s" \
-            | grep -v "^- chore: bump version" > release-notes.txt
+          git log "${prev}"..HEAD --pretty=format:"- %s" \
+            | grep -v "^- chore: bump version" > release-notes.txt || true
 
       - name: Create draft release
         env:
