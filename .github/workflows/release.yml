@@ -1,19 +1,80 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options: [patch, minor, major]
 
 permissions:
   contents: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: npm version ${{ inputs.bump }} --no-git-tag-version --ignore-scripts
+
+      - name: Read new version
+        id: read_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Commit, tag, and push
+        run: |
+          VERSION=${{ steps.read_version.outputs.version }}
+          if ! git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null 2>&1; then
+            git add package.json package-lock.json
+            git commit -m "chore: bump version to v${VERSION}"
+            git tag "v${VERSION}"
+            git push origin master "v${VERSION}"
+          fi
+
+      - name: Collect changelog
+        run: |
+          VERSION=${{ steps.read_version.outputs.version }}
+          prev=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          git log ${prev}..HEAD --pretty=format:"- %s" \
+            | grep -v "^- chore: bump version" > release-notes.txt
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.read_version.outputs.version }}
+          gh release view "v${VERSION}" 2>/dev/null || \
+            gh release create "v${VERSION}" \
+              --draft \
+              --title "v${VERSION}" \
+              --notes-file release-notes.txt
+
   release-mac:
+    needs: prepare
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.prepare.outputs.version }}
 
       - uses: actions/setup-node@v4
         with:
@@ -28,22 +89,24 @@ jobs:
 
       - run: npm ci
 
-      - name: Upload npm logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npm-logs-mac
-          path: ~/.npm/_logs/
+      - name: Build
+        run: npm run build
 
-      - name: Build & publish macOS
+      - name: Package macOS
+        run: npx electron-builder --mac --x64 --arm64 --publish never
+
+      - name: Upload macOS artifacts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release -- --mac --x64 --arm64
+        run: gh release upload "v${{ needs.prepare.outputs.version }}" dist/*.dmg dist/*.zip --clobber
 
   release-win:
+    needs: prepare
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.prepare.outputs.version }}
 
       - uses: actions/setup-node@v4
         with:
@@ -58,14 +121,14 @@ jobs:
 
       - run: npm ci
 
-      - name: Upload npm logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npm-logs-win
-          path: ~/.npm/_logs/
+      - name: Build
+        run: npm run build
 
-      - name: Build & publish Windows
+      - name: Package Windows
+        run: npx electron-builder --win --publish never
+
+      - name: Upload Windows artifacts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release -- --win
+        shell: bash
+        run: gh release upload "v${{ needs.prepare.outputs.version }}" dist/*.exe dist/*.yml --clobber
