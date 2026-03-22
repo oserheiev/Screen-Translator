@@ -51,6 +51,7 @@ jobs:
           fi
 
       - name: Collect changelog
+        if: ${{ !cancelled() }}
         run: |
           VERSION=${{ steps.read_version.outputs.version }}
           prev=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
