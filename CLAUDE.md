@@ -29,9 +29,18 @@ npm start
 # Package for distribution
 npm run package:mac
 npm run package:win
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-There are no automated tests — only manual testing.
+**Always run `npm test` after any code change and ensure all tests pass before committing.**
 
 To open DevTools, launch with `--debug` flag or set `NODE_ENV=development`.
 

@@ -157,6 +157,7 @@ export class GeminiService {
   private createImagePrompt(sourceLanguage: string, targetLanguage: string, extras?: ExtrasOptions): string {
     const sourceLangText = sourceLanguage === 'Auto' ? 'any language' : sourceLanguage;
     return `Extract text from this image (source language: ${sourceLangText}) and translate it to ${targetLanguage}. ` +
+      `Translate the meaning of words accurately — do not transliterate or phonetically transcribe. ` +
       'Return output in strict JSON format: {"originalText": "detected original text", "translatedText": "translated text"' +
       this.buildExtrasSchema(extras) + '}. ' +
       this.buildExtrasInstructions(sourceLangText, extras) +
