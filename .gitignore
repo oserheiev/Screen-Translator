@@ -49,3 +49,7 @@ packages/
 # Temporary files
 *.tmp
 *.temp
+
+# AI
+.claude/
+docs/superpowers/

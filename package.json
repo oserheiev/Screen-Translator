@@ -73,7 +73,8 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "assets/icons/icon.png"
+      "icon": "assets/icons/icon.png",
+      "artifactName": "Screen-Translator-Setup-${version}.${ext}"
     },
     "asarUnpack": [
       "**/uiohook-napi/**"
