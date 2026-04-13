@@ -107,7 +107,7 @@ function createWindow() {
   const saveBounds = () => {
     if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
     saveBoundsTimer = setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isMaximized()) {
         store.set('windowBounds', mainWindow.getBounds());
       }
     }, 500);
@@ -136,6 +136,13 @@ function createWindow() {
     } else {
       event.preventDefault();
       mainWindow?.hide();
+    }
+  });
+
+  mainWindow.on('close', () => {
+    if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isMaximized()) {
+      store.set('windowBounds', mainWindow.getBounds());
     }
   });
 
