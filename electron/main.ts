@@ -103,7 +103,19 @@ function createWindow() {
     icon: path.join(__dirname, WINDOW_CONFIG.ICON_PATH)
   });
 
-  // Load the index.html of the app
+  let saveBoundsTimer: ReturnType<typeof setTimeout> | null = null;
+  const saveBounds = () => {
+    if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+    saveBoundsTimer = setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        store.set('windowBounds', mainWindow.getBounds());
+      }
+    }, 500);
+  };
+
+  mainWindow.on('resize', saveBounds);
+  mainWindow.on('move', saveBounds);
+
   mainWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, WINDOW_CONFIG.INDEX_HTML_PATH),
