@@ -1,7 +1,9 @@
+import { Settings } from './types';
+
 export function validateWindowBounds(
-  bounds: { x: number; y: number; width: number; height: number } | null | undefined,
+  bounds: NonNullable<Settings['windowBounds']> | null | undefined,
   displays: { bounds: { x: number; y: number; width: number; height: number } }[]
-): { x: number; y: number; width: number; height: number } | null {
+): NonNullable<Settings['windowBounds']> | null {
   if (!bounds) return null;
 
   const visible = displays.some((display) => {

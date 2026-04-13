@@ -35,4 +35,9 @@ describe('validateWindowBounds', () => {
   it('returns null for undefined input', () => {
     expect(validateWindowBounds(undefined, [primary])).toBeNull();
   });
+
+  it('returns null when the displays array is empty', () => {
+    const bounds = { x: 100, y: 100, width: 800, height: 600 };
+    expect(validateWindowBounds(bounds, [])).toBeNull();
+  });
 });
