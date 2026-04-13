@@ -8,6 +8,7 @@ import { Settings, AppLanguage } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 import { getLocale } from '../src/i18n/index';
 import { showCaptureWindows } from './captureWindowManager';
+import { validateWindowBounds } from './windowBounds';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -82,10 +83,16 @@ let captureWindows: Map<number, BrowserWindow> = new Map();
 let isCapturing = false;
 
 function createWindow() {
-  // Create the browser window
+  const savedBounds = validateWindowBounds(
+    store.get('windowBounds'),
+    screen.getAllDisplays()
+  );
+
   mainWindow = new BrowserWindow({
-    width: WINDOW_CONFIG.WIDTH,
-    height: WINDOW_CONFIG.HEIGHT,
+    width: savedBounds?.width ?? WINDOW_CONFIG.WIDTH,
+    height: savedBounds?.height ?? WINDOW_CONFIG.HEIGHT,
+    x: savedBounds?.x,
+    y: savedBounds?.y,
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     webPreferences: {
