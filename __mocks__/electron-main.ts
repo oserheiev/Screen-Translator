@@ -8,6 +8,7 @@ const app = {
   whenReady: jest.fn().mockResolvedValue(undefined),
   isPackaged: false,
   requestSingleInstanceLock: jest.fn().mockReturnValue(true),
+  focus: jest.fn(),
 };
 
 const BrowserWindow = jest.fn().mockImplementation(() => ({
@@ -31,6 +32,9 @@ const BrowserWindow = jest.fn().mockImplementation(() => ({
   showInactive: jest.fn(),
   focus: jest.fn(),
   setIgnoreMouseEvents: jest.fn(),
+  moveTop: jest.fn(),
+  setVisibleOnAllWorkspaces: jest.fn(),
+  setPosition: jest.fn(),
 }));
 (BrowserWindow as any).getAllWindows = jest.fn().mockReturnValue([]);
 (BrowserWindow as any).fromWebContents = jest.fn();

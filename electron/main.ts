@@ -7,6 +7,7 @@ import { autoUpdater } from 'electron-updater';
 import { Settings, AppLanguage } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 import { getLocale } from '../src/i18n/index';
+import { showCaptureWindows } from './captureWindowManager';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -462,37 +463,8 @@ function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: numbe
 }
 
 function showAllCaptureWindows() {
-  globalShortcut.register('Escape', () => closeAllCaptureWindows());
-
-  captureWindows.forEach((captureWindow, displayId) => {
-    if (captureWindow && !captureWindow.isDestroyed()) {
-      let shown = false;
-
-      const showWindow = () => {
-        if (shown || captureWindow.isDestroyed()) return;
-        shown = true;
-
-        captureWindow.setAlwaysOnTop(true, 'screen-saver');
-        captureWindow.setIgnoreMouseEvents(false);
-        captureWindow.setVisibleOnAllWorkspaces(true);
-        captureWindow.showInactive();
-        captureWindow.moveTop();
-
-        process.nextTick(() => {
-          if (captureWindow && !captureWindow.isDestroyed()) {
-            captureWindow.moveTop();
-          }
-        });
-      };
-
-      captureWindow.once('ready-to-show', showWindow);
-
-      setTimeout(() => {
-        if (!shown) {
-          showWindow();
-        }
-      }, 300);
-    }
+  showCaptureWindows(captureWindows, () => {
+    closeAllCaptureWindows().catch(console.error);
   });
 }
 
@@ -638,14 +610,6 @@ function setupIpcHandlers() {
       mainWindow.show();
       mainWindow.focus();
       mainWindow.moveTop();
-    }
-  });
-
-  ipcMain.handle(IPC_CHANNELS.CAPTURE_READY, (event) => {
-    const senderWindow = BrowserWindow.fromWebContents(event.sender);
-    if (senderWindow) {
-      console.log('Capture window reported ready, forcing focus');
-      senderWindow.focus();
     }
   });
 
