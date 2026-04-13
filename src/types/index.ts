@@ -75,7 +75,6 @@ export interface ElectronAPI {
     getSources: () => Promise<Electron.DesktopCapturerSource[]>;
     complete: (imageData: string) => Promise<void>;
     log: (message: string, ...args: any[]) => Promise<void>;
-    ready: () => Promise<void>;
   };
   alert: {
     show: (title: string, message: string) => Promise<void>;

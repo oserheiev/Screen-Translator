@@ -83,7 +83,6 @@ class ScreenCapture {
             this.displayScreenshot();
             this.displayInstructions();
             document.body.style.cursor = 'crosshair';
-            window.electron.capture.ready();
 
             console.log(`Screen capture initialized for display ${this.displayId}`);
         } catch (error) {

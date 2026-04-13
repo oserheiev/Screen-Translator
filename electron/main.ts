@@ -7,6 +7,8 @@ import { autoUpdater } from 'electron-updater';
 import { Settings, AppLanguage } from './types';
 import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 import { getLocale } from '../src/i18n/index';
+import { showCaptureWindows } from './captureWindowManager';
+import { validateWindowBounds } from './windowBounds';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -81,10 +83,16 @@ let captureWindows: Map<number, BrowserWindow> = new Map();
 let isCapturing = false;
 
 function createWindow() {
-  // Create the browser window
+  const savedBounds = validateWindowBounds(
+    store.get('windowBounds'),
+    screen.getAllDisplays()
+  );
+
   mainWindow = new BrowserWindow({
-    width: WINDOW_CONFIG.WIDTH,
-    height: WINDOW_CONFIG.HEIGHT,
+    width: savedBounds?.width ?? WINDOW_CONFIG.WIDTH,
+    height: savedBounds?.height ?? WINDOW_CONFIG.HEIGHT,
+    x: savedBounds?.x,
+    y: savedBounds?.y,
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     webPreferences: {
@@ -95,7 +103,19 @@ function createWindow() {
     icon: path.join(__dirname, WINDOW_CONFIG.ICON_PATH)
   });
 
-  // Load the index.html of the app
+  let saveBoundsTimer: ReturnType<typeof setTimeout> | null = null;
+  const saveBounds = () => {
+    if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+    saveBoundsTimer = setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isMaximized()) {
+        store.set('windowBounds', mainWindow.getBounds());
+      }
+    }, 500);
+  };
+
+  mainWindow.on('resize', saveBounds);
+  mainWindow.on('move', saveBounds);
+
   mainWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, WINDOW_CONFIG.INDEX_HTML_PATH),
@@ -116,6 +136,13 @@ function createWindow() {
     } else {
       event.preventDefault();
       mainWindow?.hide();
+    }
+  });
+
+  mainWindow.on('close', () => {
+    if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isMaximized()) {
+      store.set('windowBounds', mainWindow.getBounds());
     }
   });
 
@@ -462,37 +489,8 @@ function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: numbe
 }
 
 function showAllCaptureWindows() {
-  globalShortcut.register('Escape', () => closeAllCaptureWindows());
-
-  captureWindows.forEach((captureWindow, displayId) => {
-    if (captureWindow && !captureWindow.isDestroyed()) {
-      let shown = false;
-
-      const showWindow = () => {
-        if (shown || captureWindow.isDestroyed()) return;
-        shown = true;
-
-        captureWindow.setAlwaysOnTop(true, 'screen-saver');
-        captureWindow.setIgnoreMouseEvents(false);
-        captureWindow.setVisibleOnAllWorkspaces(true);
-        captureWindow.showInactive();
-        captureWindow.moveTop();
-
-        process.nextTick(() => {
-          if (captureWindow && !captureWindow.isDestroyed()) {
-            captureWindow.moveTop();
-          }
-        });
-      };
-
-      captureWindow.once('ready-to-show', showWindow);
-
-      setTimeout(() => {
-        if (!shown) {
-          showWindow();
-        }
-      }, 300);
-    }
+  showCaptureWindows(captureWindows, () => {
+    closeAllCaptureWindows().catch(console.error);
   });
 }
 
@@ -638,14 +636,6 @@ function setupIpcHandlers() {
       mainWindow.show();
       mainWindow.focus();
       mainWindow.moveTop();
-    }
-  });
-
-  ipcMain.handle(IPC_CHANNELS.CAPTURE_READY, (event) => {
-    const senderWindow = BrowserWindow.fromWebContents(event.sender);
-    if (senderWindow) {
-      console.log('Capture window reported ready, forcing focus');
-      senderWindow.focus();
     }
   });
 
