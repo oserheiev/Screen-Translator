@@ -307,7 +307,7 @@ async function startScreenCapture() {
       const display = displays.find(d => d.id === displayId)!;
       if (screenshot) {
         window.webContents.send(IPC_CHANNELS.SCREENSHOT_READY, {
-          dataUrl: 'data:image/png;base64,' + screenshot.toString('base64'),
+          buffer: screenshot,
           displayId,
           displayX: display.bounds.x,
           displayY: display.bounds.y,

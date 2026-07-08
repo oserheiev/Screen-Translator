@@ -107,5 +107,6 @@ const captureLocales: Record<string, CaptureLocale> = {
 };
 
 export function getCaptureLocale(lang: string | undefined): CaptureLocale {
-  return (lang && captureLocales[lang]) ?? captureLocales['English'];
+  if (!lang) return captureLocales['English'];
+  return captureLocales[lang] ?? captureLocales['English'];
 }

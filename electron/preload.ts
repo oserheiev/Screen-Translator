@@ -36,8 +36,11 @@ contextBridge.exposeInMainWorld(
         }
       },
       log: (message: string, ...args: any[]) => ipcRenderer.invoke('log-message', message, ...args),
-      onScreenshotReady: (callback: (payload: { dataUrl: string; displayId: number; displayX: number; displayY: number }) => void) => {
-        ipcRenderer.once('screenshot-ready', (_event, payload) => callback(payload));
+      onScreenshotReady: (callback: (payload: { buffer: Uint8Array; displayId: number; displayX: number; displayY: number }) => void) => {
+        ipcRenderer.on('screenshot-ready', (_event, payload) => callback(payload));
+      },
+      onCaptureReset: (callback: () => void) => {
+        ipcRenderer.on('capture-reset', () => callback());
       }
     },
     clipboard: {

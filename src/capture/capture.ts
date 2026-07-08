@@ -1,5 +1,5 @@
 import './capture.css';
-import { ElectronAPI } from '../types';
+import { ElectronAPI, ScreenshotPayload } from '../types';
 import { CaptureLocale, getCaptureLocale } from './captureLocales';
 
 // Add types for the window object
@@ -19,22 +19,13 @@ interface SelectionBounds extends Point {
     height: number;
 }
 
-interface ScreenshotPayload {
-    dataUrl: string;
-    displayId: number;
-    displayX: number;
-    displayY: number;
-}
-
-class ScreenCapture {
+export class ScreenCapture {
     private isSelecting: boolean = false;
     private isCompleting: boolean = false;
     private startPoint: Point = { x: 0, y: 0 };
     private endPoint: Point = { x: 0, y: 0 };
-    private screenshotDataURL: string | null = null;
     private imageElement: HTMLImageElement | null = null;
-    private retryCount: number = 0;
-    private maxRetries: number = 3;
+    private objectUrl: string | null = null;
     private displayId: number = 0;
     private displayOffset: Point = { x: 0, y: 0 };
     private animationFrame: number | null = null;
@@ -63,56 +54,65 @@ class ScreenCapture {
         this.init();
     }
 
-    async init() {
+    init() {
+        console.log('Initializing screen capture');
+
+        this.setupEventListeners();
+
+        // Persistent listeners: this window is pooled and reused across captures
+        window.electron.capture.onScreenshotReady((payload: ScreenshotPayload) => {
+            this.handleScreenshot(payload);
+        });
+        window.electron.capture.onCaptureReset(() => this.reset());
+
+        // Locale resolves long before the first capture (window is pre-created at startup)
+        window.electron.settings.get().then(
+            s => { this.locale = getCaptureLocale(s.appLanguage ?? 'English'); },
+            () => { /* fallback to English */ }
+        );
+    }
+
+    handleScreenshot(payload: ScreenshotPayload) {
         try {
-            console.log('Initializing screen capture');
+            this.reset();
 
-            const [, screenshotPayload] = await Promise.all([
-                window.electron.settings.get().then(
-                    s => { this.locale = getCaptureLocale(s.appLanguage ?? 'English'); },
-                    () => { /* fallback to English */ }
-                ),
-                this.waitForScreenshot(),
-            ]);
+            this.displayId = payload.displayId;
+            this.displayOffset = { x: payload.displayX, y: payload.displayY };
 
-            this.displayId = screenshotPayload.displayId;
-            this.displayOffset = { x: screenshotPayload.displayX, y: screenshotPayload.displayY };
-            this.screenshotDataURL = screenshotPayload.dataUrl;
+            const blob = new Blob([payload.buffer as unknown as BlobPart], { type: 'image/png' });
+            this.objectUrl = URL.createObjectURL(blob);
 
-            this.setupEventListeners();
-            this.displayScreenshot();
+            this.imageElement = document.createElement('img');
+            this.imageElement.className = 'screenshot-background';
+            this.imageElement.src = this.objectUrl;
+            document.body.appendChild(this.imageElement);
+
             this.displayInstructions();
             document.body.style.cursor = 'crosshair';
 
-            console.log(`Screen capture initialized for display ${this.displayId}`);
+            console.log(`Screen capture ready for display ${this.displayId}`);
         } catch (error) {
-            console.error('Failed to initialize screen capture:', error);
+            console.error('Failed to display screenshot:', error);
             this.showError(`Failed to initialize screen capture: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
-    waitForScreenshot(): Promise<ScreenshotPayload> {
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error('Screenshot not received from main process'));
-            }, 10000);
-
-            (window.electron.capture as any).onScreenshotReady((payload: ScreenshotPayload) => {
-                clearTimeout(timeout);
-                resolve(payload);
-            });
-        });
-    }
-
-    displayScreenshot() {
-        if (!this.screenshotDataURL) {
-            throw new Error('No screenshot data available');
+    reset() {
+        if (this.imageElement) {
+            this.imageElement.remove();
+            this.imageElement = null;
         }
-
-        this.imageElement = document.createElement('img');
-        this.imageElement.className = 'screenshot-background';
-        this.imageElement.src = this.screenshotDataURL;
-        document.body.appendChild(this.imageElement);
+        if (this.objectUrl) {
+            URL.revokeObjectURL(this.objectUrl);
+            this.objectUrl = null;
+        }
+        const existingError = document.querySelector('.capture-error');
+        if (existingError) {
+            existingError.remove();
+        }
+        this.selectionArea.style.display = 'none';
+        this.isSelecting = false;
+        this.isCompleting = false;
     }
 
     setupEventListeners() {
@@ -215,7 +215,7 @@ class ScreenCapture {
 
     handleKeyDown(e: KeyboardEvent) {
         if (e.key === 'Escape') {
-            this.cleanup();
+            this.reset();
             // Window will be closed by main process on Escape
         }
     }
@@ -326,52 +326,14 @@ class ScreenCapture {
       <p>${message}</p>
       <div>
         <button id="close-btn">${this.locale.close}</button>
-        <button id="retry-btn">${this.locale.tryAgain}</button>
       </div>
     `;
 
         document.body.appendChild(errorElement);
 
         document.getElementById('close-btn')?.addEventListener('click', () => {
-            this.cleanup();
+            this.reset();
         });
-        document.getElementById('retry-btn')?.addEventListener('click', () => this.retry());
-    }
-
-    async retry() {
-        if (this.retryCount >= this.maxRetries) {
-            this.showError(this.locale.maxRetries);
-            return;
-        }
-
-        this.retryCount++;
-        console.log(`Retrying capture (attempt ${this.retryCount}/${this.maxRetries})`);
-
-        const errorElement = document.querySelector('.capture-error');
-        if (errorElement) {
-            errorElement.remove();
-        }
-
-        this.cleanup();
-        this.instructions.textContent = this.locale.initializing;
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        try {
-            await this.init();
-        } catch (error) {
-            this.showError(`Retry failed: ${error instanceof Error ? error.message : String(error)}`);
-        }
-    }
-
-    cleanup() {
-        if (this.imageElement) {
-            this.imageElement.remove();
-            this.imageElement = null;
-        }
-        this.screenshotDataURL = null;
-        this.isSelecting = false;
-        this.isCompleting = false;
     }
 }
 

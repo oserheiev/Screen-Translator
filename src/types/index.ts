@@ -40,6 +40,13 @@ export interface HistoryEntry {
   context?: ContextData;
 }
 
+export interface ScreenshotPayload {
+  buffer: Uint8Array;
+  displayId: number;
+  displayX: number;
+  displayY: number;
+}
+
 export interface ElectronAPI {
   settings: {
     get: () => Promise<{
@@ -75,6 +82,8 @@ export interface ElectronAPI {
     getSources: () => Promise<Electron.DesktopCapturerSource[]>;
     complete: (imageData: string) => Promise<void>;
     log: (message: string, ...args: any[]) => Promise<void>;
+    onScreenshotReady: (callback: (payload: ScreenshotPayload) => void) => void;
+    onCaptureReset: (callback: () => void) => void;
   };
   alert: {
     show: (title: string, message: string) => Promise<void>;
