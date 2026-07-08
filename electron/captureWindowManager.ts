@@ -1,5 +1,7 @@
 import { app, BrowserWindow, globalShortcut } from 'electron';
 
+// Windows are always fully loaded before this is called: pooled windows load
+// capture.html at prepare time, cold-path windows are awaited before showing.
 export function showCaptureWindows(
   windows: Map<number, BrowserWindow>,
   onEscapeClose: () => void
@@ -11,29 +13,16 @@ export function showCaptureWindows(
   windows.forEach((captureWindow) => {
     if (!captureWindow || captureWindow.isDestroyed()) return;
 
-    let shown = false;
+    captureWindow.setAlwaysOnTop(true, 'screen-saver');
+    captureWindow.setIgnoreMouseEvents(false);
+    captureWindow.show();
+    captureWindow.focus();
+    captureWindow.moveTop();
 
-    const showWindow = () => {
-      if (shown || captureWindow.isDestroyed()) return;
-      shown = true;
-
-      captureWindow.setAlwaysOnTop(true, 'screen-saver');
-      captureWindow.setIgnoreMouseEvents(false);
-      captureWindow.show();
-      captureWindow.focus();
-      captureWindow.moveTop();
-
-      process.nextTick(() => {
-        if (!captureWindow.isDestroyed()) {
-          captureWindow.moveTop();
-        }
-      });
-    };
-
-    captureWindow.once('ready-to-show', showWindow);
-
-    setTimeout(() => {
-      if (!shown) showWindow();
-    }, 300);
+    process.nextTick(() => {
+      if (!captureWindow.isDestroyed()) {
+        captureWindow.moveTop();
+      }
+    });
   });
 }

@@ -11,6 +11,7 @@ import { showCaptureWindows } from './captureWindowManager';
 import { validateWindowBounds } from './windowBounds';
 import { createCaptureWindow, loadCaptureInterface } from './captureWindowFactory';
 import { captureDisplayScreenshots } from './screenshot';
+import { CaptureWindowPool } from './captureWindowPool';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -83,6 +84,17 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureWindows: Map<number, BrowserWindow> = new Map();
 let isCapturing = false;
+
+let captureFromPool = false;
+const captureWindowPool = new CaptureWindowPool({
+  onWindowCreated: (win) => {
+    win.webContents.on('before-input-event', (_event, input) => {
+      if (input.key === 'Escape') {
+        closeAllCaptureWindows();
+      }
+    });
+  },
+});
 
 function createWindow() {
   const savedBounds = validateWindowBounds(
@@ -286,43 +298,45 @@ async function startScreenCapture() {
   console.log(`Found ${displays.length} displays`);
 
   try {
-    // Capture screenshots in main process before creating overlay windows.
-    // This avoids getUserMedia/video stream overhead and is faster.
+    // Capture the frozen screenshot FIRST (freeze-at-hotkey semantics),
+    // then show pre-created windows — or fall back to creating them now.
     const screenshotsByDisplayId = await captureDisplayScreenshots(displays);
 
-    const windowCreationPromises = displays.map(async (display) => {
-      const window = createCaptureWindow(display);
-      captureWindows.set(display.id, window);
-      return { window, displayId: display.id };
-    });
+    const pooled = captureWindowPool.acquire();
+    captureFromPool = pooled !== null;
 
-    const windowResults = await Promise.all(windowCreationPromises);
+    if (pooled) {
+      pooled.forEach((win, displayId) => captureWindows.set(displayId, win));
+    } else {
+      // Cold path: pool not ready (startup, display change, renderer crash)
+      await Promise.all(displays.map(async (display) => {
+        const window = createCaptureWindow(display);
+        captureWindows.set(display.id, window);
+        setupCaptureWindowEvents(window, display.id);
+        await loadCaptureInterface(window);
+      }));
+    }
 
-    const setupPromises = windowResults.map(async ({ window, displayId }) => {
-      await loadCaptureInterface(window);
-      setupCaptureWindowEvents(window, displayId);
-
-      // Send pre-captured screenshot along with display bounds to the window renderer
-      const screenshot = screenshotsByDisplayId.get(displayId);
-      const display = displays.find(d => d.id === displayId)!;
+    for (const display of displays) {
+      const window = captureWindows.get(display.id);
+      if (!window || window.isDestroyed()) continue;
+      const screenshot = screenshotsByDisplayId.get(display.id);
       if (screenshot) {
         window.webContents.send(IPC_CHANNELS.SCREENSHOT_READY, {
           buffer: screenshot,
-          displayId,
+          displayId: display.id,
           displayX: display.bounds.x,
           displayY: display.bounds.y,
         });
       } else {
-        console.error(`No screenshot available for display ${displayId}`);
+        console.error(`No screenshot available for display ${display.id}`);
         window.webContents.send(IPC_CHANNELS.CAPTURE_ERROR, 'Failed to capture screenshot for this display');
       }
-    });
-
-    await Promise.all(setupPromises);
+    }
 
     showAllCaptureWindows();
 
-    console.log(`Initialized capture windows for ${captureWindows.size} displays`);
+    console.log(`Initialized capture windows for ${captureWindows.size} displays (pool: ${captureFromPool})`);
   } catch (error) {
     console.error('Failed to start screen capture:', error);
     isCapturing = false;
@@ -343,24 +357,32 @@ async function closeAllCaptureWindows() {
   globalShortcut.unregister('Escape');
 
   try {
-    console.log(`Closing ${captureWindows.size} capture windows`);
+    console.log(`Releasing ${captureWindows.size} capture windows (pool: ${captureFromPool})`);
     const windows = Array.from(captureWindows.values());
     captureWindows.clear();
 
-    for (const win of windows) {
-      if (win && !win.isDestroyed()) {
-        try {
-          win.hide();
-          // Use setImmediate to ensure current event loop finishes before destruction
-          setImmediate(() => {
-            if (!win.isDestroyed()) win.destroy();
-          });
-        } catch (e) {
-          console.error('Error closing capture window:', e);
+    if (captureFromPool) {
+      // Pooled windows are hidden and reset, staying warm for the next capture
+      captureWindowPool.release();
+    } else {
+      for (const win of windows) {
+        if (win && !win.isDestroyed()) {
+          try {
+            win.hide();
+            // Use setImmediate to ensure current event loop finishes before destruction
+            setImmediate(() => {
+              if (!win.isDestroyed()) win.destroy();
+            });
+          } catch (e) {
+            console.error('Error closing capture window:', e);
+          }
         }
       }
+      // Warm the pool so the next capture takes the fast path
+      void captureWindowPool.prepare();
     }
   } finally {
+    captureFromPool = false;
     isClosingWindows = false;
     isCapturing = false;
   }
@@ -618,6 +640,20 @@ app.on('ready', () => {
       mainWindow?.webContents.send(IPC_CHANNELS.ACCESSIBILITY_ERROR);
     });
   }
+
+  void captureWindowPool.prepare();
+
+  // Rebuild the pool when the display configuration changes (events fire in bursts)
+  let displayChangeTimer: ReturnType<typeof setTimeout> | null = null;
+  const scheduleDisplayRebuild = () => {
+    if (displayChangeTimer) clearTimeout(displayChangeTimer);
+    displayChangeTimer = setTimeout(() => {
+      void captureWindowPool.prepare();
+    }, 500);
+  };
+  screen.on('display-added', scheduleDisplayRebuild);
+  screen.on('display-removed', scheduleDisplayRebuild);
+  screen.on('display-metrics-changed', scheduleDisplayRebuild);
 });
 
 // On second-instance attempt: focus/restore the existing window
@@ -646,6 +682,7 @@ app.on('activate', () => {
 app.on('before-quit', () => {
   app.quitting = true;
   keyboardHook.stop();
+  captureWindowPool.destroyAll();
 });
 
 declare global {
