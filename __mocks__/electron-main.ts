@@ -35,6 +35,7 @@ const BrowserWindow = jest.fn().mockImplementation(() => ({
   moveTop: jest.fn(),
   setVisibleOnAllWorkspaces: jest.fn(),
   setPosition: jest.fn(),
+  removeAllListeners: jest.fn(),
 }));
 (BrowserWindow as any).getAllWindows = jest.fn().mockReturnValue([]);
 (BrowserWindow as any).fromWebContents = jest.fn();

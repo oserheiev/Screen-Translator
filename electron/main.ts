@@ -9,6 +9,7 @@ import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 import { getLocale } from '../src/i18n/index';
 import { showCaptureWindows } from './captureWindowManager';
 import { validateWindowBounds } from './windowBounds';
+import { createCaptureWindow, loadCaptureInterface } from './captureWindowFactory';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -336,7 +337,7 @@ async function startScreenCapture() {
     }));
 
     const windowCreationPromises = displays.map(async (display) => {
-      const window = await createCaptureWindowForDisplay(display);
+      const window = createCaptureWindow(display);
       captureWindows.set(display.id, window);
       return { window, displayId: display.id };
     });
@@ -344,7 +345,7 @@ async function startScreenCapture() {
     const windowResults = await Promise.all(windowCreationPromises);
 
     const setupPromises = windowResults.map(async ({ window, displayId }) => {
-      await loadCaptureInterfaceForWindow(window);
+      await loadCaptureInterface(window);
       setupCaptureWindowEvents(window, displayId);
 
       // Send pre-captured screenshot along with display bounds to the window renderer
@@ -411,57 +412,6 @@ async function closeAllCaptureWindows() {
   }
 }
 
-async function createCaptureWindowForDisplay(display: Electron.Display): Promise<BrowserWindow> {
-  const captureWindow = new BrowserWindow({
-    width: display.bounds.width,
-    height: display.bounds.height,
-    x: display.bounds.x,
-    y: display.bounds.y,
-    transparent: true,
-    frame: false,
-    fullscreen: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    movable: false,
-    minimizable: false,
-    maximizable: false,
-    show: false,
-    focusable: true,
-    acceptFirstMouse: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, WINDOW_CONFIG.PRELOAD_PATH),
-      additionalArguments: [`--display-id=${display.id}`]
-    }
-  });
-
-  captureWindow.setVisibleOnAllWorkspaces(true);
-
-  captureWindow.setBounds({
-    x: display.bounds.x,
-    y: display.bounds.y,
-    width: display.bounds.width,
-    height: display.bounds.height
-  });
-
-  if (process.platform === 'darwin') {
-    captureWindow.setPosition(display.bounds.x, display.bounds.y);
-  }
-
-  return captureWindow;
-}
-
-async function loadCaptureInterfaceForWindow(captureWindow: BrowserWindow) {
-  await captureWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, WINDOW_CONFIG.CAPTURE_HTML_PATH),
-      protocol: 'file:',
-      slashes: true
-    })
-  );
-}
 
 function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: number) {
   captureWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
