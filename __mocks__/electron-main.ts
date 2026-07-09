@@ -35,6 +35,7 @@ const BrowserWindow = jest.fn().mockImplementation(() => ({
   moveTop: jest.fn(),
   setVisibleOnAllWorkspaces: jest.fn(),
   setPosition: jest.fn(),
+  removeAllListeners: jest.fn(),
 }));
 (BrowserWindow as any).getAllWindows = jest.fn().mockReturnValue([]);
 (BrowserWindow as any).fromWebContents = jest.fn();
@@ -53,6 +54,7 @@ const screen = {
   getPrimaryDisplay: jest.fn().mockReturnValue(
     { id: 1, bounds: { x: 0, y: 0, width: 1920, height: 1080 }, scaleFactor: 1 }
   ),
+  on: jest.fn(),
 };
 
 const globalShortcut = {

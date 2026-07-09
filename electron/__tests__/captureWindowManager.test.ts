@@ -4,45 +4,46 @@ import { app, BrowserWindow, globalShortcut } from 'electron';
 const MockBrowserWindow = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
 
 function makeMockWindow() {
-  const win = new MockBrowserWindow() as jest.Mocked<InstanceType<typeof BrowserWindow>>;
-  // Suppress ready-to-show so we control timing via fake timers
-  (win.once as jest.Mock).mockImplementation(() => win);
-  return win;
+  return new MockBrowserWindow() as jest.Mocked<InstanceType<typeof BrowserWindow>>;
 }
 
 describe('showCaptureWindows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('calls show() on each capture window', () => {
+  it('shows, focuses and raises each capture window immediately (windows are pre-loaded)', () => {
     const win = makeMockWindow();
+
     showCaptureWindows(new Map([[1, win as any]]), jest.fn());
 
-    jest.advanceTimersByTime(300);
+    expect(win.show).toHaveBeenCalledTimes(1);
+    expect(win.focus).toHaveBeenCalledTimes(1);
+    expect(win.moveTop).toHaveBeenCalled();
+  });
 
+  it('does not wait for ready-to-show', () => {
+    const win = makeMockWindow();
+
+    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
+
+    expect(win.once).not.toHaveBeenCalledWith('ready-to-show', expect.any(Function));
     expect(win.show).toHaveBeenCalled();
   });
 
-  it('calls focus() on each capture window', () => {
+  it('re-enables mouse events and raises always-on-top level', () => {
     const win = makeMockWindow();
+
     showCaptureWindows(new Map([[1, win as any]]), jest.fn());
 
-    jest.advanceTimersByTime(300);
-
-    expect(win.focus).toHaveBeenCalled();
+    expect(win.setAlwaysOnTop).toHaveBeenCalledWith(true, 'screen-saver');
+    expect(win.setIgnoreMouseEvents).toHaveBeenCalledWith(false);
   });
 
   it('does not call showInactive()', () => {
     const win = makeMockWindow();
-    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
 
-    jest.advanceTimersByTime(300);
+    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
 
     expect(win.showInactive).not.toHaveBeenCalled();
   });
@@ -55,55 +56,10 @@ describe('showCaptureWindows', () => {
 
   it('registers Escape shortcut to invoke the close callback', () => {
     const onClose = jest.fn();
+
     showCaptureWindows(new Map(), onClose);
 
     expect(globalShortcut.register).toHaveBeenCalledWith('Escape', expect.any(Function));
-  });
-
-  it('shows windows via ready-to-show event when it fires before the timeout', () => {
-    const win = makeMockWindow();
-    // Fire ready-to-show synchronously when registered
-    (win.once as jest.Mock).mockImplementation((event: string, cb: () => void) => {
-      if (event === 'ready-to-show') cb();
-      return win;
-    });
-
-    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
-
-    expect(win.show).toHaveBeenCalled();
-    expect(win.focus).toHaveBeenCalled();
-  });
-
-  it('only shows each window once even if both ready-to-show and timeout fire', () => {
-    const win = makeMockWindow();
-    (win.once as jest.Mock).mockImplementation((event: string, cb: () => void) => {
-      if (event === 'ready-to-show') cb();
-      return win;
-    });
-
-    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
-    jest.advanceTimersByTime(300);
-
-    expect(win.show).toHaveBeenCalledTimes(1);
-    expect(win.focus).toHaveBeenCalledTimes(1);
-  });
-
-  it('skips already-destroyed windows', () => {
-    const win = makeMockWindow();
-    (win.isDestroyed as jest.Mock).mockReturnValue(true);
-
-    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
-    jest.advanceTimersByTime(300);
-
-    expect(win.show).not.toHaveBeenCalled();
-    expect(win.focus).not.toHaveBeenCalled();
-  });
-
-  it('does not call setVisibleOnAllWorkspaces (already set at window creation)', () => {
-    const win = makeMockWindow();
-    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
-    jest.advanceTimersByTime(300);
-    expect(win.setVisibleOnAllWorkspaces).not.toHaveBeenCalled();
   });
 
   it('invokes the close callback when Escape is pressed', () => {
@@ -116,12 +72,29 @@ describe('showCaptureWindows', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('skips already-destroyed windows', () => {
+    const win = makeMockWindow();
+    (win.isDestroyed as jest.Mock).mockReturnValue(true);
+
+    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
+
+    expect(win.show).not.toHaveBeenCalled();
+    expect(win.focus).not.toHaveBeenCalled();
+  });
+
+  it('does not call setVisibleOnAllWorkspaces (already set at window creation)', () => {
+    const win = makeMockWindow();
+
+    showCaptureWindows(new Map([[1, win as any]]), jest.fn());
+
+    expect(win.setVisibleOnAllWorkspaces).not.toHaveBeenCalled();
+  });
+
   it('shows and focuses all windows when multiple displays are active', () => {
     const win1 = makeMockWindow();
     const win2 = makeMockWindow();
-    showCaptureWindows(new Map([[1, win1 as any], [2, win2 as any]]), jest.fn());
 
-    jest.advanceTimersByTime(300);
+    showCaptureWindows(new Map([[1, win1 as any], [2, win2 as any]]), jest.fn());
 
     expect(win1.show).toHaveBeenCalled();
     expect(win1.focus).toHaveBeenCalled();

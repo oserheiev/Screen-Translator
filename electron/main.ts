@@ -9,6 +9,9 @@ import { WINDOW_CONFIG, TRAY_ICONS, IPC_CHANNELS } from './constants';
 import { getLocale } from '../src/i18n/index';
 import { showCaptureWindows } from './captureWindowManager';
 import { validateWindowBounds } from './windowBounds';
+import { createCaptureWindow, loadCaptureInterface } from './captureWindowFactory';
+import { captureDisplayScreenshots } from './screenshot';
+import { CaptureWindowPool } from './captureWindowPool';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -81,6 +84,17 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureWindows: Map<number, BrowserWindow> = new Map();
 let isCapturing = false;
+
+let captureFromPool = false;
+const captureWindowPool = new CaptureWindowPool({
+  onWindowCreated: (win) => {
+    win.webContents.on('before-input-event', (_event, input) => {
+      if (input.key === 'Escape') {
+        closeAllCaptureWindows().catch(console.error);
+      }
+    });
+  },
+});
 
 function createWindow() {
   const savedBounds = validateWindowBounds(
@@ -267,28 +281,6 @@ async function requestScreenCapturePermission(): Promise<boolean> {
   return true;
 }
 
-function findSourceForDisplay(display: Electron.Display, displayIndex: number, sources: Electron.DesktopCapturerSource[]): Electron.DesktopCapturerSource | null {
-  // Sort screen sources by their sequential index (screen:0:0, screen:1:0, ...)
-  const screenSources = sources
-    .filter((s: any) => s.id.startsWith('screen:'))
-    .sort((a: any, b: any) => {
-      const aIdx = parseInt(a.id.split(':')[1] ?? '0', 10);
-      const bIdx = parseInt(b.id.split(':')[1] ?? '0', 10);
-      return aIdx - bIdx;
-    });
-
-  const match = screenSources.find((source: any) => {
-    if (source.id.includes(display.id.toString())) return true;
-    // @ts-ignore - display_id may be present on some platforms (raw ID string)
-    if (source.display_id === display.id.toString()) return true;
-    if (source.name && source.name.includes(display.id.toString())) return true;
-    return false;
-  });
-
-  // Positional fallback: match by display index (both APIs order displays left-to-right)
-  return match || screenSources[displayIndex] || screenSources[0] || null;
-}
-
 async function startScreenCapture() {
   if (isCapturing) return;
   isCapturing = true;
@@ -306,68 +298,56 @@ async function startScreenCapture() {
   console.log(`Found ${displays.length} displays`);
 
   try {
-    // Capture screenshots in main process before creating overlay windows.
-    // This avoids getUserMedia/video stream overhead and is faster.
-    // Each display gets its own getSources() call with the exact physical pixel dimensions
-    // so thumbnails are never upscaled or aspect-ratio-constrained by another display's size.
-    const { desktopCapturer } = require('electron');
+    // Capture the frozen screenshot FIRST (freeze-at-hotkey semantics),
+    // then show pre-created windows — or fall back to creating them now.
+    const screenshotsByDisplayId = await captureDisplayScreenshots(displays);
 
-    // Sort displays left-to-right (then top-to-bottom) to match desktopCapturer source order
-    const sortedDisplays = [...displays].sort((a, b) =>
-      a.bounds.x !== b.bounds.x ? a.bounds.x - b.bounds.x : a.bounds.y - b.bounds.y
-    );
+    const pooled = captureWindowPool.acquire();
+    captureFromPool = pooled !== null;
 
-    const screenshotsByDisplayId = new Map<number, string>();
-    await Promise.all(displays.map(async (display) => {
-      const displayIndex = sortedDisplays.findIndex(d => d.id === display.id);
-      const physWidth = Math.round(display.bounds.width * display.scaleFactor);
-      const physHeight = Math.round(display.bounds.height * display.scaleFactor);
-      const sources = await desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: { width: physWidth, height: physHeight }
-      });
-      const source = findSourceForDisplay(display, displayIndex, sources);
-      if (source) {
-        screenshotsByDisplayId.set(display.id, source.thumbnail.toDataURL());
-        console.log(`Captured screenshot for display ${display.id} at ${physWidth}x${physHeight}`);
-      } else {
-        console.warn(`No source found for display ${display.id}`);
-      }
-    }));
+    if (pooled) {
+      pooled.forEach((win, displayId) => captureWindows.set(displayId, win));
+    } else {
+      // Cold path: pool not ready (startup, display change, renderer crash)
+      await Promise.all(displays.map(async (display) => {
+        const window = createCaptureWindow(display);
+        captureWindows.set(display.id, window);
+        setupCaptureWindowEvents(window, display.id);
+        await loadCaptureInterface(window);
+      }));
+    }
 
-    const windowCreationPromises = displays.map(async (display) => {
-      const window = await createCaptureWindowForDisplay(display);
-      captureWindows.set(display.id, window);
-      return { window, displayId: display.id };
-    });
-
-    const windowResults = await Promise.all(windowCreationPromises);
-
-    const setupPromises = windowResults.map(async ({ window, displayId }) => {
-      await loadCaptureInterfaceForWindow(window);
-      setupCaptureWindowEvents(window, displayId);
-
-      // Send pre-captured screenshot along with display bounds to the window renderer
-      const screenshot = screenshotsByDisplayId.get(displayId);
-      const display = displays.find(d => d.id === displayId)!;
+    for (const display of displays) {
+      const window = captureWindows.get(display.id);
+      if (!window || window.isDestroyed()) continue;
+      const screenshot = screenshotsByDisplayId.get(display.id);
       if (screenshot) {
         window.webContents.send(IPC_CHANNELS.SCREENSHOT_READY, {
-          dataUrl: screenshot,
-          displayId,
+          buffer: screenshot,
+          displayId: display.id,
           displayX: display.bounds.x,
           displayY: display.bounds.y,
         });
       } else {
-        console.error(`No screenshot available for display ${displayId}`);
-        window.webContents.send(IPC_CHANNELS.CAPTURE_ERROR, 'Failed to capture screenshot for this display');
+        // No screenshot for this display: don't show it as an invisible,
+        // input-eating, always-on-top overlay. Drop it from the map; cold
+        // windows are destroyed outright, pooled windows just stay hidden
+        // (pool.release() resets them later).
+        console.error(`No screenshot available for display ${display.id}`);
+        captureWindows.delete(display.id);
+        if (!captureFromPool) {
+          window.destroy();
+        }
       }
-    });
+    }
 
-    await Promise.all(setupPromises);
+    if (captureWindows.size === 0) {
+      throw new Error('Failed to capture screenshot for any display');
+    }
 
     showAllCaptureWindows();
 
-    console.log(`Initialized capture windows for ${captureWindows.size} displays`);
+    console.log(`Initialized capture windows for ${captureWindows.size} displays (pool: ${captureFromPool})`);
   } catch (error) {
     console.error('Failed to start screen capture:', error);
     isCapturing = false;
@@ -382,85 +362,44 @@ async function startScreenCapture() {
 
 let isClosingWindows = false;
 async function closeAllCaptureWindows() {
-  if (isClosingWindows || captureWindows.size === 0) return;
+  // An acquired pool must always be released even when every window was
+  // dropped from captureWindows (e.g. all displays failed to screenshot),
+  // otherwise the pool stays stuck `inUse` and the hotkey goes dead.
+  if (isClosingWindows || (captureWindows.size === 0 && !captureFromPool)) return;
   isClosingWindows = true;
 
   globalShortcut.unregister('Escape');
 
   try {
-    console.log(`Closing ${captureWindows.size} capture windows`);
+    console.log(`Releasing ${captureWindows.size} capture windows (pool: ${captureFromPool})`);
     const windows = Array.from(captureWindows.values());
     captureWindows.clear();
 
-    for (const win of windows) {
-      if (win && !win.isDestroyed()) {
-        try {
-          win.hide();
-          // Use setImmediate to ensure current event loop finishes before destruction
-          setImmediate(() => {
-            if (!win.isDestroyed()) win.destroy();
-          });
-        } catch (e) {
-          console.error('Error closing capture window:', e);
+    if (captureFromPool) {
+      // Pooled windows are hidden and reset, staying warm for the next capture
+      captureWindowPool.release();
+    } else {
+      for (const win of windows) {
+        if (win && !win.isDestroyed()) {
+          try {
+            win.hide();
+            // Use setImmediate to ensure current event loop finishes before destruction
+            setImmediate(() => {
+              if (!win.isDestroyed()) win.destroy();
+            });
+          } catch (e) {
+            console.error('Error closing capture window:', e);
+          }
         }
       }
+      // Warm the pool so the next capture takes the fast path
+      void captureWindowPool.prepare();
     }
   } finally {
+    captureFromPool = false;
     isClosingWindows = false;
     isCapturing = false;
   }
-}
-
-async function createCaptureWindowForDisplay(display: Electron.Display): Promise<BrowserWindow> {
-  const captureWindow = new BrowserWindow({
-    width: display.bounds.width,
-    height: display.bounds.height,
-    x: display.bounds.x,
-    y: display.bounds.y,
-    transparent: true,
-    frame: false,
-    fullscreen: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    movable: false,
-    minimizable: false,
-    maximizable: false,
-    show: false,
-    focusable: true,
-    acceptFirstMouse: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, WINDOW_CONFIG.PRELOAD_PATH),
-      additionalArguments: [`--display-id=${display.id}`]
-    }
-  });
-
-  captureWindow.setVisibleOnAllWorkspaces(true);
-
-  captureWindow.setBounds({
-    x: display.bounds.x,
-    y: display.bounds.y,
-    width: display.bounds.width,
-    height: display.bounds.height
-  });
-
-  if (process.platform === 'darwin') {
-    captureWindow.setPosition(display.bounds.x, display.bounds.y);
-  }
-
-  return captureWindow;
-}
-
-async function loadCaptureInterfaceForWindow(captureWindow: BrowserWindow) {
-  await captureWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, WINDOW_CONFIG.CAPTURE_HTML_PATH),
-      protocol: 'file:',
-      slashes: true
-    })
-  );
 }
 
 function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: number) {
@@ -714,6 +653,20 @@ app.on('ready', () => {
       mainWindow?.webContents.send(IPC_CHANNELS.ACCESSIBILITY_ERROR);
     });
   }
+
+  void captureWindowPool.prepare();
+
+  // Rebuild the pool when the display configuration changes (events fire in bursts)
+  let displayChangeTimer: ReturnType<typeof setTimeout> | null = null;
+  const scheduleDisplayRebuild = () => {
+    if (displayChangeTimer) clearTimeout(displayChangeTimer);
+    displayChangeTimer = setTimeout(() => {
+      void captureWindowPool.prepare();
+    }, 500);
+  };
+  screen.on('display-added', scheduleDisplayRebuild);
+  screen.on('display-removed', scheduleDisplayRebuild);
+  screen.on('display-metrics-changed', scheduleDisplayRebuild);
 });
 
 // On second-instance attempt: focus/restore the existing window
@@ -742,6 +695,7 @@ app.on('activate', () => {
 app.on('before-quit', () => {
   app.quitting = true;
   keyboardHook.stop();
+  captureWindowPool.destroyAll();
 });
 
 declare global {
