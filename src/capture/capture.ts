@@ -210,6 +210,7 @@ export class ScreenCapture {
         } catch (error) {
             console.error('Capture failed:', error);
             this.showError(`Capture failed: ${error instanceof Error ? error.message : String(error)}`);
+            this.isCompleting = false;
         }
     }
 

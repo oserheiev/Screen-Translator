@@ -92,4 +92,23 @@ describe('ScreenCapture', () => {
 
     expect((capture as any).localToGlobalCoordinates(10, 20)).toEqual({ x: 1930, y: 120 });
   });
+
+  it('resets isCompleting and shows an error when a capture fails', async () => {
+    (window as any).electron.capture.complete = jest.fn().mockRejectedValue(new Error('ipc failed'));
+
+    const capture = new ScreenCapture();
+    screenshotCallback(makePayload());
+
+    const overlay = document.getElementById('captureOverlay') as HTMLElement;
+    overlay.dispatchEvent(new MouseEvent('mousedown', { clientX: 0, clientY: 0 }));
+    overlay.dispatchEvent(new MouseEvent('mousemove', { clientX: 50, clientY: 50 }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { clientX: 50, clientY: 50 }));
+
+    // Let the async handleMouseUp handler run to completion.
+    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect((capture as any).isCompleting).toBe(false);
+    expect(document.querySelector('.capture-error')).not.toBeNull();
+  });
 });

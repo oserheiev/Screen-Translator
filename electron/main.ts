@@ -329,9 +329,20 @@ async function startScreenCapture() {
           displayY: display.bounds.y,
         });
       } else {
+        // No screenshot for this display: don't show it as an invisible,
+        // input-eating, always-on-top overlay. Drop it from the map; cold
+        // windows are destroyed outright, pooled windows just stay hidden
+        // (pool.release() resets them later).
         console.error(`No screenshot available for display ${display.id}`);
-        window.webContents.send(IPC_CHANNELS.CAPTURE_ERROR, 'Failed to capture screenshot for this display');
+        captureWindows.delete(display.id);
+        if (!captureFromPool) {
+          window.destroy();
+        }
       }
+    }
+
+    if (captureWindows.size === 0) {
+      throw new Error('Failed to capture screenshot for any display');
     }
 
     showAllCaptureWindows();
@@ -351,7 +362,10 @@ async function startScreenCapture() {
 
 let isClosingWindows = false;
 async function closeAllCaptureWindows() {
-  if (isClosingWindows || captureWindows.size === 0) return;
+  // An acquired pool must always be released even when every window was
+  // dropped from captureWindows (e.g. all displays failed to screenshot),
+  // otherwise the pool stays stuck `inUse` and the hotkey goes dead.
+  if (isClosingWindows || (captureWindows.size === 0 && !captureFromPool)) return;
   isClosingWindows = true;
 
   globalShortcut.unregister('Escape');
