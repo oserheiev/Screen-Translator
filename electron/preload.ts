@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
+//
+// Channel names below are string literals rather than IPC_CHANNELS
+// constants: the preload script runs sandboxed and cannot `require`
+// local modules like electron/constants.ts at runtime, so literals
+// are intentional here (and must be kept in sync with IPC_CHANNELS).
 contextBridge.exposeInMainWorld(
   'electron',
   {

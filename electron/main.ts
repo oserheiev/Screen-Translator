@@ -90,7 +90,7 @@ const captureWindowPool = new CaptureWindowPool({
   onWindowCreated: (win) => {
     win.webContents.on('before-input-event', (_event, input) => {
       if (input.key === 'Escape') {
-        closeAllCaptureWindows();
+        closeAllCaptureWindows().catch(console.error);
       }
     });
   },
@@ -401,7 +401,6 @@ async function closeAllCaptureWindows() {
     isCapturing = false;
   }
 }
-
 
 function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: number) {
   captureWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {

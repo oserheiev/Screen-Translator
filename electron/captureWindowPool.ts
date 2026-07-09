@@ -119,6 +119,7 @@ export class CaptureWindowPool {
     }
   }
 
+  /** App-shutdown cleanup. Not safe mid-capture: destroys windows without checking inUse. */
   destroyAll(): void {
     this.disposeWindows();
   }
