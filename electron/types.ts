@@ -47,6 +47,8 @@ export interface Settings {
   showAlternatives?: boolean;
   showContext?: boolean;
   windowBounds?: { x: number; y: number; width: number; height: number };
+  lastSeenVersion?: string;
+  ignoredUpdateVersion?: string;
 }
 
 // Create a type for the store with proper methods

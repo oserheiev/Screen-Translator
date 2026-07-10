@@ -506,7 +506,9 @@ function setupIpcHandlers() {
       hotkey: store.get('hotkey'),
       theme: store.get('theme'),
       model: store.get('model'),
-      appLanguage: store.get('appLanguage')
+      appLanguage: store.get('appLanguage'),
+      lastSeenVersion: store.get('lastSeenVersion'),
+      ignoredUpdateVersion: store.get('ignoredUpdateVersion')
     };
   });
 
@@ -524,6 +526,8 @@ function setupIpcHandlers() {
       store.set('appLanguage', settings.appLanguage);
       updateTrayMenu(); // Rebuild tray menu in new language
     }
+    if (settings.lastSeenVersion !== undefined) store.set('lastSeenVersion', settings.lastSeenVersion);
+    if (settings.ignoredUpdateVersion !== undefined) store.set('ignoredUpdateVersion', settings.ignoredUpdateVersion);
     return true;
   });
 
