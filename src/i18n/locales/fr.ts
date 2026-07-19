@@ -69,6 +69,10 @@ const fr: LocaleStrings = {
 
   whatsNewTitle: "Quoi de neuf dans v{version}",
   whatsNewClose: "C'est noté",
+  updateAvailableTitle: 'Mise à jour disponible',
+  updateAvailableMessage: 'Une nouvelle version de Screen Translator est disponible : v{version}.',
+  updateNow: 'Mettre à jour',
+  ignoreRelease: 'Ignorer cette version',
 
   languageNames: {
     'Auto': 'Auto',

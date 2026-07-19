@@ -69,6 +69,10 @@ const ja: LocaleStrings = {
 
   whatsNewTitle: "v{version}の新機能",
   whatsNewClose: 'わかりました',
+  updateAvailableTitle: 'アップデートがあります',
+  updateAvailableMessage: 'Screen Translator の新しいバージョン v{version} が利用可能です。',
+  updateNow: '更新',
+  ignoreRelease: 'このバージョンをスキップ',
 
   languageNames: {
     'Auto': '自動',

@@ -69,6 +69,10 @@ const uk: LocaleStrings = {
 
   whatsNewTitle: "Що нового в v{version}",
   whatsNewClose: 'Зрозумів',
+  updateAvailableTitle: 'Доступне оновлення',
+  updateAvailableMessage: 'Доступна нова версія Screen Translator: v{version}.',
+  updateNow: 'Оновити',
+  ignoreRelease: 'Пропустити цю версію',
 
   languageNames: {
     'Auto': 'Авто',

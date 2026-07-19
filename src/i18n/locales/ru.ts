@@ -69,6 +69,10 @@ const ru: LocaleStrings = {
 
   whatsNewTitle: "Что нового в v{version}",
   whatsNewClose: 'Понял',
+  updateAvailableTitle: 'Доступно обновление',
+  updateAvailableMessage: 'Доступна новая версия Screen Translator: v{version}.',
+  updateNow: 'Обновить',
+  ignoreRelease: 'Пропустить эту версию',
 
   languageNames: {
     'Auto': 'Авто',

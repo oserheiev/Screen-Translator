@@ -69,6 +69,10 @@ const en: LocaleStrings = {
 
   whatsNewTitle: "What's New in v{version}",
   whatsNewClose: 'Got it',
+  updateAvailableTitle: 'Update Available',
+  updateAvailableMessage: 'A new version of Screen Translator is available: v{version}.',
+  updateNow: 'Update',
+  ignoreRelease: 'Ignore this release',
 
   languageNames: {
     'Auto': 'Auto',

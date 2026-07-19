@@ -81,6 +81,12 @@ export interface LocaleStrings {
   whatsNewTitle: string;
   whatsNewClose: string;
 
+  // UpdateAvailableModal
+  updateAvailableTitle: string;
+  updateAvailableMessage: string;
+  updateNow: string;
+  ignoreRelease: string;
+
   // DualLanguageSelector
   languageNames: Record<SupportedLanguage, string>;
 }

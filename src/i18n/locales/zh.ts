@@ -69,6 +69,10 @@ const zh: LocaleStrings = {
 
   whatsNewTitle: "v{version} 中的新增功能",
   whatsNewClose: '我知道了',
+  updateAvailableTitle: '有可用更新',
+  updateAvailableMessage: 'Screen Translator 新版本 v{version} 已发布。',
+  updateNow: '更新',
+  ignoreRelease: '跳过此版本',
 
   languageNames: {
     'Auto': '自动',
