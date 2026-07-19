@@ -59,6 +59,8 @@ export interface ElectronAPI {
       appLanguage: AppLanguage;
       showAlternatives?: boolean;
       showContext?: boolean;
+      lastSeenVersion?: string;
+      ignoredUpdateVersion?: string;
     }>;
     save: (settings: {
       apiKey?: string;
@@ -70,6 +72,8 @@ export interface ElectronAPI {
       appLanguage?: AppLanguage;
       showAlternatives?: boolean;
       showContext?: boolean;
+      lastSeenVersion?: string;
+      ignoredUpdateVersion?: string;
     }) => Promise<boolean>;
   };
   history: {

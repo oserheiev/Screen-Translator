@@ -5,6 +5,17 @@ import GeminiService from '../../services/gemini.service';
 
 jest.mock('../../services/gemini.service');
 
+jest.mock('../../whatsnew', () => {
+  const actual = jest.requireActual('../../whatsnew');
+  return {
+    ...actual,
+    WHATS_NEW: [
+      { version: '1.7.0', bullets: [{ English: 'Faster capture overlay' }] },
+      { version: '1.6.5', bullets: [{ English: 'Bug fixes' }] },
+    ],
+  };
+});
+
 // Minimal consumer to expose context values in tests
 const Consumer: React.FC<{ onRender?: (ctx: ReturnType<typeof useAppContext>) => void }> = ({ onRender }) => {
   const ctx = useAppContext();
@@ -295,5 +306,95 @@ describe('AppContext — history management', () => {
 
     expect(screen.getByTestId('original').textContent).toBe('Restored original');
     expect(screen.getByTestId('translated').textContent).toBe('Restored translation');
+  });
+});
+
+describe("AppContext — what's new", () => {
+  beforeEach(() => {
+    (window.electron.app.getVersion as jest.Mock).mockResolvedValue('1.7.0');
+  });
+
+  it('shows unseen entries after an upgrade', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({
+      apiKey: 'valid-key',
+      lastSeenVersion: '1.6.0',
+    });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() =>
+      expect(ctx.whatsNewEntries.map(e => e.version)).toEqual(['1.7.0', '1.6.5'])
+    );
+  });
+
+  it('treats missing lastSeenVersion with existing settings as an upgrade', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() => expect(ctx.whatsNewEntries.length).toBe(2));
+  });
+
+  it('fresh install: persists version silently and shows nothing', async () => {
+    // setupTests defaults: settings.get → null, history.get → []
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() =>
+      expect(window.electron.settings.save).toHaveBeenCalledWith({ lastSeenVersion: '1.7.0' })
+    );
+    expect(ctx.whatsNewEntries).toEqual([]);
+  });
+
+  it('does nothing when lastSeenVersion equals the current version', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({
+      apiKey: 'valid-key',
+      lastSeenVersion: '1.7.0',
+    });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() => expect(window.electron.settings.get).toHaveBeenCalled());
+    expect(ctx.whatsNewEntries).toEqual([]);
+    expect(window.electron.settings.save).not.toHaveBeenCalledWith(
+      expect.objectContaining({ lastSeenVersion: expect.anything() })
+    );
+  });
+
+  it('persists silently when no entries exist in the unseen range', async () => {
+    (window.electron.app.getVersion as jest.Mock).mockResolvedValue('1.8.0');
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({
+      apiKey: 'valid-key',
+      lastSeenVersion: '1.7.0',
+    });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() =>
+      expect(window.electron.settings.save).toHaveBeenCalledWith({ lastSeenVersion: '1.8.0' })
+    );
+    expect(ctx.whatsNewEntries).toEqual([]);
+  });
+
+  it('dismissWhatsNew clears entries and persists the current version', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({
+      apiKey: 'valid-key',
+      lastSeenVersion: '1.6.0',
+    });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.whatsNewEntries.length).toBe(2));
+
+    act(() => { ctx.dismissWhatsNew(); });
+
+    await waitFor(() =>
+      expect(window.electron.settings.save).toHaveBeenCalledWith({ lastSeenVersion: '1.7.0' })
+    );
+    expect(ctx.whatsNewEntries).toEqual([]);
   });
 });

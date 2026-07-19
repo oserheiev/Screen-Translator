@@ -3,6 +3,7 @@ import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, TranslationResult, Theme, HistoryEntry, AppLanguage, AlternativeGroup, ContextData } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
 import { getLocale } from '../i18n';
+import { WhatsNewEntry, WHATS_NEW, getUnseenEntries, compareVersions } from '../whatsnew';
 
 export type UpdateStatus = 'idle' | 'available' | 'downloading' | 'ready' | 'error';
 
@@ -40,6 +41,8 @@ interface AppContextType {
   handleDownloadUpdate: () => void;
   handleInstallUpdate: () => void;
   appVersion: string;
+  whatsNewEntries: WhatsNewEntry[];
+  dismissWhatsNew: () => void;
   showAlternatives: boolean;
   showContext: boolean;
   alternatives: AlternativeGroup[] | null;
@@ -82,6 +85,8 @@ const defaultContext: AppContextType = {
   handleDownloadUpdate: () => { },
   handleInstallUpdate: () => { },
   appVersion: '1.0.0',
+  whatsNewEntries: [],
+  dismissWhatsNew: () => { },
   showAlternatives: false,
   showContext: false,
   alternatives: null,
@@ -121,6 +126,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [updateProgress, setUpdateProgress] = useState(0);
   const [appVersion, setAppVersion] = useState('1.0.0');
+  const [whatsNewEntries, setWhatsNewEntries] = useState<WhatsNewEntry[]>([]);
 
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showContext, setShowContext] = useState(false);
@@ -158,7 +164,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
           setHistory(savedHistory || []);
 
           const version = await window.electron.app.getVersion();
-          if (version) setAppVersion(version);
+          if (version) {
+            setAppVersion(version);
+
+            const lastSeen: string | null = settings?.lastSeenVersion ?? null;
+            const isFreshInstall = !settings?.apiKey && (savedHistory ?? []).length === 0;
+            if (lastSeen === null && isFreshInstall) {
+              window.electron.settings.save({ lastSeenVersion: version }).catch(console.error);
+            } else if (lastSeen === null || compareVersions(lastSeen, version) < 0) {
+              const unseen = getUnseenEntries(lastSeen, version, WHATS_NEW);
+              if (unseen.length > 0) {
+                setWhatsNewEntries(unseen);
+              } else {
+                window.electron.settings.save({ lastSeenVersion: version }).catch(console.error);
+              }
+            }
+          }
 
           historyLoadedRef.current = true;
         }
@@ -273,6 +294,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   const handleInstallUpdate = useCallback(() => {
     window.electron.updater.install();
   }, []);
+
+  const dismissWhatsNew = useCallback(() => {
+    setWhatsNewEntries([]);
+    window.electron.settings.save({ lastSeenVersion: appVersion }).catch(console.error);
+  }, [appVersion]);
 
   const appendHistory = useCallback((entry: HistoryEntry) => {
     setHistory((prev: HistoryEntry[]) => [entry, ...prev].slice(0, 30));
@@ -439,6 +465,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     handleDownloadUpdate,
     handleInstallUpdate,
     appVersion,
+    whatsNewEntries,
+    dismissWhatsNew,
     showAlternatives,
     showContext,
     alternatives,
