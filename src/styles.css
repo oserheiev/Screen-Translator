@@ -1589,12 +1589,14 @@ body.alert-mode {
 }
 
 /* What's New modal */
-.whatsnew-modal .whatsnew-list {
+.whatsnew-modal .whatsnew-list,
+.update-available-modal .whatsnew-list {
   margin: 0 0 12px;
   padding-left: 20px;
 }
 
-.whatsnew-modal .whatsnew-list li {
+.whatsnew-modal .whatsnew-list li,
+.update-available-modal .whatsnew-list li {
   margin-bottom: 6px;
 }
 

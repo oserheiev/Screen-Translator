@@ -3,7 +3,7 @@ import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, TranslationResult, Theme, HistoryEntry, AppLanguage, AlternativeGroup, ContextData } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
 import { getLocale } from '../i18n';
-import { WhatsNewEntry, WHATS_NEW, getUnseenEntries, compareVersions } from '../whatsnew';
+import { WhatsNewEntry, WhatsNewBullet, WHATS_NEW, getUnseenEntries, compareVersions } from '../whatsnew';
 
 export type UpdateStatus = 'idle' | 'available' | 'downloading' | 'ready' | 'error';
 
@@ -46,6 +46,7 @@ interface AppContextType {
   updatePromptVersion: string | null;
   dismissUpdatePrompt: () => void;
   ignoreUpdateVersion: () => void;
+  updatePreviewBullets: WhatsNewBullet[] | null;
   showAlternatives: boolean;
   showContext: boolean;
   alternatives: AlternativeGroup[] | null;
@@ -93,6 +94,7 @@ const defaultContext: AppContextType = {
   updatePromptVersion: null,
   dismissUpdatePrompt: () => { },
   ignoreUpdateVersion: () => { },
+  updatePreviewBullets: null,
   showAlternatives: false,
   showContext: false,
   alternatives: null,
@@ -137,6 +139,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   // undefined = settings not loaded yet (suppresses the prompt until we know what's ignored)
   const [ignoredUpdateVersion, setIgnoredUpdateVersion] = useState<string | null | undefined>(undefined);
   const [updatePromptDismissed, setUpdatePromptDismissed] = useState<string | null>(null);
+  const [updatePreviewBullets, setUpdatePreviewBullets] = useState<WhatsNewBullet[] | null>(null);
 
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showContext, setShowContext] = useState(false);
@@ -278,9 +281,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   useEffect(() => {
     if (!isElectronAvailable) return;
 
-    const removeUpdateAvailable = window.electron.on('update-available', (info: { version: string; downloaded?: boolean }) => {
+    const removeUpdateAvailable = window.electron.on('update-available', (info: { version: string; downloaded?: boolean; previewBullets?: WhatsNewBullet[] | null }) => {
       setUpdateVersion(info.version);
       setUpdateStatus(info.downloaded ? 'ready' : 'available');
+      setUpdatePreviewBullets(info.previewBullets ?? null);
     });
 
     const removeUpdateProgress = window.electron.on('update-progress', (percent: number) => {
@@ -502,6 +506,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     updatePromptVersion,
     dismissUpdatePrompt,
     ignoreUpdateVersion,
+    updatePreviewBullets,
     showAlternatives,
     showContext,
     alternatives,

@@ -433,14 +433,32 @@ function showAllCaptureWindows() {
   });
 }
 
+async function fetchWhatsNewPreview(version: string): Promise<{ English: string; [key: string]: string }[] | null> {
+  try {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/oserheiev/Screen-Translator/v${version}/src/whatsnew.json`,
+      { signal: AbortSignal.timeout(3000) }
+    );
+    if (!res.ok) return null;
+    const entries = await res.json();
+    if (!Array.isArray(entries)) return null;
+    const entry = entries.find((e: any) => e && e.version === version);
+    return entry?.bullets ?? null;
+  } catch {
+    return null; // best-effort preview; never block the update-available notification on this
+  }
+}
+
 function setupAutoUpdater() {
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
 
-  autoUpdater.on('update-available', (info) => {
+  autoUpdater.on('update-available', async (info) => {
+    const previewBullets = await fetchWhatsNewPreview(info.version);
     mainWindow?.webContents.send(IPC_CHANNELS.UPDATE_AVAILABLE, {
       version: info.version,
       releaseNotes: info.releaseNotes,
+      previewBullets,
       downloaded: false
     });
   });

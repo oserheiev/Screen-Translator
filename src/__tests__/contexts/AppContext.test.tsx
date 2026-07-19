@@ -486,4 +486,35 @@ describe('AppContext — update prompt', () => {
       expect.objectContaining({ ignoredUpdateVersion: expect.anything() })
     );
   });
+
+  it('stores previewBullets from the update-available payload', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => {
+      listeners['update-available']({
+        version: '1.8.0',
+        downloaded: false,
+        previewBullets: [{ English: 'Faster startup' }],
+      });
+    });
+
+    await waitFor(() => expect(ctx.updatePreviewBullets).toEqual([{ English: 'Faster startup' }]));
+  });
+
+  it('defaults previewBullets to null when the payload omits it', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: false }); });
+
+    await waitFor(() => expect(ctx.updatePromptVersion).toBe('1.8.0'));
+    expect(ctx.updatePreviewBullets).toBeNull();
+  });
 });

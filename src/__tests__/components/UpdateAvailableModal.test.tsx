@@ -40,4 +40,18 @@ describe('UpdateAvailableModal', () => {
     await userEvent.click(await screen.findByText('×'));
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('renders a localized preview when bullets are provided', async () => {
+    renderModal([{ English: 'Faster startup', German: 'Schnellerer Start' }]);
+    expect(await screen.findByText('Faster startup')).toBeInTheDocument();
+  });
+
+  it('renders nothing extra when previewBullets is null', () => {
+    render(
+      <AppProvider>
+        <UpdateAvailableModal version="1.8.0" previewBullets={null} onUpdate={jest.fn()} onIgnore={jest.fn()} onClose={jest.fn()} />
+      </AppProvider>
+    );
+    expect(screen.queryByRole('list')).toBeNull();
+  });
 });

@@ -89,6 +89,7 @@ const App: React.FC = () => {
     updatePromptVersion,
     dismissUpdatePrompt,
     ignoreUpdateVersion,
+    updatePreviewBullets,
   } = useAppContext();
 
   const t = useLocale();
@@ -332,7 +333,7 @@ const App: React.FC = () => {
         {updatePromptVersion && !isFirstRun && (
           <UpdateAvailableModal
             version={updatePromptVersion}
-            previewBullets={null}
+            previewBullets={updatePreviewBullets}
             onUpdate={handleDownloadUpdate}
             onIgnore={ignoreUpdateVersion}
             onClose={dismissUpdatePrompt}
