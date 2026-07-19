@@ -52,4 +52,6 @@ packages/
 
 # AI
 .claude/
+!.claude/skills/
+!.claude/skills/**
 docs/superpowers/

@@ -103,6 +103,10 @@ an update (tracked via the `lastSeenVersion` setting); `UpdateAvailableModal` sh
 localized preview before installing, fetched from the new tag's `whatsnew.json` on
 GitHub. Never edit `src/whatsnew.json` by hand except to fix a broken entry.
 
+Before opening a PR, invoke the `release-notes` skill (`.claude/skills/release-notes/`)
+to write a fragment for the change, or apply the `no-release-notes` label if it has no
+user-facing impact.
+
 ### TypeScript Setup
 
 Two separate `tsconfig.json` files:
