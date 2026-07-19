@@ -1,0 +1,33 @@
+name: Release Notes Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    paths:
+      - 'src/**'
+      - 'electron/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for a release-notes fragment or the no-release-notes label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --name-only --diff-filter=A "${BASE_SHA}"...HEAD | grep -q '^\.release-notes/.*\.ya\?ml$'; then
+            echo "Fragment found — OK"
+            exit 0
+          fi
+          if gh pr view "${{ github.event.pull_request.number }}" --json labels --jq '.labels[].name' | grep -qx 'no-release-notes'; then
+            echo "no-release-notes label present — OK"
+            exit 0
+          fi
+          echo "This PR touches src/ or electron/ but adds no .release-notes/*.yml fragment."
+          echo "Add one describing the user-facing change, or apply the 'no-release-notes' label if this change has no user-facing impact."
+          exit 1
