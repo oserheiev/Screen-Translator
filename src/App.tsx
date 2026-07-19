@@ -329,8 +329,8 @@ const App: React.FC = () => {
           <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
         )}
 
-        {/* Update available modal */}
-        {updatePromptVersion && !isFirstRun && (
+        {/* Update available modal — only after What's New has been dismissed/shown, so the two modals never stack */}
+        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && (
           <UpdateAvailableModal
             version={updatePromptVersion}
             previewBullets={updatePreviewBullets}
