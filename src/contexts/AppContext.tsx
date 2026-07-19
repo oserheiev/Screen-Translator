@@ -43,6 +43,9 @@ interface AppContextType {
   appVersion: string;
   whatsNewEntries: WhatsNewEntry[];
   dismissWhatsNew: () => void;
+  updatePromptVersion: string | null;
+  dismissUpdatePrompt: () => void;
+  ignoreUpdateVersion: () => void;
   showAlternatives: boolean;
   showContext: boolean;
   alternatives: AlternativeGroup[] | null;
@@ -87,6 +90,9 @@ const defaultContext: AppContextType = {
   appVersion: '1.0.0',
   whatsNewEntries: [],
   dismissWhatsNew: () => { },
+  updatePromptVersion: null,
+  dismissUpdatePrompt: () => { },
+  ignoreUpdateVersion: () => { },
   showAlternatives: false,
   showContext: false,
   alternatives: null,
@@ -128,6 +134,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
   const [appVersion, setAppVersion] = useState('1.0.0');
   const [whatsNewEntries, setWhatsNewEntries] = useState<WhatsNewEntry[]>([]);
 
+  // undefined = settings not loaded yet (suppresses the prompt until we know what's ignored)
+  const [ignoredUpdateVersion, setIgnoredUpdateVersion] = useState<string | null | undefined>(undefined);
+  const [updatePromptDismissed, setUpdatePromptDismissed] = useState<string | null>(null);
+
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showContext, setShowContext] = useState(false);
   const [alternatives, setAlternatives] = useState<AlternativeGroup[] | null>(null);
@@ -160,6 +170,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
             setShowContext(settings.showContext ?? false);
           }
 
+          setIgnoredUpdateVersion(settings?.ignoredUpdateVersion ?? null);
+
           const savedHistory = await window.electron.history.get();
           setHistory(savedHistory || []);
 
@@ -185,6 +197,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
+        setIgnoredUpdateVersion(null);
         historyLoadedRef.current = true;
       }
     };
@@ -299,6 +312,25 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     setWhatsNewEntries([]);
     window.electron.settings.save({ lastSeenVersion: appVersion }).catch(console.error);
   }, [appVersion]);
+
+  const updatePromptVersion =
+    updateStatus === 'available' &&
+    updateVersion !== null &&
+    ignoredUpdateVersion !== undefined &&
+    updateVersion !== ignoredUpdateVersion &&
+    updateVersion !== updatePromptDismissed
+      ? updateVersion
+      : null;
+
+  const dismissUpdatePrompt = useCallback(() => {
+    setUpdatePromptDismissed(updateVersion);
+  }, [updateVersion]);
+
+  const ignoreUpdateVersion = useCallback(() => {
+    if (!updateVersion) return;
+    setIgnoredUpdateVersion(updateVersion);
+    window.electron.settings.save({ ignoredUpdateVersion: updateVersion }).catch(console.error);
+  }, [updateVersion]);
 
   const appendHistory = useCallback((entry: HistoryEntry) => {
     setHistory((prev: HistoryEntry[]) => [entry, ...prev].slice(0, 30));
@@ -467,6 +499,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }: AppProvide
     appVersion,
     whatsNewEntries,
     dismissWhatsNew,
+    updatePromptVersion,
+    dismissUpdatePrompt,
+    ignoreUpdateVersion,
     showAlternatives,
     showContext,
     alternatives,

@@ -7,6 +7,7 @@ import DualLanguageSelector from './components/DualLanguageSelector';
 import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
 import WhatsNewModal from './components/WhatsNewModal';
+import UpdateAvailableModal from './components/UpdateAvailableModal';
 import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
 
@@ -85,6 +86,9 @@ const App: React.FC = () => {
     toggleContext,
     whatsNewEntries,
     dismissWhatsNew,
+    updatePromptVersion,
+    dismissUpdatePrompt,
+    ignoreUpdateVersion,
   } = useAppContext();
 
   const t = useLocale();
@@ -322,6 +326,17 @@ const App: React.FC = () => {
         {/* What's New modal */}
         {whatsNewEntries.length > 0 && !isFirstRun && (
           <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
+        )}
+
+        {/* Update available modal */}
+        {updatePromptVersion && !isFirstRun && (
+          <UpdateAvailableModal
+            version={updatePromptVersion}
+            previewBullets={null}
+            onUpdate={handleDownloadUpdate}
+            onIgnore={ignoreUpdateVersion}
+            onClose={dismissUpdatePrompt}
+          />
         )}
 
         {/* First-run modal */}

@@ -398,3 +398,92 @@ describe("AppContext — what's new", () => {
     expect(ctx.whatsNewEntries).toEqual([]);
   });
 });
+
+describe('AppContext — update prompt', () => {
+  let listeners: Record<string, (...args: any[]) => void>;
+
+  beforeEach(() => {
+    listeners = {};
+    (window.electron.on as jest.Mock).mockImplementation((channel: string, cb: any) => {
+      listeners[channel] = cb;
+      return () => {};
+    });
+  });
+
+  it('prompts when an update is available and not ignored', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: false }); });
+
+    await waitFor(() => expect(ctx.updatePromptVersion).toBe('1.8.0'));
+  });
+
+  it('does not prompt for an ignored version but still updates the pill state', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({
+      apiKey: 'valid-key',
+      ignoredUpdateVersion: '1.8.0',
+    });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: false }); });
+
+    await waitFor(() => expect(ctx.updateStatus).toBe('available'));
+    expect(ctx.updatePromptVersion).toBeNull();
+  });
+
+  it('does not prompt for an already-downloaded update', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: true }); });
+
+    await waitFor(() => expect(ctx.updateStatus).toBe('ready'));
+    expect(ctx.updatePromptVersion).toBeNull();
+  });
+
+  it('ignoreUpdateVersion persists the version and hides the prompt', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: false }); });
+    await waitFor(() => expect(ctx.updatePromptVersion).toBe('1.8.0'));
+
+    act(() => { ctx.ignoreUpdateVersion(); });
+
+    await waitFor(() =>
+      expect(window.electron.settings.save).toHaveBeenCalledWith({ ignoredUpdateVersion: '1.8.0' })
+    );
+    expect(ctx.updatePromptVersion).toBeNull();
+  });
+
+  it('dismissUpdatePrompt hides for the session without persisting', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'valid-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+    await waitFor(() => expect(ctx.apiKey).toBe('valid-key'));
+
+    act(() => { listeners['update-available']({ version: '1.8.0', downloaded: false }); });
+    await waitFor(() => expect(ctx.updatePromptVersion).toBe('1.8.0'));
+
+    act(() => { ctx.dismissUpdatePrompt(); });
+
+    await waitFor(() => expect(ctx.updatePromptVersion).toBeNull());
+    expect(window.electron.settings.save).not.toHaveBeenCalledWith(
+      expect.objectContaining({ ignoredUpdateVersion: expect.anything() })
+    );
+  });
+});
