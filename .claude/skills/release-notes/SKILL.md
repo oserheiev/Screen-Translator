@@ -40,9 +40,7 @@ Rules:
   (say what changed for them, not how the code changed).
 - Also provide `Russian` and `Ukrainian` translations for each bullet yourself — you are
   the translator here, there is no separate translation step. Skip a language only if
-  you are genuinely unsure of a good translation; the app falls back to English per
-  bullet when a translation is missing, so an English-only bullet is never broken, just
-  less localized.
+  I've asked to skip.
 - Do not add any other language keys unless explicitly asked — only `English`,
   `Russian`, `Ukrainian` are translated in this repo today.
 
