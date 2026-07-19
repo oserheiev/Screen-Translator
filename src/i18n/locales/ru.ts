@@ -67,6 +67,13 @@ const ru: LocaleStrings = {
 
   apiKeyNotSet: 'API-ключ не задан. Укажите ваш API-ключ Gemini в настройках.',
 
+  whatsNewTitle: "Что нового в v{version}",
+  whatsNewClose: 'Понял',
+  updateAvailableTitle: 'Доступно обновление',
+  updateAvailableMessage: 'Доступна новая версия Screen Translator: v{version}.',
+  updateNow: 'Обновить',
+  ignoreRelease: 'Пропустить эту версию',
+
   languageNames: {
     'Auto': 'Авто',
     'English': 'Английский',

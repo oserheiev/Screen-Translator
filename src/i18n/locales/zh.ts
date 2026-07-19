@@ -67,6 +67,13 @@ const zh: LocaleStrings = {
 
   apiKeyNotSet: '未设置 API 密钥。请在设置中配置您的 Gemini API 密钥。',
 
+  whatsNewTitle: "v{version} 中的新增功能",
+  whatsNewClose: '我知道了',
+  updateAvailableTitle: '有可用更新',
+  updateAvailableMessage: 'Screen Translator 新版本 v{version} 已发布。',
+  updateNow: '更新',
+  ignoreRelease: '跳过此版本',
+
   languageNames: {
     'Auto': '自动',
     'English': '英语',

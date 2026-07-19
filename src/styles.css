@@ -1587,3 +1587,20 @@ body.alert-mode {
     font-size: 16px;
   }
 }
+
+/* What's New modal */
+.whatsnew-modal .whatsnew-list,
+.update-available-modal .whatsnew-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.whatsnew-modal .whatsnew-list li,
+.update-available-modal .whatsnew-list li {
+  margin-bottom: 6px;
+}
+
+.whatsnew-modal .whatsnew-version {
+  margin: 12px 0 6px;
+  font-size: 14px;
+}

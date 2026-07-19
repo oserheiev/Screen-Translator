@@ -67,6 +67,13 @@ const uk: LocaleStrings = {
 
   apiKeyNotSet: 'API-ключ не вказано. Будь ласка, задайте ваш API-ключ Gemini у налаштуваннях.',
 
+  whatsNewTitle: "Що нового в v{version}",
+  whatsNewClose: 'Зрозумів',
+  updateAvailableTitle: 'Доступне оновлення',
+  updateAvailableMessage: 'Доступна нова версія Screen Translator: v{version}.',
+  updateNow: 'Оновити',
+  ignoreRelease: 'Пропустити цю версію',
+
   languageNames: {
     'Auto': 'Авто',
     'English': 'Англійська',

@@ -44,6 +44,8 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - run: npm ci
+
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
@@ -58,25 +60,32 @@ jobs:
         id: read_version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
+      - name: Compile release notes
+        env:
+          VERSION: ${{ steps.read_version.outputs.version }}
+        run: node scripts/compile-release-notes.mjs --version "$VERSION"
+
+      - name: Collect changelog for the GitHub release body
+        env:
+          VERSION: ${{ steps.read_version.outputs.version }}
+        run: |
+          node -e "
+            const entries = require('./src/whatsnew.json');
+            const entry = entries.find(e => e.version === process.env.VERSION);
+            const lines = (entry ? entry.bullets : []).map(b => '- ' + b.English);
+            require('fs').writeFileSync('release-notes.txt', lines.join('\n') + '\n');
+          "
+
       - name: Commit, tag, and push
         env:
           VERSION: ${{ steps.read_version.outputs.version }}
         run: |
           if ! git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null 2>&1; then
-            git add package.json package-lock.json
-            git commit -m "chore: bump version to v${VERSION}"
+            git add package.json package-lock.json src/whatsnew.json .release-notes
+            git commit -m "chore: release v${VERSION}"
             git tag "v${VERSION}"
             git push origin master "v${VERSION}"
           fi
-
-      - name: Collect changelog
-        if: ${{ !cancelled() }}
-        env:
-          VERSION: ${{ steps.read_version.outputs.version }}
-        run: |
-          prev=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
-          git log "${prev}"..HEAD --pretty=format:"- %s" \
-            | grep -v "^- chore: bump version" > release-notes.txt || true
 
       - name: Create draft release
         env:

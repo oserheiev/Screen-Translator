@@ -6,6 +6,8 @@ import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
 import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
+import WhatsNewModal from './components/WhatsNewModal';
+import UpdateAvailableModal from './components/UpdateAvailableModal';
 import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
 
@@ -82,6 +84,12 @@ const App: React.FC = () => {
     contextData,
     toggleAlternatives,
     toggleContext,
+    whatsNewEntries,
+    dismissWhatsNew,
+    updatePromptVersion,
+    dismissUpdatePrompt,
+    ignoreUpdateVersion,
+    updatePreviewBullets,
   } = useAppContext();
 
   const t = useLocale();
@@ -313,6 +321,22 @@ const App: React.FC = () => {
               setAccessibilitySkipped(true);
             }}
             onClose={() => { setAccessibilityDenied(false); setAccessibilitySkipped(true); }}
+          />
+        )}
+
+        {/* What's New modal */}
+        {whatsNewEntries.length > 0 && !isFirstRun && (
+          <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
+        )}
+
+        {/* Update available modal — only after What's New has been dismissed/shown, so the two modals never stack */}
+        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && (
+          <UpdateAvailableModal
+            version={updatePromptVersion}
+            previewBullets={updatePreviewBullets}
+            onUpdate={handleDownloadUpdate}
+            onIgnore={ignoreUpdateVersion}
+            onClose={dismissUpdatePrompt}
           />
         )}
 

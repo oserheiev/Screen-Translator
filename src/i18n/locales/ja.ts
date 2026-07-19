@@ -67,6 +67,13 @@ const ja: LocaleStrings = {
 
   apiKeyNotSet: 'APIキーが設定されていません。設定からGemini APIキーを入力してください。',
 
+  whatsNewTitle: "v{version}の新機能",
+  whatsNewClose: 'わかりました',
+  updateAvailableTitle: 'アップデートがあります',
+  updateAvailableMessage: 'Screen Translator の新しいバージョン v{version} が利用可能です。',
+  updateNow: '更新',
+  ignoreRelease: 'このバージョンをスキップ',
+
   languageNames: {
     'Auto': '自動',
     'English': '英語',

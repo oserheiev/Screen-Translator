@@ -77,6 +77,16 @@ export interface LocaleStrings {
   // AppContext errors
   apiKeyNotSet: string;
 
+  // WhatsNewModal
+  whatsNewTitle: string;
+  whatsNewClose: string;
+
+  // UpdateAvailableModal
+  updateAvailableTitle: string;
+  updateAvailableMessage: string;
+  updateNow: string;
+  ignoreRelease: string;
+
   // DualLanguageSelector
   languageNames: Record<SupportedLanguage, string>;
 }

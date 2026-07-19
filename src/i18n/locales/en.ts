@@ -67,6 +67,13 @@ const en: LocaleStrings = {
 
   apiKeyNotSet: 'API key not set. Please set your Gemini API key in settings.',
 
+  whatsNewTitle: "What's New in v{version}",
+  whatsNewClose: 'Got it',
+  updateAvailableTitle: 'Update Available',
+  updateAvailableMessage: 'A new version of Screen Translator is available: v{version}.',
+  updateNow: 'Update',
+  ignoreRelease: 'Ignore this release',
+
   languageNames: {
     'Auto': 'Auto',
     'English': 'English',

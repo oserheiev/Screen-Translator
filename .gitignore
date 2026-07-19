@@ -51,5 +51,4 @@ packages/
 *.temp
 
 # AI
-.claude/
 docs/superpowers/

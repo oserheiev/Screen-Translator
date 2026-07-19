@@ -67,6 +67,13 @@ const ko: LocaleStrings = {
 
   apiKeyNotSet: 'API 키가 설정되지 않았습니다. 설정에서 Gemini API 키를 입력해 주세요.',
 
+  whatsNewTitle: "v{version}의 새로운 기능",
+  whatsNewClose: '알겠습니다',
+  updateAvailableTitle: '업데이트 가능',
+  updateAvailableMessage: 'Screen Translator의 새 버전 v{version}을(를) 사용할 수 있습니다.',
+  updateNow: '업데이트',
+  ignoreRelease: '이 버전 건너뛰기',
+
   languageNames: {
     'Auto': '자동',
     'English': '영어',
