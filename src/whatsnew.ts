@@ -1,11 +1,11 @@
 import { AppLanguage } from './types';
 import whatsnewData from './whatsnew.json';
 
-export type WhatsNewNotes = { English: string[] } & Partial<Record<AppLanguage, string[]>>;
+export type WhatsNewBullet = { English: string } & Partial<Record<AppLanguage, string>>;
 
 export interface WhatsNewEntry {
   version: string;
-  notes: WhatsNewNotes;
+  bullets: WhatsNewBullet[];
 }
 
 export const WHATS_NEW: WhatsNewEntry[] = whatsnewData as WhatsNewEntry[];

@@ -15,10 +15,10 @@ describe('compareVersions', () => {
 });
 
 const entries: WhatsNewEntry[] = [
-  { version: '2.0.0', notes: { English: ['two zero'] } },
-  { version: '1.9.0', notes: { English: ['one nine'] } },
-  { version: '1.8.0', notes: { English: ['one eight'] } },
-  { version: '1.7.0', notes: { English: ['one seven'] } },
+  { version: '2.0.0', bullets: [{ English: 'two zero' }] },
+  { version: '1.9.0', bullets: [{ English: 'one nine' }] },
+  { version: '1.8.0', bullets: [{ English: 'one eight' }] },
+  { version: '1.7.0', bullets: [{ English: 'one seven' }] },
 ];
 
 describe('getUnseenEntries', () => {
@@ -44,7 +44,7 @@ describe('getUnseenEntries', () => {
 });
 
 describe('whatsnew.json schema', () => {
-  it('has valid, unique, newest-first entries with non-empty English notes', () => {
+  it('has valid, unique, newest-first entries with a mandatory English bullet each', () => {
     const versions = WHATS_NEW.map(e => e.version);
     expect(new Set(versions).size).toBe(versions.length);
     for (let i = 1; i < WHATS_NEW.length; i++) {
@@ -52,13 +52,14 @@ describe('whatsnew.json schema', () => {
     }
     for (const entry of WHATS_NEW) {
       expect(entry.version).toMatch(/^\d+\.\d+\.\d+$/);
-      expect(entry.notes.English.length).toBeGreaterThan(0);
-      for (const [lang, notes] of Object.entries(entry.notes)) {
-        expect(APP_LANGUAGES).toContain(lang);
-        expect(notes!.length).toBeGreaterThan(0);
-        for (const note of notes!) {
-          expect(typeof note).toBe('string');
-          expect(note.trim()).not.toBe('');
+      expect(entry.bullets.length).toBeGreaterThan(0);
+      for (const bullet of entry.bullets) {
+        expect(typeof bullet.English).toBe('string');
+        expect(bullet.English.trim()).not.toBe('');
+        for (const [lang, text] of Object.entries(bullet)) {
+          expect(APP_LANGUAGES).toContain(lang);
+          expect(typeof text).toBe('string');
+          expect((text as string).trim()).not.toBe('');
         }
       }
     }
