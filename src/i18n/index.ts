@@ -29,6 +29,12 @@ export interface LocaleStrings {
   model: string;
   loadingModel: string;
   appLanguageLabel: string;
+  themeLabel: string;
+  themeLight: string;
+  themeDark: string;
+  themeSystem: string;
+  alwaysOnTopLabel: string;
+  launchAtStartupLabel: string;
   cancel: string;
   save: string;
   getStarted: string;
@@ -61,6 +67,7 @@ export interface LocaleStrings {
   clearHistory: string;
   today: string;
   yesterday: string;
+  deleteHistoryEntry: string;
 
   // TextDisplay
   sourceText: string;

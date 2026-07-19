@@ -46,6 +46,7 @@ export interface Settings {
   history?: any[];
   showAlternatives?: boolean;
   showContext?: boolean;
+  alwaysOnTop?: boolean;
   windowBounds?: { x: number; y: number; width: number; height: number };
   lastSeenVersion?: string;
   ignoredUpdateVersion?: string;

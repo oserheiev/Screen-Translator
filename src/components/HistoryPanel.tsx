@@ -5,6 +5,7 @@ import { useLocale } from '../i18n/useLocale';
 interface HistoryPanelProps {
   entries: HistoryEntry[];
   onSelect: (entry: HistoryEntry) => void;
+  onDelete: (id: string) => void;
   onClear: () => void;
   onClose?: () => void;
   closeOnSelect?: boolean;
@@ -24,7 +25,7 @@ function formatTimestamp(ts: number, today: string, yesterday: string): string {
   return `${date.toLocaleDateString()} ${time}`;
 }
 
-const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear, onClose, closeOnSelect }) => {
+const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onDelete, onClear, onClose, closeOnSelect }) => {
   const t = useLocale();
   const [selectedId, setSelectedId] = useState<string | null>(
     entries.length > 0 ? entries[0].id : null
@@ -62,17 +63,35 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onClear,
           <div className="history-panel-empty">{t.noHistory}</div>
         )}
         {entries.map((entry) => (
-          <button
+          <div
             key={entry.id}
             className={`history-item${entry.id === effectiveSelectedId ? ' history-item-active' : ''}`}
-            onClick={() => handleSelect(entry)}
-            type="button"
           >
-            <span className="history-item-text">
-              {entry.originalText.trim().slice(0, 40)}{entry.originalText.trim().length > 40 ? '...' : ''}
-            </span>
-            <span className="history-item-time">{formatTimestamp(entry.timestamp, t.today, t.yesterday)}</span>
-          </button>
+            <button
+              className="history-item-main"
+              onClick={() => handleSelect(entry)}
+              type="button"
+            >
+              <span className="history-item-text">
+                {entry.originalText.trim().slice(0, 40)}{entry.originalText.trim().length > 40 ? '...' : ''}
+              </span>
+              <span className="history-item-langs">
+                {(t.languageNames[entry.sourceLanguage] ?? entry.sourceLanguage)}
+                {' → '}
+                {(t.languageNames[entry.targetLanguage] ?? entry.targetLanguage)}
+              </span>
+              <span className="history-item-time">{formatTimestamp(entry.timestamp, t.today, t.yesterday)}</span>
+            </button>
+            <button
+              className="history-item-delete-btn"
+              onClick={() => onDelete(entry.id)}
+              title={t.deleteHistoryEntry}
+              aria-label={t.deleteHistoryEntry}
+              type="button"
+            >
+              ×
+            </button>
+          </div>
         ))}
       </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AppProvider } from './contexts/AppContext';
+import ThemeProvider from './components/ThemeProvider';
 import './styles.css';
 
 const root = ReactDOM.createRoot(
@@ -23,7 +24,9 @@ if (isAlertMode) {
   root.render(
     <React.StrictMode>
       <AppProvider>
-        <App />
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
       </AppProvider>
     </React.StrictMode>
   );

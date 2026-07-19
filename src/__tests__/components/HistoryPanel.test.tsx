@@ -10,7 +10,11 @@ jest.mock('../../i18n/useLocale', () => ({
     clearHistory: 'Clear history',
     today: 'Today',
     yesterday: 'Yesterday',
-    languageNames: {},
+    deleteHistoryEntry: 'Delete',
+    languageNames: {
+      English: 'English',
+      Spanish: 'Spanish',
+    },
   }),
 }));
 
@@ -28,13 +32,13 @@ function makeEntry(overrides: Partial<HistoryEntry> = {}): HistoryEntry {
 
 describe('HistoryPanel', () => {
   it('shows the empty state when there are no entries', () => {
-    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
     expect(screen.getByText('No history yet')).toBeInTheDocument();
   });
 
   it('renders one button per history entry', () => {
     const entries = [makeEntry({ originalText: 'First' }), makeEntry({ originalText: 'Second' })];
-    render(<HistoryPanel entries={entries} onSelect={jest.fn()} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={entries} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
 
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();
@@ -43,7 +47,7 @@ describe('HistoryPanel', () => {
   it('calls onSelect with the correct entry when clicked', () => {
     const onSelect = jest.fn();
     const entry = makeEntry({ originalText: 'Click me' });
-    render(<HistoryPanel entries={[entry]} onSelect={onSelect} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={[entry]} onSelect={onSelect} onDelete={jest.fn()} onClear={jest.fn()} />);
 
     fireEvent.click(screen.getByText('Click me'));
 
@@ -52,7 +56,7 @@ describe('HistoryPanel', () => {
 
   it('calls onClear when the clear button is clicked', () => {
     const onClear = jest.fn();
-    render(<HistoryPanel entries={[makeEntry()]} onSelect={jest.fn()} onClear={onClear} />);
+    render(<HistoryPanel entries={[makeEntry()]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={onClear} />);
 
     fireEvent.click(screen.getByText('Clear history'));
 
@@ -61,29 +65,48 @@ describe('HistoryPanel', () => {
 
   it('truncates long original text to 40 characters with ellipsis', () => {
     const longText = 'A'.repeat(50);
-    render(<HistoryPanel entries={[makeEntry({ originalText: longText })]} onSelect={jest.fn()} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={[makeEntry({ originalText: longText })]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
 
     expect(screen.getByText(`${'A'.repeat(40)}...`)).toBeInTheDocument();
   });
 
   it('does not add ellipsis when text is 40 chars or fewer', () => {
     const exactText = 'B'.repeat(40);
-    render(<HistoryPanel entries={[makeEntry({ originalText: exactText })]} onSelect={jest.fn()} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={[makeEntry({ originalText: exactText })]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
 
     expect(screen.getByText(exactText)).toBeInTheDocument();
   });
 
   it('shows the panel header label', () => {
-    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onClear={jest.fn()} />);
+    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
     expect(screen.getByText('Recent History')).toBeInTheDocument();
   });
 
   it('calls onClose when the close button is clicked', () => {
     const onClose = jest.fn();
-    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onClear={jest.fn()} onClose={onClose} />);
+    render(<HistoryPanel entries={[]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} onClose={onClose} />);
 
     fireEvent.click(screen.getByText('×'));
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('shows the language pair for each entry', () => {
+    const entry = makeEntry({ sourceLanguage: 'English', targetLanguage: 'Spanish' });
+    render(<HistoryPanel entries={[entry]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
+
+    expect(screen.getByText('English → Spanish')).toBeInTheDocument();
+  });
+
+  it('calls onDelete with the entry id when its delete button is clicked, without triggering onSelect', () => {
+    const onDelete = jest.fn();
+    const onSelect = jest.fn();
+    const entry = makeEntry({ id: 'entry-1' });
+    render(<HistoryPanel entries={[entry]} onSelect={onSelect} onDelete={onDelete} onClear={jest.fn()} />);
+
+    fireEvent.click(screen.getByTitle('Delete'));
+
+    expect(onDelete).toHaveBeenCalledWith('entry-1');
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

@@ -59,6 +59,8 @@ export interface ElectronAPI {
       appLanguage: AppLanguage;
       showAlternatives?: boolean;
       showContext?: boolean;
+      alwaysOnTop?: boolean;
+      launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
     }>;
@@ -72,6 +74,8 @@ export interface ElectronAPI {
       appLanguage?: AppLanguage;
       showAlternatives?: boolean;
       showContext?: boolean;
+      alwaysOnTop?: boolean;
+      launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
     }) => Promise<boolean>;
