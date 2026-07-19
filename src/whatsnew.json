@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "version": "1.7.0",
+    "bullets": [
+      {
+        "English": "See what's new after every update, right when you open the app",
+        "Russian": "Смотрите, что нового после каждого обновления, прямо при открытии приложения",
+        "Ukrainian": "Дивіться, що нового після кожного оновлення, одразу при відкритті застосунку"
+      },
+      {
+        "English": "Get a heads-up when a new version is available, with the option to update now or skip that release",
+        "Russian": "Получайте уведомление о новой версии с возможностью обновиться сразу или пропустить этот релиз",
+        "Ukrainian": "Отримуйте сповіщення про нову версію з можливістю оновитися одразу або пропустити цей реліз"
+      }
+    ]
+  }
+]
