@@ -67,6 +67,9 @@ const ko: LocaleStrings = {
 
   apiKeyNotSet: 'API 키가 설정되지 않았습니다. 설정에서 Gemini API 키를 입력해 주세요.',
 
+  whatsNewTitle: "v{version}의 새로운 기능",
+  whatsNewClose: '알겠습니다',
+
   languageNames: {
     'Auto': '자동',
     'English': '영어',

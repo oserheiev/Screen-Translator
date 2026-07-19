@@ -6,6 +6,7 @@ import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
 import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
+import WhatsNewModal from './components/WhatsNewModal';
 import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
 
@@ -82,6 +83,8 @@ const App: React.FC = () => {
     contextData,
     toggleAlternatives,
     toggleContext,
+    whatsNewEntries,
+    dismissWhatsNew,
   } = useAppContext();
 
   const t = useLocale();
@@ -314,6 +317,11 @@ const App: React.FC = () => {
             }}
             onClose={() => { setAccessibilityDenied(false); setAccessibilitySkipped(true); }}
           />
+        )}
+
+        {/* What's New modal */}
+        {whatsNewEntries.length > 0 && !isFirstRun && (
+          <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
         )}
 
         {/* First-run modal */}

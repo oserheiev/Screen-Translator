@@ -67,6 +67,9 @@ const en: LocaleStrings = {
 
   apiKeyNotSet: 'API key not set. Please set your Gemini API key in settings.',
 
+  whatsNewTitle: "What's New in v{version}",
+  whatsNewClose: 'Got it',
+
   languageNames: {
     'Auto': 'Auto',
     'English': 'English',

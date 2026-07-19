@@ -67,6 +67,9 @@ const it: LocaleStrings = {
 
   apiKeyNotSet: 'Chiave API non impostata. Imposta la tua chiave API Gemini nelle impostazioni.',
 
+  whatsNewTitle: "Cosa c'è di nuovo in v{version}",
+  whatsNewClose: 'Capito',
+
   languageNames: {
     'Auto': 'Auto',
     'English': 'Inglese',

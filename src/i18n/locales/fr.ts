@@ -67,6 +67,9 @@ const fr: LocaleStrings = {
 
   apiKeyNotSet: "Clé API non définie. Veuillez définir votre clé API Gemini dans les paramètres.",
 
+  whatsNewTitle: "Quoi de neuf dans v{version}",
+  whatsNewClose: "C'est noté",
+
   languageNames: {
     'Auto': 'Auto',
     'English': 'Anglais',
