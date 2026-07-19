@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppLanguage } from '../types';
+import { AppLanguage, Theme } from '../types';
 import { APP_LANGUAGES, NATIVE_LANGUAGE_NAMES } from '../i18n';
 import { useLocale } from '../i18n/useLocale';
 
@@ -9,10 +9,16 @@ interface SettingsModalProps {
   availableModels: string[];
   selectedModel: string;
   appLanguage: AppLanguage;
+  theme: Theme;
+  alwaysOnTop: boolean;
+  launchAtStartup: boolean;
   onApiKeyChange: (key: string) => void;
   onHotkeyChange: (hotkey: string) => void;
   onModelChange: (model: string) => void;
   onAppLanguageChange: (language: AppLanguage) => void;
+  onThemeChange: (theme: Theme) => void;
+  onAlwaysOnTopChange: (value: boolean) => void;
+  onLaunchAtStartupChange: (value: boolean) => void;
   onClose: () => void;
   isFirstRun?: boolean;
 }
@@ -23,10 +29,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   availableModels,
   selectedModel,
   appLanguage,
+  theme,
+  alwaysOnTop,
+  launchAtStartup,
   onApiKeyChange,
   onHotkeyChange,
   onModelChange,
   onAppLanguageChange,
+  onThemeChange,
+  onAlwaysOnTopChange,
+  onLaunchAtStartupChange,
   onClose,
   isFirstRun = false
 }) => {
@@ -35,6 +47,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [currentHotkey, setCurrentHotkey] = useState(hotkey);
   const [currentModel, setCurrentModel] = useState(selectedModel);
   const [currentLanguage, setCurrentLanguage] = useState<AppLanguage>(appLanguage);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
+  const [currentAlwaysOnTop, setCurrentAlwaysOnTop] = useState(alwaysOnTop);
+  const [currentLaunchAtStartup, setCurrentLaunchAtStartup] = useState(launchAtStartup);
   const [error, setError] = useState('');
   const [showKey, setShowKey] = useState(false);
 
@@ -48,6 +63,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onHotkeyChange(currentHotkey);
     onModelChange(currentModel);
     onAppLanguageChange(currentLanguage);
+    onThemeChange(currentTheme);
+    onAlwaysOnTopChange(currentAlwaysOnTop);
+    onLaunchAtStartupChange(currentLaunchAtStartup);
     onClose();
   };
 
@@ -167,6 +185,47 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
                     )}
                   </select>
+                </div>
+
+                <div className="form-group">
+                  <label>{t.themeLabel}</label>
+                  <div className="theme-option-group" role="radiogroup" aria-label={t.themeLabel}>
+                    {(['light', 'dark', 'system'] as Theme[]).map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`theme-option-btn${currentTheme === option ? ' selected' : ''}`}
+                        aria-pressed={currentTheme === option}
+                        onClick={() => setCurrentTheme(option)}
+                      >
+                        {option === 'light' ? t.themeLight : option === 'dark' ? t.themeDark : t.themeSystem}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="always-on-top"
+                      type="checkbox"
+                      checked={currentAlwaysOnTop}
+                      onChange={e => setCurrentAlwaysOnTop(e.target.checked)}
+                    />
+                    <label htmlFor="always-on-top">{t.alwaysOnTopLabel}</label>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="launch-at-startup"
+                      type="checkbox"
+                      checked={currentLaunchAtStartup}
+                      onChange={e => setCurrentLaunchAtStartup(e.target.checked)}
+                    />
+                    <label htmlFor="launch-at-startup">{t.launchAtStartupLabel}</label>
+                  </div>
                 </div>
               </>
             )}

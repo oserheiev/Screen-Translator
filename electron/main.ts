@@ -48,7 +48,8 @@ const store = new Store<Settings>({
     targetLanguage: 'English',
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
     theme: 'system',
-    model: 'gemini-2.5-flash'
+    model: 'gemini-2.5-flash',
+    alwaysOnTop: false
   }
 });
 
@@ -109,6 +110,7 @@ function createWindow() {
     y: savedBounds?.y,
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
+    alwaysOnTop: store.get('alwaysOnTop') ?? false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -525,12 +527,16 @@ function setupIpcHandlers() {
       theme: store.get('theme'),
       model: store.get('model'),
       appLanguage: store.get('appLanguage'),
+      showAlternatives: store.get('showAlternatives'),
+      showContext: store.get('showContext'),
+      alwaysOnTop: store.get('alwaysOnTop'),
+      launchAtStartup: app.getLoginItemSettings().openAtLogin,
       lastSeenVersion: store.get('lastSeenVersion'),
       ignoredUpdateVersion: store.get('ignoredUpdateVersion')
     };
   });
 
-  ipcMain.handle(IPC_CHANNELS.SAVE_SETTINGS, (_, settings: Partial<Settings>) => {
+  ipcMain.handle(IPC_CHANNELS.SAVE_SETTINGS, (_, settings: Partial<Settings> & { launchAtStartup?: boolean }) => {
     if (settings.apiKey !== undefined) store.set('apiKey', settings.apiKey ? encodeApiKey(settings.apiKey) : '');
     if (settings.sourceLanguage !== undefined) store.set('sourceLanguage', settings.sourceLanguage);
     if (settings.targetLanguage !== undefined) store.set('targetLanguage', settings.targetLanguage);
@@ -543,6 +549,15 @@ function setupIpcHandlers() {
     if (settings.appLanguage !== undefined) {
       store.set('appLanguage', settings.appLanguage);
       updateTrayMenu(); // Rebuild tray menu in new language
+    }
+    if (settings.showAlternatives !== undefined) store.set('showAlternatives', settings.showAlternatives);
+    if (settings.showContext !== undefined) store.set('showContext', settings.showContext);
+    if (settings.alwaysOnTop !== undefined) {
+      store.set('alwaysOnTop', settings.alwaysOnTop);
+      mainWindow?.setAlwaysOnTop(settings.alwaysOnTop);
+    }
+    if (settings.launchAtStartup !== undefined) {
+      app.setLoginItemSettings({ openAtLogin: settings.launchAtStartup });
     }
     if (settings.lastSeenVersion !== undefined) store.set('lastSeenVersion', settings.lastSeenVersion);
     if (settings.ignoredUpdateVersion !== undefined) store.set('ignoredUpdateVersion', settings.ignoredUpdateVersion);

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useSettingsContext } from '../contexts/SettingsContext';
 import { Theme } from '../types';
 
 interface ThemeProviderProps {
@@ -7,7 +7,7 @@ interface ThemeProviderProps {
 }
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const { theme } = useAppContext();
+  const { theme } = useSettingsContext();
 
   useEffect(() => {
     // Apply theme to the document
