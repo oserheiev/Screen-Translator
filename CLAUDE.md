@@ -86,6 +86,23 @@ Renderer → Main invocations (`ipcRenderer.invoke`): everything else
 
 `electron-store` persists settings in the OS user data directory. Default model is `gemini-2.5-flash`. On settings save, hotkey is immediately re-registered via `globalShortcut`.
 
+### What's New / Release Notes
+
+Release notes are authored per-PR, not drafted at release time (see
+`docs/adr/0001-release-notes-authored-per-pr.md`). A PR with a user-facing change adds a
+`.release-notes/<slug>.yml` fragment — a YAML list of bullets, each with a mandatory
+`English` key and optional translations for any other `AppLanguage`. A project skill
+writes this automatically when finishing a branch (see `.claude/skills/release-notes/`);
+PRs with no user-facing change should carry the `no-release-notes` label instead. A CI
+check enforces one or the other on PRs touching `src/` or `electron/`.
+
+At release time, `scripts/compile-release-notes.mjs` merges every fragment into a new
+`{ version, bullets }` entry, prepends it to `src/whatsnew.json`, and deletes the
+consumed fragments — no AI call, no network. `WhatsNewModal` shows unseen entries after
+an update (tracked via the `lastSeenVersion` setting); `UpdateAvailableModal` shows a
+localized preview before installing, fetched from the new tag's `whatsnew.json` on
+GitHub. Never edit `src/whatsnew.json` by hand except to fix a broken entry.
+
 ### TypeScript Setup
 
 Two separate `tsconfig.json` files:
