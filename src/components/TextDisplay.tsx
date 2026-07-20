@@ -5,6 +5,7 @@ import { useLocale } from '../i18n/useLocale';
 interface TextDisplayProps {
   text: string;
   onTextEdit?: (text: string) => void;
+  onPasteError?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
 }
@@ -31,7 +32,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = false, isLoading = false }) => {
+const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, onPasteError, disabled = false, isLoading = false }) => {
   const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
@@ -52,7 +53,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
         onTextEdit(clipText);
       }
     } catch {
-      // clipboard read may fail if permission denied; silently ignore
+      onPasteError?.();
     }
   };
 

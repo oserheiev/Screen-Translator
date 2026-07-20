@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TextDisplay from '../../components/TextDisplay';
 
 jest.mock('../../i18n/useLocale', () => ({
@@ -7,6 +7,7 @@ jest.mock('../../i18n/useLocale', () => ({
     sourceText: 'Source Text',
     paste: 'Paste',
     typePlaceholder: 'Type here...',
+    pasteFailed: 'Paste failed',
     translation: 'Translation',
     recentHistory: 'Recent History',
     noHistory: 'No history',
@@ -63,5 +64,17 @@ describe('TextDisplay', () => {
   it('disables the textarea when disabled prop is true', () => {
     render(<TextDisplay text="text" disabled={true} />);
     expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('calls onPasteError when clipboard read rejects', async () => {
+    const onPasteError = jest.fn();
+    Object.assign(navigator, {
+      clipboard: { readText: jest.fn().mockRejectedValue(new Error('denied')) },
+    });
+    render(<TextDisplay text="" onPasteError={onPasteError} />);
+
+    fireEvent.click(screen.getByTitle('Paste'));
+
+    await waitFor(() => expect(onPasteError).toHaveBeenCalled());
   });
 });

@@ -66,6 +66,8 @@ const uk: LocaleStrings = {
   sourceText: 'Вихідний текст',
   paste: 'ВСТАВИТИ',
   typePlaceholder: 'Введіть або вставте текст для перекладу...',
+  pasteFailed: 'Не вдалося вставити з буфера обміну',
+  captureStartFailed: 'Не вдалося почати захоплення екрана',
 
   translation: 'Переклад',
   altToggleLabel: 'Вар.',

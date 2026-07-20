@@ -66,6 +66,8 @@ const es: LocaleStrings = {
   sourceText: 'Texto fuente',
   paste: 'PEGAR',
   typePlaceholder: 'Escribe o pega para traducir...',
+  pasteFailed: 'No se pudo pegar desde el portapapeles',
+  captureStartFailed: 'No se pudo iniciar la captura de pantalla',
 
   translation: 'Traducción',
   altToggleLabel: 'Alt.',

@@ -66,6 +66,8 @@ const en: LocaleStrings = {
   sourceText: 'Source Text',
   paste: 'PASTE',
   typePlaceholder: 'Type or paste to translate...',
+  pasteFailed: 'Could not paste from clipboard',
+  captureStartFailed: 'Could not start screen capture',
 
   translation: 'Translation',
   altToggleLabel: 'Alt',

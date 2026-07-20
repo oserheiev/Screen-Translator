@@ -66,6 +66,8 @@ const de: LocaleStrings = {
   sourceText: 'Quelltext',
   paste: 'EINFÜGEN',
   typePlaceholder: 'Tippe oder füge Text zum Übersetzen ein...',
+  pasteFailed: 'Einfügen aus der Zwischenablage fehlgeschlagen',
+  captureStartFailed: 'Bildschirmaufnahme konnte nicht gestartet werden',
 
   translation: 'Übersetzung',
   altToggleLabel: 'Alt.',

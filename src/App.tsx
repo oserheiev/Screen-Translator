@@ -65,6 +65,7 @@ const App: React.FC = () => {
     processImage,
     translateText,
     clearError,
+    reportError,
     clearHistory,
     restoreHistoryEntry,
     deleteHistoryEntry,
@@ -148,7 +149,10 @@ const App: React.FC = () => {
   }, []);
 
 
-  const handleCapture = async () => { await startCapture(); };
+  const handleCapture = async () => {
+    const started = await startCapture();
+    if (!started) reportError(t.captureStartFailed);
+  };
 
   const handleManualTranslate = () => {
     if (originalText && !isProcessing) {
@@ -278,6 +282,7 @@ const App: React.FC = () => {
           <TextDisplay
             text={originalText}
             onTextEdit={setOriginalText}
+            onPasteError={() => reportError(t.pasteFailed)}
             disabled={isProcessing}
             isLoading={isCaptureProcessing}
           />

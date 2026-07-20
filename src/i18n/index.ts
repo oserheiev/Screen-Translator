@@ -74,6 +74,10 @@ export interface LocaleStrings {
   sourceText: string;
   paste: string;
   typePlaceholder: string;
+  pasteFailed: string;
+
+  // Capture failures
+  captureStartFailed: string;
 
   // TranslationDisplay
   translation: string;
