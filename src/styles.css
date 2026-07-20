@@ -1474,6 +1474,10 @@ body.alert-mode {
   background: var(--bg-subtle);
 }
 
+.custom-select-option.active {
+  background: var(--bg-item-hover);
+}
+
 .custom-select-option.selected {
   font-weight: 600;
 }
