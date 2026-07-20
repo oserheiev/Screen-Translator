@@ -7,6 +7,7 @@ jest.mock('../../i18n/useLocale', () => ({
     translation: 'Translation',
     sourceText: 'Source Text',
     paste: 'Paste',
+    copy: 'Copy',
     typePlaceholder: 'Type here...',
     recentHistory: 'Recent History',
     noHistory: 'No history',
@@ -62,6 +63,11 @@ describe('TranslationDisplay', () => {
     // The copy button should be disabled when no text
     const btn = screen.getByRole('button');
     expect(btn).toBeDisabled();
+  });
+
+  it('labels the copy button for accessibility', () => {
+    render(<TranslationDisplay text="some translated text" />);
+    expect(screen.getByTitle('Copy')).toBeInTheDocument();
   });
 });
 

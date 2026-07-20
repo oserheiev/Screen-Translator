@@ -6,6 +6,7 @@ jest.mock('../../i18n/useLocale', () => ({
   useLocale: () => ({
     sourceText: 'Source Text',
     paste: 'Paste',
+    copy: 'Copy',
     typePlaceholder: 'Type here...',
     pasteFailed: 'Paste failed',
     translation: 'Translation',
@@ -81,5 +82,10 @@ describe('TextDisplay', () => {
     fireEvent.click(screen.getByTitle('Paste'));
 
     await waitFor(() => expect(onPasteError).toHaveBeenCalled());
+  });
+
+  it('labels the copy button for accessibility', () => {
+    render(<TextDisplay text="some text" />);
+    expect(screen.getByTitle('Copy')).toBeInTheDocument();
   });
 });

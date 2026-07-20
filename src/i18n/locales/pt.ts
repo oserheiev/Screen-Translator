@@ -65,6 +65,7 @@ const pt: LocaleStrings = {
 
   sourceText: 'Texto de origem',
   paste: 'COLAR',
+  copy: 'Copiar',
   typePlaceholder: 'Digite ou cole para traduzir...',
   pasteFailed: 'Não foi possível colar da área de transferência',
   captureStartFailed: 'Não foi possível iniciar a captura de tela',

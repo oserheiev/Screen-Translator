@@ -73,6 +73,7 @@ export interface LocaleStrings {
   // TextDisplay
   sourceText: string;
   paste: string;
+  copy: string;
   typePlaceholder: string;
   pasteFailed: string;
 

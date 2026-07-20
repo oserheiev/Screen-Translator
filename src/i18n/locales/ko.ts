@@ -65,6 +65,7 @@ const ko: LocaleStrings = {
 
   sourceText: '원문',
   paste: '붙여넣기',
+  copy: '복사',
   typePlaceholder: '번역할 텍스트를 입력하거나 붙여넣으세요...',
   pasteFailed: '클립보드에서 붙여넣기하지 못했습니다',
   captureStartFailed: '화면 캡처를 시작하지 못했습니다',

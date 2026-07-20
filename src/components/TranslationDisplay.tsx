@@ -107,7 +107,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
               <span className="pill-label">{t.contextToggleLabel}</span>
             </button>
           )}
-          <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
+          <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading} title={t.copy} aria-label={t.copy}>
             {isCopied ? <CheckIcon /> : <CopyIcon />}
           </button>
         </div>

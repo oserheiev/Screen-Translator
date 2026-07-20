@@ -65,6 +65,7 @@ const ja: LocaleStrings = {
 
   sourceText: '原文',
   paste: '貼り付け',
+  copy: 'コピー',
   typePlaceholder: '翻訳するテキストを入力または貼り付け...',
   pasteFailed: 'クリップボードから貼り付けできませんでした',
   captureStartFailed: '画面キャプチャを開始できませんでした',

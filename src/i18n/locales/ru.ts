@@ -65,6 +65,7 @@ const ru: LocaleStrings = {
 
   sourceText: 'Исходный текст',
   paste: 'ВСТАВИТЬ',
+  copy: 'Копировать',
   typePlaceholder: 'Введите или вставьте текст для перевода...',
   pasteFailed: 'Не удалось вставить из буфера обмена',
   captureStartFailed: 'Не удалось начать захват экрана',

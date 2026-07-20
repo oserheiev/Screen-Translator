@@ -65,6 +65,7 @@ const zh: LocaleStrings = {
 
   sourceText: '原文',
   paste: '粘贴',
+  copy: '复制',
   typePlaceholder: '输入或粘贴以进行翻译...',
   pasteFailed: '无法从剪贴板粘贴',
   captureStartFailed: '无法开始屏幕截图',

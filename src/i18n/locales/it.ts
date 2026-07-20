@@ -65,6 +65,7 @@ const it: LocaleStrings = {
 
   sourceText: 'Testo sorgente',
   paste: 'INCOLLA',
+  copy: 'Copia',
   typePlaceholder: 'Digita o incolla per tradurre...',
   pasteFailed: 'Impossibile incollare dagli appunti',
   captureStartFailed: "Impossibile avviare l'acquisizione dello schermo",

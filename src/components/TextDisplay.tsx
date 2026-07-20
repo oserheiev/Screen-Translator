@@ -72,7 +72,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, onPasteErro
             <PasteIcon />
             <span className="paste-btn-label">{t.paste}</span>
           </button>
-          <button className="copy-icon-btn" onClick={handleCopy} disabled={!text || disabled}>
+          <button className="copy-icon-btn" onClick={handleCopy} disabled={!text || disabled} title={t.copy} aria-label={t.copy}>
             {isCopied ? <CheckIcon /> : <CopyIcon />}
           </button>
         </div>

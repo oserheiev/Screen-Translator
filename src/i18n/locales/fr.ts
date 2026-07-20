@@ -65,6 +65,7 @@ const fr: LocaleStrings = {
 
   sourceText: 'Texte source',
   paste: 'COLLER',
+  copy: 'Copier',
   typePlaceholder: 'Tapez ou collez pour traduire...',
   pasteFailed: 'Impossible de coller depuis le presse-papiers',
   captureStartFailed: "Impossible de démarrer la capture d'écran",

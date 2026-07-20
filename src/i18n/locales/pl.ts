@@ -65,6 +65,7 @@ const pl: LocaleStrings = {
 
   sourceText: 'Tekst źródłowy',
   paste: 'WKLEJ',
+  copy: 'Kopiuj',
   typePlaceholder: 'Wpisz lub wklej, aby przetłumaczyć...',
   pasteFailed: 'Nie udało się wkleić ze schowka',
   captureStartFailed: 'Nie udało się rozpocząć przechwytywania ekranu',
