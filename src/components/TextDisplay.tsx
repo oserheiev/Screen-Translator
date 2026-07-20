@@ -84,7 +84,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, onPasteErro
           onChange={handleTextChange}
           disabled={disabled}
         />
-        {!text && (
+        {!text && !isLoading && (
           <span className="source-placeholder">{t.typePlaceholder}</span>
         )}
       </div>

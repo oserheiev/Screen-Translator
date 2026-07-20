@@ -52,6 +52,11 @@ describe('TextDisplay', () => {
     expect(container.querySelector('.translation-skeleton-overlay')).not.toBeInTheDocument();
   });
 
+  it('hides the empty-state placeholder while loading, even when text is empty', () => {
+    render(<TextDisplay text="" isLoading={true} />);
+    expect(screen.queryByText('Type here...')).not.toBeInTheDocument();
+  });
+
   it('calls onTextEdit when the textarea value changes', () => {
     const onEdit = jest.fn();
     render(<TextDisplay text="" onTextEdit={onEdit} />);
