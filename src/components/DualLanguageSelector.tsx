@@ -2,6 +2,15 @@ import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { SupportedLanguage } from '../types';
 import { useLocale } from '../i18n/useLocale';
 
+const SwapIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="17 1 21 5 17 9" />
+    <path d="M3 5h18" />
+    <polyline points="7 23 3 19 7 15" />
+    <path d="M21 19H3" />
+  </svg>
+);
+
 interface CustomSelectProps {
   value: SupportedLanguage;
   options: SupportedLanguage[];
@@ -68,10 +77,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, g
           tabIndex={-1}
           onKeyDown={handleListboxKeyDown}
           ref={el => el?.focus()}
+          aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
         >
           {options.map((option, i) => (
             <button
               key={option}
+              id={`${listboxId}-option-${i}`}
               className={`custom-select-option${option === value ? ' selected' : ''}${i === activeIndex ? ' active' : ''}`}
               role="option"
               aria-selected={option === value}
@@ -148,7 +159,7 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
         disabled={disabled || sourceLanguage === 'Auto'}
         title="Swap languages"
       >
-        ⇄
+        <SwapIcon />
       </button>
 
       <CustomSelect

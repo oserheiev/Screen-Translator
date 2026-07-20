@@ -149,6 +149,9 @@ body {
 }
 
 .model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--accent-bg);
   color: var(--accent-text);
   border-radius: 100px;

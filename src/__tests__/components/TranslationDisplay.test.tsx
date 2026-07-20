@@ -126,10 +126,20 @@ describe('TranslationDisplay — context section', () => {
     expect(screen.getByText('A greeting used informally.')).toBeInTheDocument();
   });
 
-  it('renders applicable and non-applicable tags with correct marks', () => {
-    render(<TranslationDisplay text="text" showContext={true} contextData={contextData} />);
-    expect(screen.getByText('✓ Informal')).toBeInTheDocument();
-    expect(screen.getByText('✗ Formal')).toBeInTheDocument();
+  it('renders applicable and non-applicable tags with correct icons', () => {
+    const { container } = render(<TranslationDisplay text="text" showContext={true} contextData={contextData} />);
+    const tags = container.querySelectorAll('.context-tag');
+    expect(tags).toHaveLength(2);
+
+    const applicableTag = tags[0];
+    expect(applicableTag).toHaveTextContent('Informal');
+    expect(applicableTag).not.toHaveClass('not-applicable');
+    expect(applicableTag.querySelector('svg')).toBeInTheDocument();
+
+    const notApplicableTag = tags[1];
+    expect(notApplicableTag).toHaveTextContent('Formal');
+    expect(notApplicableTag).toHaveClass('not-applicable');
+    expect(notApplicableTag.querySelector('svg')).toBeInTheDocument();
   });
 
   it('applies not-applicable class to tags where applicable is false', () => {

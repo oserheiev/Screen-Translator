@@ -6,7 +6,7 @@ import { useDialogA11y } from '../hooks/useDialogA11y';
 export const AlertWindow: React.FC = () => {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
-    const [locale, setLocale] = useState(getLocale('English'));
+    const [locale, setLocale] = useState(() => getLocale('English'));
     const contentRef = useRef<HTMLDivElement>(null);
     const titleId = useId();
 

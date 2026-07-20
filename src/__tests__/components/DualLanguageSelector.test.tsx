@@ -132,4 +132,19 @@ describe('DualLanguageSelector', () => {
 
     expect(onSourceChange).toHaveBeenCalledWith('English');
   });
+
+  it('updates aria-activedescendant on the listbox to match the active option after ArrowDown', () => {
+    render(<DualLanguageSelector {...defaultProps} />);
+    const trigger = screen.getByLabelText('Source language').querySelector('button')!;
+    fireEvent.click(trigger);
+
+    const listbox = screen.getByRole('listbox');
+    fireEvent.keyDown(listbox, { key: 'ArrowDown' }); // Auto -> English
+
+    const options = screen.getAllByRole('option');
+    const activeOption = options[1]; // Auto is index 0, English is index 1
+    expect(activeOption).toHaveTextContent('English');
+    expect(listbox).toHaveAttribute('aria-activedescendant', activeOption.id);
+    expect(activeOption.id).toBeTruthy();
+  });
 });
