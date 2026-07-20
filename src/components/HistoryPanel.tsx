@@ -81,7 +81,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ entries, onSelect, onDelete
               onClick={() => handleSelect(entry)}
               type="button"
             >
-              <span className="history-item-text">
+              <span className="history-item-text" title={entry.originalText.trim()}>
                 {entry.originalText.trim().slice(0, 40)}{entry.originalText.trim().length > 40 ? '...' : ''}
               </span>
               <span className="history-item-langs">

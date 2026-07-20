@@ -109,4 +109,11 @@ describe('HistoryPanel', () => {
     expect(onDelete).toHaveBeenCalledWith('entry-1');
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  it('sets the full untruncated text as a title tooltip', () => {
+    const longText = 'A'.repeat(50);
+    render(<HistoryPanel entries={[makeEntry({ originalText: longText })]} onSelect={jest.fn()} onDelete={jest.fn()} onClear={jest.fn()} />);
+
+    expect(screen.getByText(`${'A'.repeat(40)}...`)).toHaveAttribute('title', longText);
+  });
 });
