@@ -99,6 +99,13 @@ const fr: LocaleStrings = {
     'Korean': 'Coréen',
     'Polish': 'Polonais',
   },
+
+  capture: {
+    instruction: 'Cliquez et faites glisser pour sélectionner une zone. Appuyez sur ESC pour annuler.',
+    processing: 'Traitement de la capture...',
+    initializing: "Initialisation de la capture d'écran...",
+    close: 'Fermer',
+  },
 };
 
 export default fr;

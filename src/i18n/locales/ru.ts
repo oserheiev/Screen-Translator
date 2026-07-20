@@ -99,6 +99,13 @@ const ru: LocaleStrings = {
     'Korean': 'Корейский',
     'Polish': 'Польский',
   },
+
+  capture: {
+    instruction: 'Нажмите и перетащите, чтобы выбрать область. Нажмите ESC для отмены.',
+    processing: 'Обработка захвата...',
+    initializing: 'Инициализация захвата экрана...',
+    close: 'Закрыть',
+  },
 };
 
 export default ru;

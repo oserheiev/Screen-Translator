@@ -99,6 +99,13 @@ const ko: LocaleStrings = {
     'Korean': '한국어',
     'Polish': '폴란드어',
   },
+
+  capture: {
+    instruction: '클릭하고 드래그하여 영역을 선택하세요. ESC를 눌러 취소.',
+    processing: '캡처 처리 중...',
+    initializing: '화면 캡처 초기화 중...',
+    close: '닫기',
+  },
 };
 
 export default ko;

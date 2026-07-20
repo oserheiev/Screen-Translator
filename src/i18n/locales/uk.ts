@@ -99,6 +99,13 @@ const uk: LocaleStrings = {
     'Korean': 'Корейська',
     'Polish': 'Польська',
   },
+
+  capture: {
+    instruction: 'Натисніть і перетягніть, щоб вибрати область. Натисніть ESC для скасування.',
+    processing: 'Обробка захоплення...',
+    initializing: 'Ініціалізація захоплення екрана...',
+    close: 'Закрити',
+  },
 };
 
 export default uk;

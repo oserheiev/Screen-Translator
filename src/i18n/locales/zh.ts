@@ -99,6 +99,13 @@ const zh: LocaleStrings = {
     'Korean': '韩语',
     'Polish': '波兰语',
   },
+
+  capture: {
+    instruction: '点击并拖动以选择区域。按 ESC 取消。',
+    processing: '正在处理截图...',
+    initializing: '正在初始化屏幕截图...',
+    close: '关闭',
+  },
 };
 
 export default zh;

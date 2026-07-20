@@ -99,6 +99,13 @@ const ja: LocaleStrings = {
     'Korean': '韓国語',
     'Polish': 'ポーランド語',
   },
+
+  capture: {
+    instruction: 'クリックしてドラッグしてエリアを選択します。ESCでキャンセル。',
+    processing: 'キャプチャを処理中...',
+    initializing: '画面キャプチャを初期化中...',
+    close: '閉じる',
+  },
 };
 
 export default ja;

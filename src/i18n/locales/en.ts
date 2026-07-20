@@ -99,6 +99,13 @@ const en: LocaleStrings = {
     'Korean': 'Korean',
     'Polish': 'Polish',
   },
+
+  capture: {
+    instruction: 'Click and drag to select an area. Press ESC to cancel.',
+    processing: 'Processing capture...',
+    initializing: 'Initializing screen capture...',
+    close: 'Close',
+  },
 };
 
 export default en;

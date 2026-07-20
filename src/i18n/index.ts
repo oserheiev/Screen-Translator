@@ -101,6 +101,14 @@ export interface LocaleStrings {
 
   // DualLanguageSelector
   languageNames: Record<SupportedLanguage, string>;
+
+  // Capture overlay window (standalone, non-React renderer)
+  capture: {
+    instruction: string;
+    processing: string;
+    initializing: string;
+    close: string;
+  };
 }
 
 import en from './locales/en';
