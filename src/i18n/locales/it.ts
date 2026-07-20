@@ -8,6 +8,7 @@ const it: LocaleStrings = {
   captureTooltip: 'Acquisisci schermata',
   restartButton: '↺ Riavvia',
   downloadingUpdate: '↓ Download…',
+  updateFailed: 'Controllo aggiornamenti non riuscito — tocca per riprovare',
   trayCapture: 'Acquisisci schermata',
   trayOpen: 'Apri',
   trayQuit: 'Esci',

@@ -8,6 +8,7 @@ const ko: LocaleStrings = {
   captureTooltip: '화면 캡처',
   restartButton: '↺ 재시작',
   downloadingUpdate: '↓ 다운로드 중…',
+  updateFailed: '업데이트 확인 실패 — 탭하여 재시도',
   trayCapture: '화면 캡처',
   trayOpen: '열기',
   trayQuit: '종료',

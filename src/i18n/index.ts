@@ -9,6 +9,7 @@ export interface LocaleStrings {
   captureTooltip: string;
   restartButton: string;
   downloadingUpdate: string;
+  updateFailed: string;
 
   // Tray context menu
   trayCapture: string;

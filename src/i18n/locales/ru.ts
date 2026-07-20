@@ -8,6 +8,7 @@ const ru: LocaleStrings = {
   captureTooltip: 'Захват экрана',
   restartButton: '↺ Перезапустить',
   downloadingUpdate: '↓ Загрузка…',
+  updateFailed: 'Ошибка проверки обновлений — нажмите для повтора',
   trayCapture: 'Захват экрана',
   trayOpen: 'Открыть',
   trayQuit: 'Выйти',

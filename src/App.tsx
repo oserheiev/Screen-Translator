@@ -189,7 +189,6 @@ const App: React.FC = () => {
             <h1 className="header-title">Screen Translator <span className="app-version">v{appVersion}</span></h1>
           </div>
           <div className="header-right">
-            <div className="model-pill">{modelLabel}</div>
             {updateStatus === 'available' && (
               <button className="update-pill" onClick={handleDownloadUpdate} title={`Update to v${updateVersion}`}>
                 ↑ v{updateVersion}
@@ -205,6 +204,15 @@ const App: React.FC = () => {
                 {t.restartButton}
               </button>
             )}
+            {updateStatus === 'error' && (
+              <button
+                className="update-pill update-pill--error"
+                onClick={() => window.electron.updater.check()}
+                title={t.updateFailed}
+              >
+                {t.updateFailed}
+              </button>
+            )}
             {accessibilitySkipped && (
               <button
                 className="header-icon-btn header-icon-btn--warning"
@@ -214,6 +222,7 @@ const App: React.FC = () => {
                 <KeyboardWarningIcon />
               </button>
             )}
+            <div className="model-pill">{modelLabel}</div>
             <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title={t.settingsTooltip}>
               <GearIcon />
             </button>

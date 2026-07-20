@@ -193,6 +193,14 @@ body {
   background: var(--update-green-hover);
 }
 
+.update-pill--error {
+  background: var(--danger-text);
+}
+
+.update-pill--error:hover {
+  opacity: 0.85;
+}
+
 .settings-icon-btn {
   display: flex;
   align-items: center;

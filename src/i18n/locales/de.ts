@@ -8,6 +8,7 @@ const de: LocaleStrings = {
   captureTooltip: 'Bildschirm aufnehmen',
   restartButton: '↺ Neustart',
   downloadingUpdate: '↓ Herunterladen…',
+  updateFailed: 'Update-Prüfung fehlgeschlagen — zum Wiederholen tippen',
   trayCapture: 'Bildschirm aufnehmen',
   trayOpen: 'Öffnen',
   trayQuit: 'Beenden',

@@ -8,6 +8,7 @@ const en: LocaleStrings = {
   captureTooltip: 'Capture screen',
   restartButton: '↺ Restart',
   downloadingUpdate: '↓ Downloading…',
+  updateFailed: 'Update check failed — tap to retry',
   trayCapture: 'Capture Screen',
   trayOpen: 'Open',
   trayQuit: 'Quit',

@@ -8,6 +8,7 @@ const es: LocaleStrings = {
   captureTooltip: 'Capturar pantalla',
   restartButton: '↺ Reiniciar',
   downloadingUpdate: '↓ Descargando…',
+  updateFailed: 'Error al buscar actualizaciones — toca para reintentar',
   trayCapture: 'Capturar pantalla',
   trayOpen: 'Abrir',
   trayQuit: 'Salir',

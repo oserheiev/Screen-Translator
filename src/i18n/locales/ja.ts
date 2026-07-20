@@ -8,6 +8,7 @@ const ja: LocaleStrings = {
   captureTooltip: '画面をキャプチャ',
   restartButton: '↺ 再起動',
   downloadingUpdate: '↓ ダウンロード中…',
+  updateFailed: '更新の確認に失敗しました — タップして再試行',
   trayCapture: '画面をキャプチャ',
   trayOpen: '開く',
   trayQuit: '終了',

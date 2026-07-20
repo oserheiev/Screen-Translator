@@ -8,6 +8,7 @@ const zh: LocaleStrings = {
   captureTooltip: '截取屏幕',
   restartButton: '↺ 重启',
   downloadingUpdate: '↓ 下载中…',
+  updateFailed: '检查更新失败 — 点击重试',
   trayCapture: '截取屏幕',
   trayOpen: '打开',
   trayQuit: '退出',

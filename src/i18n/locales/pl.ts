@@ -8,6 +8,7 @@ const pl: LocaleStrings = {
   captureTooltip: 'Przechwytywanie ekranu',
   restartButton: '↺ Uruchom ponownie',
   downloadingUpdate: '↓ Pobieranie…',
+  updateFailed: 'Sprawdzanie aktualizacji nie powiodło się — dotknij, aby ponowić',
   trayCapture: 'Przechwytywanie ekranu',
   trayOpen: 'Otwórz',
   trayQuit: 'Wyjdź',

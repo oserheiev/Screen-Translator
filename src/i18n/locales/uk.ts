@@ -8,6 +8,7 @@ const uk: LocaleStrings = {
   captureTooltip: 'Захопити екран',
   restartButton: '↺ Перезапустити',
   downloadingUpdate: '↓ Завантаження…',
+  updateFailed: 'Помилка перевірки оновлень — натисніть, щоб повторити',
   trayCapture: 'Захопити екран',
   trayOpen: 'Відкрити',
   trayQuit: 'Вийти',
