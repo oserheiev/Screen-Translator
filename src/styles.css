@@ -162,6 +162,9 @@ body {
 }
 
 .update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--update-blue);
   color: #ffffff;
   border-radius: 100px;
@@ -1396,6 +1399,9 @@ body.alert-mode {
 }
 
 .history-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: none;
   border: none;
   font-size: 12px;
