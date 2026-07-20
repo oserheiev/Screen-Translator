@@ -13,23 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-
-      - run: npm ci
-
-      - name: Run tests
-        run: npm test
-
   prepare:
-    needs: test
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.read_version.outputs.version }}
@@ -44,7 +28,19 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - run: npm ci
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
 
       - name: Configure git
         run: |
@@ -111,11 +107,15 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - name: Read electron version
+        id: electron_version
+        run: echo "version=$(node -p "require('./package.json').devDependencies.electron")" >> $GITHUB_OUTPUT
+
       - name: Cache Electron binary
         uses: actions/cache@v4
         with:
           path: ~/Library/Caches/electron
-          key: electron-mac-${{ hashFiles('package.json') }}
+          key: electron-mac-${{ steps.electron_version.outputs.version }}
 
       - run: npm ci
 
@@ -143,11 +143,16 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - name: Read electron version
+        id: electron_version
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').devDependencies.electron")" >> $GITHUB_OUTPUT
+
       - name: Cache Electron binary
         uses: actions/cache@v4
         with:
           path: ~\AppData\Local\electron\Cache
-          key: electron-win-${{ hashFiles('package.json') }}
+          key: electron-win-${{ steps.electron_version.outputs.version }}
 
       - run: npm ci
 
