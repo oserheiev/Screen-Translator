@@ -107,6 +107,11 @@ const uk: LocaleStrings = {
     initializing: 'Ініціалізація захоплення екрана...',
     close: 'Закрити',
   },
+
+  notification: 'Сповіщення',
+  ok: 'OK',
+  modelUnavailableTitle: 'Модель недоступна',
+  modelUnavailableMessage: 'Модель {oldModel} недоступна. Перемкнено на {newModel}.',
 };
 
 export default uk;

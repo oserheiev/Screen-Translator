@@ -107,6 +107,11 @@ const en: LocaleStrings = {
     initializing: 'Initializing screen capture...',
     close: 'Close',
   },
+
+  notification: 'Notification',
+  ok: 'OK',
+  modelUnavailableTitle: 'Model Unavailable',
+  modelUnavailableMessage: 'Model {oldModel} is not available. Switched to {newModel}.',
 };
 
 export default en;

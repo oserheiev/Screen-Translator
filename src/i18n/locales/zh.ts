@@ -107,6 +107,11 @@ const zh: LocaleStrings = {
     initializing: '正在初始化屏幕截图...',
     close: '关闭',
   },
+
+  notification: '通知',
+  ok: '确定',
+  modelUnavailableTitle: '模型不可用',
+  modelUnavailableMessage: '模型 {oldModel} 不可用。已切换到 {newModel}。',
 };
 
 export default zh;

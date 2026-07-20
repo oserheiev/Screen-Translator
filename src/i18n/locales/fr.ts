@@ -107,6 +107,11 @@ const fr: LocaleStrings = {
     initializing: "Initialisation de la capture d'écran...",
     close: 'Fermer',
   },
+
+  notification: 'Notification',
+  ok: 'OK',
+  modelUnavailableTitle: 'Modèle indisponible',
+  modelUnavailableMessage: "Le modèle {oldModel} n'est pas disponible. Passage à {newModel}.",
 };
 
 export default fr;

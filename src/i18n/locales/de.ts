@@ -107,6 +107,11 @@ const de: LocaleStrings = {
     initializing: 'Bildschirmaufnahme wird initialisiert...',
     close: 'Schließen',
   },
+
+  notification: 'Benachrichtigung',
+  ok: 'OK',
+  modelUnavailableTitle: 'Modell nicht verfügbar',
+  modelUnavailableMessage: 'Modell {oldModel} ist nicht verfügbar. Gewechselt zu {newModel}.',
 };
 
 export default de;

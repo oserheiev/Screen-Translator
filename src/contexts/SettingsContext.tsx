@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, Theme, AppLanguage } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
+import { getLocale } from '../i18n';
 
 interface SettingsContextType {
   apiKey: string;
@@ -160,9 +161,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
           if (models.length > 0 && !models.includes(selectedModel)) {
             const newModel = models[0];
+            const t = getLocale(appLanguage);
             window.electron.alert.show(
-              'Model Unavailable',
-              `Model ${selectedModel} is not available. Switched to ${newModel}`
+              t.modelUnavailableTitle,
+              t.modelUnavailableMessage.replace('{oldModel}', selectedModel).replace('{newModel}', newModel)
             );
 
             setSelectedModel(newModel);
@@ -174,7 +176,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     };
 
     fetchModels();
-  }, [geminiService, apiKey, selectedModel]);
+  }, [geminiService, apiKey, selectedModel, appLanguage]);
 
   const toggleAlternatives = useCallback(() => {
     setShowAlternatives(prev => !prev);

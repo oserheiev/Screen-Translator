@@ -107,6 +107,11 @@ const ko: LocaleStrings = {
     initializing: '화면 캡처 초기화 중...',
     close: '닫기',
   },
+
+  notification: '알림',
+  ok: '확인',
+  modelUnavailableTitle: '모델을 사용할 수 없음',
+  modelUnavailableMessage: '모델 {oldModel}을(를) 사용할 수 없습니다. {newModel}(으)로 전환되었습니다.',
 };
 
 export default ko;

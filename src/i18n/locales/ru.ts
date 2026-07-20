@@ -107,6 +107,11 @@ const ru: LocaleStrings = {
     initializing: 'Инициализация захвата экрана...',
     close: 'Закрыть',
   },
+
+  notification: 'Уведомление',
+  ok: 'ОК',
+  modelUnavailableTitle: 'Модель недоступна',
+  modelUnavailableMessage: 'Модель {oldModel} недоступна. Переключено на {newModel}.',
 };
 
 export default ru;

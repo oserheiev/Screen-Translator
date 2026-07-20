@@ -107,6 +107,11 @@ const it: LocaleStrings = {
     initializing: 'Inizializzazione acquisizione schermo...',
     close: 'Chiudi',
   },
+
+  notification: 'Notifica',
+  ok: 'OK',
+  modelUnavailableTitle: 'Modello non disponibile',
+  modelUnavailableMessage: 'Il modello {oldModel} non è disponibile. Passato a {newModel}.',
 };
 
 export default it;

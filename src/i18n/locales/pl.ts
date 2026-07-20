@@ -107,6 +107,11 @@ const pl: LocaleStrings = {
     initializing: 'Inicjowanie przechwytywania ekranu...',
     close: 'Zamknij',
   },
+
+  notification: 'Powiadomienie',
+  ok: 'OK',
+  modelUnavailableTitle: 'Model niedostępny',
+  modelUnavailableMessage: 'Model {oldModel} jest niedostępny. Przełączono na {newModel}.',
 };
 
 export default pl;

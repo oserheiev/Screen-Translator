@@ -110,6 +110,14 @@ export interface LocaleStrings {
     initializing: string;
     close: string;
   };
+
+  // AlertWindow (standalone popup window)
+  notification: string;
+  ok: string;
+
+  // SettingsContext — model-unavailable alert
+  modelUnavailableTitle: string;
+  modelUnavailableMessage: string;
 }
 
 import en from './locales/en';

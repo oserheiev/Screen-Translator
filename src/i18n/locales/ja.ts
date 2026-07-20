@@ -107,6 +107,11 @@ const ja: LocaleStrings = {
     initializing: '画面キャプチャを初期化中...',
     close: '閉じる',
   },
+
+  notification: '通知',
+  ok: 'OK',
+  modelUnavailableTitle: 'モデルが利用できません',
+  modelUnavailableMessage: 'モデル {oldModel} は利用できません。{newModel} に切り替えました。',
 };
 
 export default ja;

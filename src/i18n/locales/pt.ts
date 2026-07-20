@@ -107,6 +107,11 @@ const pt: LocaleStrings = {
     initializing: 'Inicializando captura de tela...',
     close: 'Fechar',
   },
+
+  notification: 'Notificação',
+  ok: 'OK',
+  modelUnavailableTitle: 'Modelo indisponível',
+  modelUnavailableMessage: 'O modelo {oldModel} não está disponível. Alterado para {newModel}.',
 };
 
 export default pt;
