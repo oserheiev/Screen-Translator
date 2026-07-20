@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import GeminiService from '../services/gemini.service';
 import { SupportedLanguage, Theme, AppLanguage } from '../types';
 import { useElectronIpc } from '../hooks/useElectronIpc';
+import { getLocale } from '../i18n';
 
 interface SettingsContextType {
   apiKey: string;
@@ -151,6 +152,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     }
   }, [apiKey]);
 
+  const appLanguageRef = useRef(appLanguage);
+  useEffect(() => {
+    appLanguageRef.current = appLanguage;
+  }, [appLanguage]);
+
   useEffect(() => {
     const fetchModels = async () => {
       if (geminiService && apiKey) {
@@ -160,9 +166,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
           if (models.length > 0 && !models.includes(selectedModel)) {
             const newModel = models[0];
+            const t = getLocale(appLanguageRef.current);
             window.electron.alert.show(
-              'Model Unavailable',
-              `Model ${selectedModel} is not available. Switched to ${newModel}`
+              t.modelUnavailableTitle,
+              t.modelUnavailableMessage.replace('{oldModel}', selectedModel).replace('{newModel}', newModel)
             );
 
             setSelectedModel(newModel);

@@ -6,8 +6,9 @@ const en: LocaleStrings = {
   translateButton: 'Translate',
   translatingButton: 'Translating...',
   captureTooltip: 'Capture screen',
-  restartButton: '↺ Restart',
-  downloadingUpdate: '↓ Downloading…',
+  restartButton: 'Restart',
+  downloadingUpdate: 'Downloading…',
+  updateFailed: 'Update check failed — tap to retry',
   trayCapture: 'Capture Screen',
   trayOpen: 'Open',
   trayQuit: 'Quit',
@@ -57,14 +58,17 @@ const en: LocaleStrings = {
 
   recentHistory: 'Recent History',
   noHistory: 'No history yet',
-  clearHistory: '🗑 Clear All History',
+  clearHistory: 'Clear All History',
   today: 'Today',
   yesterday: 'Yesterday',
   deleteHistoryEntry: 'Delete',
 
   sourceText: 'Source Text',
   paste: 'PASTE',
+  copy: 'Copy',
   typePlaceholder: 'Type or paste to translate...',
+  pasteFailed: 'Could not paste from clipboard',
+  captureStartFailed: 'Could not start screen capture',
 
   translation: 'Translation',
   altToggleLabel: 'Alt',
@@ -96,6 +100,18 @@ const en: LocaleStrings = {
     'Korean': 'Korean',
     'Polish': 'Polish',
   },
+
+  capture: {
+    instruction: 'Click and drag to select an area. Press ESC to cancel.',
+    processing: 'Processing capture...',
+    initializing: 'Initializing screen capture...',
+    close: 'Close',
+  },
+
+  notification: 'Notification',
+  ok: 'OK',
+  modelUnavailableTitle: 'Model Unavailable',
+  modelUnavailableMessage: 'Model {oldModel} is not available. Switched to {newModel}.',
 };
 
 export default en;

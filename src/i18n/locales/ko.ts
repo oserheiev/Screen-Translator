@@ -6,8 +6,9 @@ const ko: LocaleStrings = {
   translateButton: '번역',
   translatingButton: '번역 중...',
   captureTooltip: '화면 캡처',
-  restartButton: '↺ 재시작',
-  downloadingUpdate: '↓ 다운로드 중…',
+  restartButton: '재시작',
+  downloadingUpdate: '다운로드 중…',
+  updateFailed: '업데이트 확인 실패 — 탭하여 재시도',
   trayCapture: '화면 캡처',
   trayOpen: '열기',
   trayQuit: '종료',
@@ -57,14 +58,17 @@ const ko: LocaleStrings = {
 
   recentHistory: '최근 기록',
   noHistory: '기록이 없습니다',
-  clearHistory: '🗑 기록 모두 지우기',
+  clearHistory: '기록 모두 지우기',
   today: '오늘',
   yesterday: '어제',
   deleteHistoryEntry: '삭제',
 
   sourceText: '원문',
   paste: '붙여넣기',
+  copy: '복사',
   typePlaceholder: '번역할 텍스트를 입력하거나 붙여넣으세요...',
+  pasteFailed: '클립보드에서 붙여넣기하지 못했습니다',
+  captureStartFailed: '화면 캡처를 시작하지 못했습니다',
 
   translation: '번역',
   altToggleLabel: '대안',
@@ -96,6 +100,18 @@ const ko: LocaleStrings = {
     'Korean': '한국어',
     'Polish': '폴란드어',
   },
+
+  capture: {
+    instruction: '클릭하고 드래그하여 영역을 선택하세요. ESC를 눌러 취소.',
+    processing: '캡처 처리 중...',
+    initializing: '화면 캡처 초기화 중...',
+    close: '닫기',
+  },
+
+  notification: '알림',
+  ok: '확인',
+  modelUnavailableTitle: '모델을 사용할 수 없음',
+  modelUnavailableMessage: '모델 {oldModel}을(를) 사용할 수 없습니다. {newModel}(으)로 전환되었습니다.',
 };
 
 export default ko;

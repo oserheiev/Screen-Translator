@@ -1,6 +1,15 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { SupportedLanguage } from '../types';
 import { useLocale } from '../i18n/useLocale';
+
+const SwapIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="17 1 21 5 17 9" />
+    <path d="M3 5h18" />
+    <polyline points="7 23 3 19 7 15" />
+    <path d="M21 19H3" />
+  </svg>
+);
 
 interface CustomSelectProps {
   value: SupportedLanguage;
@@ -13,25 +22,39 @@ interface CustomSelectProps {
 
 const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, getLabel, disabled, ariaLabel }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, options.indexOf(value)));
   const ref = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   useEffect(() => {
     if (!isOpen) return;
+    setActiveIndex(Math.max(0, options.indexOf(value)));
     const handleClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
     document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isOpen, options, value]);
+
+  const handleListboxKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex(i => Math.min(i + 1, options.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onChange(options[activeIndex]);
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div className="custom-select" ref={ref} aria-label={ariaLabel}>
@@ -40,16 +63,31 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, options, onChange, g
         onClick={() => !disabled && setIsOpen(o => !o)}
         disabled={disabled}
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
       >
         {getLabel(value)}
       </button>
       {isOpen && (
-        <div className="custom-select-dropdown">
-          {options.map(option => (
+        <div
+          className="custom-select-dropdown"
+          role="listbox"
+          id={listboxId}
+          tabIndex={-1}
+          onKeyDown={handleListboxKeyDown}
+          ref={el => el?.focus()}
+          aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
+        >
+          {options.map((option, i) => (
             <button
               key={option}
-              className={`custom-select-option${option === value ? ' selected' : ''}`}
+              id={`${listboxId}-option-${i}`}
+              className={`custom-select-option${option === value ? ' selected' : ''}${i === activeIndex ? ' active' : ''}`}
+              role="option"
+              aria-selected={option === value}
               onClick={() => { onChange(option); setIsOpen(false); }}
+              onMouseEnter={() => setActiveIndex(i)}
               type="button"
             >
               {getLabel(option)}
@@ -121,7 +159,7 @@ const DualLanguageSelector: React.FC<DualLanguageSelectorProps> = ({
         disabled={disabled || sourceLanguage === 'Auto'}
         title="Swap languages"
       >
-        ⇄
+        <SwapIcon />
       </button>
 
       <CustomSelect

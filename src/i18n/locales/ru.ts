@@ -6,8 +6,9 @@ const ru: LocaleStrings = {
   translateButton: 'Перевести',
   translatingButton: 'Перевод...',
   captureTooltip: 'Захват экрана',
-  restartButton: '↺ Перезапустить',
-  downloadingUpdate: '↓ Загрузка…',
+  restartButton: 'Перезапустить',
+  downloadingUpdate: 'Загрузка…',
+  updateFailed: 'Ошибка проверки обновлений — нажмите для повтора',
   trayCapture: 'Захват экрана',
   trayOpen: 'Открыть',
   trayQuit: 'Выйти',
@@ -57,14 +58,17 @@ const ru: LocaleStrings = {
 
   recentHistory: 'Недавняя история',
   noHistory: 'История пуста',
-  clearHistory: '🗑 Очистить историю',
+  clearHistory: 'Очистить историю',
   today: 'Сегодня',
   yesterday: 'Вчера',
   deleteHistoryEntry: 'Удалить',
 
   sourceText: 'Исходный текст',
   paste: 'ВСТАВИТЬ',
+  copy: 'Копировать',
   typePlaceholder: 'Введите или вставьте текст для перевода...',
+  pasteFailed: 'Не удалось вставить из буфера обмена',
+  captureStartFailed: 'Не удалось начать захват экрана',
 
   translation: 'Перевод',
   altToggleLabel: 'Вар.',
@@ -96,6 +100,18 @@ const ru: LocaleStrings = {
     'Korean': 'Корейский',
     'Polish': 'Польский',
   },
+
+  capture: {
+    instruction: 'Нажмите и перетащите, чтобы выбрать область. Нажмите ESC для отмены.',
+    processing: 'Обработка захвата...',
+    initializing: 'Инициализация захвата экрана...',
+    close: 'Закрыть',
+  },
+
+  notification: 'Уведомление',
+  ok: 'ОК',
+  modelUnavailableTitle: 'Модель недоступна',
+  modelUnavailableMessage: 'Модель {oldModel} недоступна. Переключено на {newModel}.',
 };
 
 export default ru;

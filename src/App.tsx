@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useElectronIpc } from './hooks/useElectronIpc';
 import { useLocale } from './i18n/useLocale';
+import { COMPACT_LAYOUT_BREAKPOINT_PX } from './constants';
 import TextDisplay from './components/TextDisplay';
 import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
@@ -45,6 +46,36 @@ const KeyboardWarningIcon = () => (
   </svg>
 );
 
+const RestartIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
+const UploadIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
 const App: React.FC = () => {
   const {
     originalText,
@@ -65,6 +96,7 @@ const App: React.FC = () => {
     processImage,
     translateText,
     clearError,
+    reportError,
     clearHistory,
     restoreHistoryEntry,
     deleteHistoryEntry,
@@ -148,7 +180,10 @@ const App: React.FC = () => {
   }, []);
 
 
-  const handleCapture = async () => { await startCapture(); };
+  const handleCapture = async () => {
+    const started = await startCapture();
+    if (!started) reportError(t.captureStartFailed);
+  };
 
   const handleManualTranslate = () => {
     if (originalText && !isProcessing) {
@@ -157,8 +192,8 @@ const App: React.FC = () => {
   };
 
   const modelLabel = selectedModel
-    ? `⚡ ${selectedModel.replace('models/', '').replace('gemini-', 'Gemini ').replace('-', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}`
-    : '⚡ Gemini Flash';
+    ? `${selectedModel.replace('models/', '').replace('gemini-', 'Gemini ').replace('-', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}`
+    : 'Gemini Flash';
 
   return (
     <div className="app-shell">
@@ -170,7 +205,7 @@ const App: React.FC = () => {
           onDelete={deleteHistoryEntry}
           onClear={clearHistory}
           onClose={() => setIsHistoryOpen(false)}
-          closeOnSelect={windowWidth <= 560}
+          closeOnSelect={windowWidth <= COMPACT_LAYOUT_BREAKPOINT_PX}
         />
       </div>
 
@@ -189,20 +224,28 @@ const App: React.FC = () => {
             <h1 className="header-title">Screen Translator <span className="app-version">v{appVersion}</span></h1>
           </div>
           <div className="header-right">
-            <div className="model-pill">{modelLabel}</div>
             {updateStatus === 'available' && (
               <button className="update-pill" onClick={handleDownloadUpdate} title={`Update to v${updateVersion}`}>
-                ↑ v{updateVersion}
+                <UploadIcon /> v{updateVersion}
               </button>
             )}
             {updateStatus === 'downloading' && (
               <button className="update-pill update-pill--downloading" disabled>
-                {updateProgress > 0 ? `${updateProgress}%` : t.downloadingUpdate}
+                <DownloadIcon /> {updateProgress > 0 ? `${updateProgress}%` : t.downloadingUpdate}
               </button>
             )}
             {updateStatus === 'ready' && (
               <button className="update-pill update-pill--ready" onClick={handleInstallUpdate} title={t.restartButton}>
-                {t.restartButton}
+                <RestartIcon /> {t.restartButton}
+              </button>
+            )}
+            {updateStatus === 'error' && (
+              <button
+                className="update-pill update-pill--error"
+                onClick={() => window.electron.updater.check()}
+                title={t.updateFailed}
+              >
+                {t.updateFailed}
               </button>
             )}
             {accessibilitySkipped && (
@@ -214,6 +257,7 @@ const App: React.FC = () => {
                 <KeyboardWarningIcon />
               </button>
             )}
+            <div className="model-pill"><ZapIcon /> {modelLabel}</div>
             <button className="settings-icon-btn" onClick={() => setIsSettingsOpen(true)} title={t.settingsTooltip}>
               <GearIcon />
             </button>
@@ -269,6 +313,7 @@ const App: React.FC = () => {
           <TextDisplay
             text={originalText}
             onTextEdit={setOriginalText}
+            onPasteError={() => reportError(t.pasteFailed)}
             disabled={isProcessing}
             isLoading={isCaptureProcessing}
           />

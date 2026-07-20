@@ -6,8 +6,9 @@ const uk: LocaleStrings = {
   translateButton: 'Перекласти',
   translatingButton: 'Переклад...',
   captureTooltip: 'Захопити екран',
-  restartButton: '↺ Перезапустити',
-  downloadingUpdate: '↓ Завантаження…',
+  restartButton: 'Перезапустити',
+  downloadingUpdate: 'Завантаження…',
+  updateFailed: 'Помилка перевірки оновлень — натисніть, щоб повторити',
   trayCapture: 'Захопити екран',
   trayOpen: 'Відкрити',
   trayQuit: 'Вийти',
@@ -57,14 +58,17 @@ const uk: LocaleStrings = {
 
   recentHistory: 'Нещодавня історія',
   noHistory: 'Історія порожня',
-  clearHistory: '🗑 Очистити історію',
+  clearHistory: 'Очистити історію',
   today: 'Сьогодні',
   yesterday: 'Вчора',
   deleteHistoryEntry: 'Видалити',
 
   sourceText: 'Вихідний текст',
   paste: 'ВСТАВИТИ',
+  copy: 'Копіювати',
   typePlaceholder: 'Введіть або вставте текст для перекладу...',
+  pasteFailed: 'Не вдалося вставити з буфера обміну',
+  captureStartFailed: 'Не вдалося почати захоплення екрана',
 
   translation: 'Переклад',
   altToggleLabel: 'Вар.',
@@ -96,6 +100,18 @@ const uk: LocaleStrings = {
     'Korean': 'Корейська',
     'Polish': 'Польська',
   },
+
+  capture: {
+    instruction: 'Натисніть і перетягніть, щоб вибрати область. Натисніть ESC для скасування.',
+    processing: 'Обробка захоплення...',
+    initializing: 'Ініціалізація захоплення екрана...',
+    close: 'Закрити',
+  },
+
+  notification: 'Сповіщення',
+  ok: 'OK',
+  modelUnavailableTitle: 'Модель недоступна',
+  modelUnavailableMessage: 'Модель {oldModel} недоступна. Перемкнено на {newModel}.',
 };
 
 export default uk;

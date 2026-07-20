@@ -6,8 +6,9 @@ const zh: LocaleStrings = {
   translateButton: '翻译',
   translatingButton: '翻译中...',
   captureTooltip: '截取屏幕',
-  restartButton: '↺ 重启',
-  downloadingUpdate: '↓ 下载中…',
+  restartButton: '重启',
+  downloadingUpdate: '下载中…',
+  updateFailed: '检查更新失败 — 点击重试',
   trayCapture: '截取屏幕',
   trayOpen: '打开',
   trayQuit: '退出',
@@ -57,14 +58,17 @@ const zh: LocaleStrings = {
 
   recentHistory: '最近历史',
   noHistory: '暂无历史记录',
-  clearHistory: '🗑 清除所有历史',
+  clearHistory: '清除所有历史',
   today: '今天',
   yesterday: '昨天',
   deleteHistoryEntry: '删除',
 
   sourceText: '原文',
   paste: '粘贴',
+  copy: '复制',
   typePlaceholder: '输入或粘贴以进行翻译...',
+  pasteFailed: '无法从剪贴板粘贴',
+  captureStartFailed: '无法开始屏幕截图',
 
   translation: '译文',
   altToggleLabel: '替换',
@@ -96,6 +100,18 @@ const zh: LocaleStrings = {
     'Korean': '韩语',
     'Polish': '波兰语',
   },
+
+  capture: {
+    instruction: '点击并拖动以选择区域。按 ESC 取消。',
+    processing: '正在处理截图...',
+    initializing: '正在初始化屏幕截图...',
+    close: '关闭',
+  },
+
+  notification: '通知',
+  ok: '确定',
+  modelUnavailableTitle: '模型不可用',
+  modelUnavailableMessage: '模型 {oldModel} 不可用。已切换到 {newModel}。',
 };
 
 export default zh;

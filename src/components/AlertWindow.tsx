@@ -1,15 +1,22 @@
-import React, { useEffect, useState, useLayoutEffect, useRef } from 'react';
-import { Theme } from '../types';
+import React, { useEffect, useState, useLayoutEffect, useRef, useId } from 'react';
+import { Theme, AppLanguage } from '../types';
+import { getLocale } from '../i18n';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 
 export const AlertWindow: React.FC = () => {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
+    const [locale, setLocale] = useState(() => getLocale('English'));
     const contentRef = useRef<HTMLDivElement>(null);
+    const titleId = useId();
 
     useEffect(() => {
         // Parse query params
         const params = new URLSearchParams(window.location.search);
-        setTitle(params.get('title') || 'Notification');
+        const lang = (params.get('lang') as AppLanguage) || 'English';
+        const t = getLocale(lang);
+        setLocale(t);
+        setTitle(params.get('title') || t.notification);
         setMessage(params.get('message') || '');
         const paramTheme = params.get('theme') as Theme;
 
@@ -48,13 +55,17 @@ export const AlertWindow: React.FC = () => {
         }
     };
 
+    useDialogA11y(contentRef, handleClose);
+
     return (
-        <div ref={contentRef} className="alert-window">
+        <div ref={contentRef} className="alert-window" role="dialog" aria-modal="true" aria-labelledby={titleId}>
             <div className="alert-header">
-                <h2>{title}</h2>
+                <h2 id={titleId}>{title}</h2>
                 <button
                     className="alert-close-button"
                     onClick={handleClose}
+                    aria-label={locale.close}
+                    title={locale.close}
                 >×</button>
             </div>
 
@@ -68,7 +79,7 @@ export const AlertWindow: React.FC = () => {
                     className="save-button alert-ok-button"
                     onClick={handleClose}
                 >
-                    OK
+                    {locale.ok}
                 </button>
             </div>
         </div>

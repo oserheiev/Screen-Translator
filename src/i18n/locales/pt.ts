@@ -6,8 +6,9 @@ const pt: LocaleStrings = {
   translateButton: 'Traduzir',
   translatingButton: 'Traduzindo...',
   captureTooltip: 'Capturar tela',
-  restartButton: '↺ Reiniciar',
-  downloadingUpdate: '↓ Baixando…',
+  restartButton: 'Reiniciar',
+  downloadingUpdate: 'Baixando…',
+  updateFailed: 'Falha ao verificar atualizações — toque para tentar novamente',
   trayCapture: 'Capturar tela',
   trayOpen: 'Abrir',
   trayQuit: 'Sair',
@@ -57,14 +58,17 @@ const pt: LocaleStrings = {
 
   recentHistory: 'Histórico recente',
   noHistory: 'Sem histórico ainda',
-  clearHistory: '🗑 Limpar todo o histórico',
+  clearHistory: 'Limpar todo o histórico',
   today: 'Hoje',
   yesterday: 'Ontem',
   deleteHistoryEntry: 'Excluir',
 
   sourceText: 'Texto de origem',
   paste: 'COLAR',
+  copy: 'Copiar',
   typePlaceholder: 'Digite ou cole para traduzir...',
+  pasteFailed: 'Não foi possível colar da área de transferência',
+  captureStartFailed: 'Não foi possível iniciar a captura de tela',
 
   translation: 'Tradução',
   altToggleLabel: 'Alt.',
@@ -96,6 +100,18 @@ const pt: LocaleStrings = {
     'Korean': 'Coreano',
     'Polish': 'Polonês',
   },
+
+  capture: {
+    instruction: 'Clique e arraste para selecionar uma área. Pressione ESC para cancelar.',
+    processing: 'Processando captura...',
+    initializing: 'Inicializando captura de tela...',
+    close: 'Fechar',
+  },
+
+  notification: 'Notificação',
+  ok: 'OK',
+  modelUnavailableTitle: 'Modelo indisponível',
+  modelUnavailableMessage: 'O modelo {oldModel} não está disponível. Alterado para {newModel}.',
 };
 
 export default pt;

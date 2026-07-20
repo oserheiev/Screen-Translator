@@ -100,4 +100,51 @@ describe('DualLanguageSelector', () => {
     expect(onSource).toHaveBeenCalledWith('Spanish');
     expect(onTarget).toHaveBeenCalledWith('English');
   });
+
+  it('sets aria-haspopup and aria-expanded on the trigger', () => {
+    render(<DualLanguageSelector {...defaultProps} />);
+    const trigger = screen.getByLabelText('Source language').querySelector('button')!;
+    expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('marks the dropdown as a listbox with role="option" items', () => {
+    render(<DualLanguageSelector {...defaultProps} />);
+    const trigger = screen.getByLabelText('Source language').querySelector('button')!;
+    fireEvent.click(trigger);
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
+  });
+
+  it('moves selection with ArrowDown/ArrowUp and selects with Enter', () => {
+    const onSourceChange = jest.fn();
+    render(<DualLanguageSelector {...defaultProps} onSourceLanguageChange={onSourceChange} />);
+    const trigger = screen.getByLabelText('Source language').querySelector('button')!;
+    fireEvent.click(trigger);
+
+    const listbox = screen.getByRole('listbox');
+    fireEvent.keyDown(listbox, { key: 'ArrowDown' }); // Auto -> English
+    fireEvent.keyDown(listbox, { key: 'Enter' });
+
+    expect(onSourceChange).toHaveBeenCalledWith('English');
+  });
+
+  it('updates aria-activedescendant on the listbox to match the active option after ArrowDown', () => {
+    render(<DualLanguageSelector {...defaultProps} />);
+    const trigger = screen.getByLabelText('Source language').querySelector('button')!;
+    fireEvent.click(trigger);
+
+    const listbox = screen.getByRole('listbox');
+    fireEvent.keyDown(listbox, { key: 'ArrowDown' }); // Auto -> English
+
+    const options = screen.getAllByRole('option');
+    const activeOption = options[1]; // Auto is index 0, English is index 1
+    expect(activeOption).toHaveTextContent('English');
+    expect(listbox).toHaveAttribute('aria-activedescendant', activeOption.id);
+    expect(activeOption.id).toBeTruthy();
+  });
 });

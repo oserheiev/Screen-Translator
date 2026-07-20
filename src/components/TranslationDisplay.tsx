@@ -45,6 +45,25 @@ const CheckIcon = () => (
   </svg>
 );
 
+const ChevronRightIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
   text,
   isLoading = false,
@@ -107,7 +126,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
               <span className="pill-label">{t.contextToggleLabel}</span>
             </button>
           )}
-          <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading}>
+          <button className="copy-icon-btn-dark" onClick={handleCopy} disabled={!text || isLoading} title={t.copy} aria-label={t.copy}>
             {isCopied ? <CheckIcon /> : <CopyIcon />}
           </button>
         </div>
@@ -123,7 +142,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
             <div className="extras-section-header">
               <span className="panel-label">{t.alternatives}</span>
               <button className="collapse-btn" onClick={() => setAltCollapsed(c => !c)}>
-                {altCollapsed ? '▸' : '▾'}
+                {altCollapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
               </button>
             </div>
             {!altCollapsed && (
@@ -151,7 +170,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
             <div className="extras-section-header">
               <span className="panel-label">{t.contextOfUse}</span>
               <button className="collapse-btn" onClick={() => setCtxCollapsed(c => !c)}>
-                {ctxCollapsed ? '▸' : '▾'}
+                {ctxCollapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
               </button>
             </div>
             {!ctxCollapsed && (
@@ -164,7 +183,7 @@ const TranslationDisplay: React.FC<TranslationDisplayProps> = ({
                         key={tag.label}
                         className={`context-tag${tag.applicable ? '' : ' not-applicable'}`}
                       >
-                        {tag.applicable ? '✓' : '✗'} {tag.label}
+                        {tag.applicable ? <CheckIcon /> : <XIcon />} {tag.label}
                       </span>
                     ))}
                   </div>

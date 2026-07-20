@@ -35,9 +35,9 @@ describe('UpdateAvailableModal', () => {
     expect(onIgnore).toHaveBeenCalled();
   });
 
-  it('fires onClose when × is clicked', async () => {
+  it('fires onClose when the close button is clicked', async () => {
     const { onClose } = renderModal();
-    await userEvent.click(await screen.findByText('×'));
+    await userEvent.click(await screen.findByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalled();
   });
 

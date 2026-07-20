@@ -634,15 +634,16 @@ function setupIpcHandlers() {
       icon: path.join(__dirname, WINDOW_CONFIG.ICON_PATH)
     });
 
-    // Get current theme if possible from store, or pass it
+    // Get current theme and language if possible from store, or pass defaults
     const theme = store.get('theme') || 'system';
+    const lang = store.get('appLanguage') ?? 'English';
 
     alertWindow.loadURL(
       url.format({
         pathname: path.join(__dirname, WINDOW_CONFIG.INDEX_HTML_PATH),
         protocol: 'file:',
         slashes: true,
-        search: `?mode=alert&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}&theme=${theme}`
+        search: `?mode=alert&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}&theme=${theme}&lang=${encodeURIComponent(lang as string)}`
       })
     );
   });

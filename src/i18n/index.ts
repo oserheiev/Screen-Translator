@@ -9,6 +9,7 @@ export interface LocaleStrings {
   captureTooltip: string;
   restartButton: string;
   downloadingUpdate: string;
+  updateFailed: string;
 
   // Tray context menu
   trayCapture: string;
@@ -72,7 +73,12 @@ export interface LocaleStrings {
   // TextDisplay
   sourceText: string;
   paste: string;
+  copy: string;
   typePlaceholder: string;
+  pasteFailed: string;
+
+  // Capture failures
+  captureStartFailed: string;
 
   // TranslationDisplay
   translation: string;
@@ -96,6 +102,22 @@ export interface LocaleStrings {
 
   // DualLanguageSelector
   languageNames: Record<SupportedLanguage, string>;
+
+  // Capture overlay window (standalone, non-React renderer)
+  capture: {
+    instruction: string;
+    processing: string;
+    initializing: string;
+    close: string;
+  };
+
+  // AlertWindow (standalone popup window)
+  notification: string;
+  ok: string;
+
+  // SettingsContext — model-unavailable alert
+  modelUnavailableTitle: string;
+  modelUnavailableMessage: string;
 }
 
 import en from './locales/en';

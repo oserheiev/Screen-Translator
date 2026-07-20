@@ -6,8 +6,9 @@ const ja: LocaleStrings = {
   translateButton: '翻訳',
   translatingButton: '翻訳中...',
   captureTooltip: '画面をキャプチャ',
-  restartButton: '↺ 再起動',
-  downloadingUpdate: '↓ ダウンロード中…',
+  restartButton: '再起動',
+  downloadingUpdate: 'ダウンロード中…',
+  updateFailed: '更新の確認に失敗しました — タップして再試行',
   trayCapture: '画面をキャプチャ',
   trayOpen: '開く',
   trayQuit: '終了',
@@ -57,14 +58,17 @@ const ja: LocaleStrings = {
 
   recentHistory: '最近の履歴',
   noHistory: '履歴はまだありません',
-  clearHistory: '🗑 履歴をすべて削除',
+  clearHistory: '履歴をすべて削除',
   today: '今日',
   yesterday: '昨日',
   deleteHistoryEntry: '削除',
 
   sourceText: '原文',
   paste: '貼り付け',
+  copy: 'コピー',
   typePlaceholder: '翻訳するテキストを入力または貼り付け...',
+  pasteFailed: 'クリップボードから貼り付けできませんでした',
+  captureStartFailed: '画面キャプチャを開始できませんでした',
 
   translation: '翻訳',
   altToggleLabel: '代替',
@@ -96,6 +100,18 @@ const ja: LocaleStrings = {
     'Korean': '韓国語',
     'Polish': 'ポーランド語',
   },
+
+  capture: {
+    instruction: 'クリックしてドラッグしてエリアを選択します。ESCでキャンセル。',
+    processing: 'キャプチャを処理中...',
+    initializing: '画面キャプチャを初期化中...',
+    close: '閉じる',
+  },
+
+  notification: '通知',
+  ok: 'OK',
+  modelUnavailableTitle: 'モデルが利用できません',
+  modelUnavailableMessage: 'モデル {oldModel} は利用できません。{newModel} に切り替えました。',
 };
 
 export default ja;

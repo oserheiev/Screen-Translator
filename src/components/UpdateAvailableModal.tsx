@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocale } from '../i18n/useLocale';
 import { useAppContext } from '../contexts/AppContext';
 import { WhatsNewBullet } from '../whatsnew';
+import Modal from './Modal';
 
 interface UpdateAvailableModalProps {
   version: string;
@@ -16,34 +17,31 @@ const UpdateAvailableModal: React.FC<UpdateAvailableModalProps> = ({ version, pr
   const { appLanguage } = useAppContext();
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content update-available-modal">
-        <div className="modal-header">
-          <h2>{t.updateAvailableTitle}</h2>
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
-
-        <div className="modal-body">
-          <p className="modal-subtitle">{t.updateAvailableMessage.replace('{version}', version)}</p>
-          {previewBullets && previewBullets.length > 0 && (
-            <ul className="whatsnew-list">
-              {previewBullets.map((bullet, i) => (
-                <li key={i}>{bullet[appLanguage] ?? bullet.English}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="modal-footer">
+    <Modal
+      title={t.updateAvailableTitle}
+      onClose={onClose}
+      closeLabel={t.close}
+      className="update-available-modal"
+      footer={
+        <>
           <button type="button" className="cancel-button" onClick={onIgnore}>
             {t.ignoreRelease}
           </button>
           <button type="button" className="save-button" onClick={onUpdate}>
             {t.updateNow}
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p className="modal-subtitle">{t.updateAvailableMessage.replace('{version}', version)}</p>
+      {previewBullets && previewBullets.length > 0 && (
+        <ul className="whatsnew-list">
+          {previewBullets.map((bullet, i) => (
+            <li key={i}>{bullet[appLanguage] ?? bullet.English}</li>
+          ))}
+        </ul>
+      )}
+    </Modal>
   );
 };
 

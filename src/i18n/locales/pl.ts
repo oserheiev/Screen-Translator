@@ -6,8 +6,9 @@ const pl: LocaleStrings = {
   translateButton: 'Przetłumacz',
   translatingButton: 'Tłumaczenie...',
   captureTooltip: 'Przechwytywanie ekranu',
-  restartButton: '↺ Uruchom ponownie',
-  downloadingUpdate: '↓ Pobieranie…',
+  restartButton: 'Uruchom ponownie',
+  downloadingUpdate: 'Pobieranie…',
+  updateFailed: 'Sprawdzanie aktualizacji nie powiodło się — dotknij, aby ponowić',
   trayCapture: 'Przechwytywanie ekranu',
   trayOpen: 'Otwórz',
   trayQuit: 'Wyjdź',
@@ -57,14 +58,17 @@ const pl: LocaleStrings = {
 
   recentHistory: 'Ostatnia historia',
   noHistory: 'Brak historii',
-  clearHistory: '🗑 Wyczyść całą historię',
+  clearHistory: 'Wyczyść całą historię',
   today: 'Dzisiaj',
   yesterday: 'Wczoraj',
   deleteHistoryEntry: 'Usuń',
 
   sourceText: 'Tekst źródłowy',
   paste: 'WKLEJ',
+  copy: 'Kopiuj',
   typePlaceholder: 'Wpisz lub wklej, aby przetłumaczyć...',
+  pasteFailed: 'Nie udało się wkleić ze schowka',
+  captureStartFailed: 'Nie udało się rozpocząć przechwytywania ekranu',
 
   translation: 'Tłumaczenie',
   altToggleLabel: 'Alt.',
@@ -96,6 +100,18 @@ const pl: LocaleStrings = {
     'Korean': 'Koreański',
     'Polish': 'Polski',
   },
+
+  capture: {
+    instruction: 'Kliknij i przeciągnij, aby wybrać obszar. Naciśnij ESC, aby anulować.',
+    processing: 'Przetwarzanie przechwytywania...',
+    initializing: 'Inicjowanie przechwytywania ekranu...',
+    close: 'Zamknij',
+  },
+
+  notification: 'Powiadomienie',
+  ok: 'OK',
+  modelUnavailableTitle: 'Model niedostępny',
+  modelUnavailableMessage: 'Model {oldModel} jest niedostępny. Przełączono na {newModel}.',
 };
 
 export default pl;

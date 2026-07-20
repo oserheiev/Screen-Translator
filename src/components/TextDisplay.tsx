@@ -5,6 +5,7 @@ import { useLocale } from '../i18n/useLocale';
 interface TextDisplayProps {
   text: string;
   onTextEdit?: (text: string) => void;
+  onPasteError?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
 }
@@ -31,7 +32,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = false, isLoading = false }) => {
+const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, onPasteError, disabled = false, isLoading = false }) => {
   const t = useLocale();
   const [isCopied, setIsCopied] = useState(false);
   const clipboardService = new ClipboardService();
@@ -52,7 +53,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
         onTextEdit(clipText);
       }
     } catch {
-      // clipboard read may fail if permission denied; silently ignore
+      onPasteError?.();
     }
   };
 
@@ -71,7 +72,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
             <PasteIcon />
             <span className="paste-btn-label">{t.paste}</span>
           </button>
-          <button className="copy-icon-btn" onClick={handleCopy} disabled={!text || disabled}>
+          <button className="copy-icon-btn" onClick={handleCopy} disabled={!text || disabled} title={t.copy} aria-label={t.copy}>
             {isCopied ? <CheckIcon /> : <CopyIcon />}
           </button>
         </div>
@@ -83,7 +84,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ text, onTextEdit, disabled = 
           onChange={handleTextChange}
           disabled={disabled}
         />
-        {!text && (
+        {!text && !isLoading && (
           <span className="source-placeholder">{t.typePlaceholder}</span>
         )}
       </div>

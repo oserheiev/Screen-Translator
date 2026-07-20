@@ -17,6 +17,7 @@ interface TranslationContextType {
   processImage: (imageData: string) => Promise<void>;
   translateText: (text: string) => Promise<void>;
   clearError: () => void;
+  reportError: (message: string) => void;
   clearHistory: () => void;
   restoreHistoryEntry: (entry: HistoryEntry) => void;
   deleteHistoryEntry: (id: string) => void;
@@ -35,6 +36,7 @@ const defaultContext: TranslationContextType = {
   processImage: async () => {},
   translateText: async () => {},
   clearError: () => {},
+  reportError: () => {},
   clearHistory: () => {},
   restoreHistoryEntry: () => {},
   deleteHistoryEntry: () => {},
@@ -196,6 +198,10 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     setError(null);
   };
 
+  const reportError = useCallback((message: string) => {
+    setError(message);
+  }, []);
+
   const clearHistory = useCallback(() => {
     setHistory([]);
   }, []);
@@ -226,6 +232,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     processImage,
     translateText,
     clearError,
+    reportError,
     clearHistory,
     restoreHistoryEntry,
     deleteHistoryEntry,
