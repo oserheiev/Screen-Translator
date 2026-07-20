@@ -1,4 +1,4 @@
-# Capture-window locales are extracted from the main locale files, not hand-synced separately
+# Capture-window locales are merged into the main locale files, not hand-synced separately
 
 The main app (`src/i18n/locales/*.ts`, 12 languages) and the capture overlay window
 (`src/capture/captureLocales.ts`, also 12 languages) had two independently maintained
@@ -9,11 +9,16 @@ that: it accepts the duplication as permanent and just alarms on it, rather than
 removing the reason it can happen.
 
 We picked a single-source-of-truth model instead: capture-window strings are defined
-once, inside the main per-language locale files, under a `capture` namespace.
-`captureLocales.ts` (or an equivalent build step) extracts just that namespace's keys
-per language. This keeps one file per language to edit while preserving the constraint
-that motivated the split in the first place — the capture window is a standalone,
-non-React bundle that loads over a live screen/game and can't afford to pull in the
-full main-app i18n system just for a handful of strings. The trade-off is a small
-amount of build/extraction machinery in exchange for eliminating the drift risk at its
-source rather than merely detecting it.
+once, inside the main per-language locale files, under a `capture` namespace on
+`LocaleStrings`. `src/capture/captureLocales.ts` becomes a thin wrapper —
+`getCaptureLocale(lang)` returns `getLocale(lang).capture` — instead of maintaining its
+own parallel `Record<string, CaptureLocale>`.
+
+We originally assumed the capture window (a standalone, non-React bundle loaded over a
+live screen/game) couldn't afford to pull in the full main-app i18n system, and planned
+a build step to extract just the `capture` subset per language. Checking actual file
+sizes before implementing showed that assumption was wrong: all 12 main locale files
+combined are ~52KB uncompressed (~15KB gzipped) of plain string data with no React or
+other heavy dependencies — negligible for a bundle that ships locally with the app
+rather than over a network. A plain import (`capture.ts` imports `getLocale` from
+`src/i18n`) achieves the same single-source-of-truth goal with no new build tooling.
