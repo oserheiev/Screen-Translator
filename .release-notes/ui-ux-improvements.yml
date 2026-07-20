@@ -1,0 +1,9 @@
+- English: Fixed the alert popup (e.g. "Model Unavailable") not respecting dark mode
+  Russian: Исправлено: всплывающее окно оповещений (например, «Модель недоступна») теперь учитывает тёмную тему
+  Ukrainian: Виправлено: спливне вікно сповіщень (наприклад, «Модель недоступна») тепер враховує темну тему
+- English: Failed screen captures, clipboard pastes, and update checks now show a clear error message instead of failing silently
+  Russian: Неудачные попытки захвата экрана, вставки из буфера обмена и проверки обновлений теперь показывают понятное сообщение об ошибке вместо тихого сбоя
+  Ukrainian: Невдалі спроби захоплення екрана, вставлення з буфера обміну та перевірки оновлень тепер показують зрозуміле повідомлення про помилку замість тихого збою
+- English: Improved keyboard and screen-reader support across dialogs and the language dropdown
+  Russian: Улучшена поддержка клавиатуры и программ чтения с экрана в диалоговых окнах и выпадающем списке языков
+  Ukrainian: Покращено підтримку клавіатури та програм читання з екрана в діалогових вікнах і випадному списку мов
