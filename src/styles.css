@@ -1044,7 +1044,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* ── Alert Window (standalone window, always light — not theme-aware) ── */
+/* ── Alert Window (standalone window, theme-aware via .theme-light/.theme-dark on <html>) ── */
 body.alert-mode {
   margin: 0;
   padding: 0;
@@ -1056,13 +1056,13 @@ body.alert-mode {
 .alert-window {
   width: 100vw;
   min-height: 100vh;
-  border: 2px solid #E2E2E2;
+  border: 2px solid var(--border-default);
   display: flex;
   flex-direction: column;
   margin: 0;
   padding: 0;
-  background-color: #ffffff;
-  color: #000000;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .alert-header {
@@ -1070,8 +1070,8 @@ body.alert-mode {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #F6F6F6;
-  border-bottom: 1px solid #E2E2E2;
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-default);
   -webkit-app-region: drag;
   user-select: none;
   cursor: grab;
@@ -1091,7 +1091,7 @@ body.alert-mode {
   font-size: 20px;
   line-height: 1;
   padding: 0 4px;
-  color: #000000;
+  color: var(--text-primary);
 }
 
 .alert-content {
@@ -1116,14 +1116,14 @@ body.alert-mode {
   margin-top: auto;
   display: flex;
   justify-content: flex-end;
-  background-color: #F6F6F6;
-  border-top: 1px solid #E2E2E2;
+  background-color: var(--bg-subtle);
+  border-top: 1px solid var(--border-default);
 }
 
 .alert-ok-button {
   min-width: 80px;
-  background: #000000;
-  color: #ffffff;
+  background: var(--accent-bg);
+  color: var(--accent-text);
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
