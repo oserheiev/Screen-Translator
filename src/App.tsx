@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useElectronIpc } from './hooks/useElectronIpc';
 import { useLocale } from './i18n/useLocale';
+import { COMPACT_LAYOUT_BREAKPOINT_PX } from './constants';
 import TextDisplay from './components/TextDisplay';
 import TranslationDisplay from './components/TranslationDisplay';
 import DualLanguageSelector from './components/DualLanguageSelector';
@@ -190,7 +191,7 @@ const App: React.FC = () => {
           onDelete={deleteHistoryEntry}
           onClear={clearHistory}
           onClose={() => setIsHistoryOpen(false)}
-          closeOnSelect={windowWidth <= 560}
+          closeOnSelect={windowWidth <= COMPACT_LAYOUT_BREAKPOINT_PX}
         />
       </div>
 
