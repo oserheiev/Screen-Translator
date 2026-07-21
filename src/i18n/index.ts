@@ -36,6 +36,11 @@ export interface LocaleStrings {
   themeSystem: string;
   alwaysOnTopLabel: string;
   launchAtStartupLabel: string;
+  startMinimizedToTrayLabel: string;
+  startMinimizedToTrayHelp: string;
+  settingsTabGeneral: string;
+  settingsTabAppearance: string;
+  settingsTabStartup: string;
   cancel: string;
   save: string;
   getStarted: string;
