@@ -970,6 +970,34 @@ body {
   border-color: var(--accent-bg);
 }
 
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-tab-btn {
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.settings-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.settings-tab-btn.selected {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-bg);
+}
+
 .input-with-toggle {
   position: relative;
 }

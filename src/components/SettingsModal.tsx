@@ -4,6 +4,8 @@ import { APP_LANGUAGES, NATIVE_LANGUAGE_NAMES } from '../i18n';
 import { useLocale } from '../i18n/useLocale';
 import Modal from './Modal';
 
+type SettingsTab = 'general' | 'appearance' | 'startup';
+
 interface SettingsModalProps {
   apiKey: string;
   hotkey: string;
@@ -13,6 +15,7 @@ interface SettingsModalProps {
   theme: Theme;
   alwaysOnTop: boolean;
   launchAtStartup: boolean;
+  startMinimizedToTray: boolean;
   onApiKeyChange: (key: string) => void;
   onHotkeyChange: (hotkey: string) => void;
   onModelChange: (model: string) => void;
@@ -20,6 +23,7 @@ interface SettingsModalProps {
   onThemeChange: (theme: Theme) => void;
   onAlwaysOnTopChange: (value: boolean) => void;
   onLaunchAtStartupChange: (value: boolean) => void;
+  onStartMinimizedToTrayChange: (value: boolean) => void;
   onClose: () => void;
   isFirstRun?: boolean;
 }
@@ -33,6 +37,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   theme,
   alwaysOnTop,
   launchAtStartup,
+  startMinimizedToTray,
   onApiKeyChange,
   onHotkeyChange,
   onModelChange,
@@ -40,6 +45,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onThemeChange,
   onAlwaysOnTopChange,
   onLaunchAtStartupChange,
+  onStartMinimizedToTrayChange,
   onClose,
   isFirstRun = false
 }) => {
@@ -51,12 +57,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
   const [currentAlwaysOnTop, setCurrentAlwaysOnTop] = useState(alwaysOnTop);
   const [currentLaunchAtStartup, setCurrentLaunchAtStartup] = useState(launchAtStartup);
+  const [currentStartMinimizedToTray, setCurrentStartMinimizedToTray] = useState(startMinimizedToTray);
+  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [error, setError] = useState('');
   const [showKey, setShowKey] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!key.trim()) {
+      setActiveTab('general');
       setError(t.apiKeyRequired);
       return;
     }
@@ -67,8 +76,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onThemeChange(currentTheme);
     onAlwaysOnTopChange(currentAlwaysOnTop);
     onLaunchAtStartupChange(currentLaunchAtStartup);
+    onStartMinimizedToTrayChange(currentStartMinimizedToTray);
     onClose();
   };
+
+  const tabs: [SettingsTab, string][] = [
+    ['general', t.settingsTabGeneral],
+    ['appearance', t.settingsTabAppearance],
+    ['startup', t.settingsTabStartup],
+  ];
 
   return (
     <Modal
@@ -95,72 +111,66 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
       {error && <div className="error-message">{error}</div>}
 
-      <form id="settings-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="api-key">{t.geminiApiKey}</label>
-          <div className="input-with-toggle">
-            <input
-              id="api-key"
-              type={showKey ? 'text' : 'password'}
-              value={key}
-              onChange={e => { setKey(e.target.value); setError(''); }}
-              placeholder={t.apiKeyPlaceholder}
-            />
+      {!isFirstRun && (
+        <div className="settings-tabs" role="tablist" aria-label={t.settings}>
+          {tabs.map(([tabKey, label]) => (
             <button
+              key={tabKey}
               type="button"
-              className="toggle-visibility-btn"
-              onClick={() => setShowKey(v => !v)}
+              role="tab"
+              aria-selected={activeTab === tabKey}
+              className={`settings-tab-btn${activeTab === tabKey ? ' selected' : ''}`}
+              onClick={() => setActiveTab(tabKey)}
             >
-              {showKey ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              )}
+              {label}
             </button>
-          </div>
-          <a
-            href="https://aistudio.google.com/app/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t.getApiKeyLink}
-          </a>
+          ))}
         </div>
+      )}
 
-        {!isFirstRun && (
-          <>
-            <div className="form-group">
-              <label htmlFor="hotkey">{t.globalHotkey}</label>
+      <form id="settings-form" onSubmit={handleSubmit}>
+        {(isFirstRun || activeTab === 'general') && (
+          <div className="form-group">
+            <label htmlFor="api-key">{t.geminiApiKey}</label>
+            <div className="input-with-toggle">
               <input
-                id="hotkey"
-                type="text"
-                value={currentHotkey}
-                readOnly
-                placeholder={t.hotkeyPlaceholder}
-                onKeyDown={e => {
-                  e.preventDefault();
-                  const parts: string[] = [];
-                  if (e.metaKey) parts.push('Command');
-                  if (e.ctrlKey) parts.push('Ctrl');
-                  if (e.altKey) parts.push('Alt');
-                  if (e.shiftKey) parts.push('Shift');
-                  const key = e.key;
-                  if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
-                    parts.push(key.length === 1 ? key.toUpperCase() : key);
-                  }
-                  if (parts.length > 1) setCurrentHotkey(parts.join('+'));
-                }}
+                id="api-key"
+                type={showKey ? 'text' : 'password'}
+                value={key}
+                onChange={e => { setKey(e.target.value); setError(''); }}
+                placeholder={t.apiKeyPlaceholder}
               />
-              <small className="form-help">{t.hotkeyHelp}</small>
+              <button
+                type="button"
+                className="toggle-visibility-btn"
+                onClick={() => setShowKey(v => !v)}
+              >
+                {showKey ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
             </div>
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t.getApiKeyLink}
+            </a>
+          </div>
+        )}
 
+        {!isFirstRun && activeTab === 'general' && (
+          <>
             <div className="form-group">
               <label htmlFor="app-language">{t.appLanguageLabel}</label>
               <select
@@ -191,7 +201,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 )}
               </select>
             </div>
+          </>
+        )}
 
+        {!isFirstRun && activeTab === 'appearance' && (
+          <>
             <div className="form-group">
               <label>{t.themeLabel}</label>
               <div className="theme-option-group" role="radiogroup" aria-label={t.themeLabel}>
@@ -220,6 +234,35 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label htmlFor="always-on-top">{t.alwaysOnTopLabel}</label>
               </div>
             </div>
+          </>
+        )}
+
+        {!isFirstRun && activeTab === 'startup' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="hotkey">{t.globalHotkey}</label>
+              <input
+                id="hotkey"
+                type="text"
+                value={currentHotkey}
+                readOnly
+                placeholder={t.hotkeyPlaceholder}
+                onKeyDown={e => {
+                  e.preventDefault();
+                  const parts: string[] = [];
+                  if (e.metaKey) parts.push('Command');
+                  if (e.ctrlKey) parts.push('Ctrl');
+                  if (e.altKey) parts.push('Alt');
+                  if (e.shiftKey) parts.push('Shift');
+                  const key = e.key;
+                  if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
+                    parts.push(key.length === 1 ? key.toUpperCase() : key);
+                  }
+                  if (parts.length > 1) setCurrentHotkey(parts.join('+'));
+                }}
+              />
+              <small className="form-help">{t.hotkeyHelp}</small>
+            </div>
 
             <div className="form-group">
               <div className="form-checkbox-row">
@@ -231,6 +274,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
                 <label htmlFor="launch-at-startup">{t.launchAtStartupLabel}</label>
               </div>
+            </div>
+
+            <div className="form-group">
+              <div className="form-checkbox-row">
+                <input
+                  id="start-minimized-to-tray"
+                  type="checkbox"
+                  checked={currentStartMinimizedToTray}
+                  disabled={!currentLaunchAtStartup}
+                  onChange={e => setCurrentStartMinimizedToTray(e.target.checked)}
+                />
+                <label htmlFor="start-minimized-to-tray">{t.startMinimizedToTrayLabel}</label>
+              </div>
+              {!currentLaunchAtStartup && (
+                <small className="form-help">{t.startMinimizedToTrayHelp}</small>
+              )}
             </div>
           </>
         )}
