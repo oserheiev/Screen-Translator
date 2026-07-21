@@ -81,6 +81,25 @@ describe('AppContext — settings loading', () => {
     expect(ctx.targetLanguage).toBe('German');
   });
 
+  it('starts with settingsLoaded false and flips true once settings resolve', async () => {
+    (window.electron.settings.get as jest.Mock).mockResolvedValue({ apiKey: 'my-key' });
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    expect(ctx.settingsLoaded).toBe(false);
+    await waitFor(() => expect(ctx.settingsLoaded).toBe(true));
+  });
+
+  it('sets settingsLoaded true even when settings.get() rejects', async () => {
+    (window.electron.settings.get as jest.Mock).mockRejectedValue(new Error('IPC failure'));
+
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() => expect(ctx.settingsLoaded).toBe(true));
+  });
+
   it('loads history from electron.history.get() on mount', async () => {
     const mockHistory = [
       { id: '1', originalText: 'Hi', translatedText: 'Hola', sourceLanguage: 'English', targetLanguage: 'Spanish', timestamp: Date.now() },

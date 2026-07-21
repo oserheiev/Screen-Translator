@@ -82,6 +82,7 @@ const App: React.FC = () => {
     translatedText,
     sourceLanguage,
     targetLanguage,
+    settingsLoaded,
     apiKey,
     hotkey,
     isProcessing,
@@ -137,16 +138,18 @@ const App: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
-  const [isFirstRun, setIsFirstRun] = useState<boolean>(true);
+  const [isFirstRun, setIsFirstRun] = useState<boolean>(false);
   const [permissionPlatform, setPermissionPlatform] = useState<string | null>(null);
   const [accessibilityDenied, setAccessibilityDenied] = useState<boolean>(false);
   const [accessibilitySkipped, setAccessibilitySkipped] = useState<boolean>(false);
 
+  // Wait for the saved API key to actually load before deciding whether to show the
+  // first-run welcome screen — deciding from the initial (empty) apiKey would flash it
+  // open for every returning user for one render before settings finish loading.
   useEffect(() => {
-    if (apiKey) {
-      setIsFirstRun(false);
-    }
-  }, [apiKey]);
+    if (!settingsLoaded) return;
+    setIsFirstRun(!apiKey);
+  }, [settingsLoaded, apiKey]);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);

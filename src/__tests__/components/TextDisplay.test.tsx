@@ -7,6 +7,7 @@ jest.mock('../../i18n/useLocale', () => ({
     sourceText: 'Source Text',
     paste: 'Paste',
     copy: 'Copy',
+    clearText: 'Clear text',
     typePlaceholder: 'Type here...',
     pasteFailed: 'Paste failed',
     translation: 'Translation',
@@ -87,5 +88,19 @@ describe('TextDisplay', () => {
   it('labels the copy button for accessibility', () => {
     render(<TextDisplay text="some text" />);
     expect(screen.getByTitle('Copy')).toBeInTheDocument();
+  });
+
+  it('clears the text when the clear button is clicked', () => {
+    const onEdit = jest.fn();
+    render(<TextDisplay text="some text" onTextEdit={onEdit} />);
+
+    fireEvent.click(screen.getByTitle('Clear text'));
+
+    expect(onEdit).toHaveBeenCalledWith('');
+  });
+
+  it('disables the clear button when there is no text', () => {
+    render(<TextDisplay text="" />);
+    expect(screen.getByTitle('Clear text')).toBeDisabled();
   });
 });

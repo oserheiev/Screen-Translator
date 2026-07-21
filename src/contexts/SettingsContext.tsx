@@ -5,6 +5,7 @@ import { useElectronIpc } from '../hooks/useElectronIpc';
 import { getLocale } from '../i18n';
 
 interface SettingsContextType {
+  settingsLoaded: boolean;
   apiKey: string;
   hotkey: string;
   theme: Theme;
@@ -34,6 +35,7 @@ interface SettingsContextType {
 }
 
 const defaultContext: SettingsContextType = {
+  settingsLoaded: true,
   apiKey: '',
   hotkey: 'Ctrl+Alt+T',
   theme: 'system',
@@ -71,6 +73,7 @@ interface SettingsProviderProps {
 }
 
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [hotkey, setHotkey] = useState('Ctrl+Alt+T');
   const [theme, setTheme] = useState<Theme>('system');
@@ -117,6 +120,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
+      } finally {
+        setSettingsLoaded(true);
       }
     };
 
@@ -199,6 +204,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   }, []);
 
   const value: SettingsContextType = {
+    settingsLoaded,
     apiKey,
     hotkey,
     theme,

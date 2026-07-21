@@ -13,6 +13,40 @@ export interface ExtrasOptions {
   appLanguage?: string;
 }
 
+// Model families known to accept image input via generateContent, for this app's
+// image-to-text OCR+translate flow. This is an allowlist, not a denylist: the Gemini API's
+// ListModels response has no field indicating input modality, so a family that isn't
+// recognized here is excluded by default rather than guessed at. That trades convenience
+// (a newly released model family needs a pattern added below before it appears in Settings)
+// for auditability (nothing unverified silently shows up).
+const MULTIMODAL_MODEL_FAMILY_PATTERNS: RegExp[] = [
+  // Versioned Gemini flash/pro tiers, e.g. gemini-2.5-flash, gemini-2.5-flash-lite,
+  // gemini-2.0-pro — including dated/preview suffixes. Deliberately excludes the older,
+  // text-only "gemini-pro" (Gemini 1.0 Pro; image support was a separate "-vision" model).
+  /^gemini-\d+(?:\.\d+)?-(?:flash|pro)(?:-|$)/,
+  // Unversioned "latest" aliases, e.g. gemini-flash-latest, gemini-pro-latest.
+  /^gemini-(?:flash|pro|flash-lite)-latest$/,
+  // Gemma 3 multimodal sizes — the 1B size is text-only and intentionally omitted.
+  /^gemma-3-(?:4b|12b|27b)-it$/,
+  // Gemma 3n multimodal sizes.
+  /^gemma-3n-e(?:2b|4b)-it$/,
+];
+
+// Suffixes that opt a model out even within an otherwise-allowed family above — these
+// variants exist for e.g. flash/pro but don't accept image input the way generateContent
+// needs (audio-only I/O, or a different tool-use format entirely).
+const NON_MULTIMODAL_SUFFIX_PATTERNS: RegExp[] = [
+  /-tts(?:-|$)/i,
+  /-live(?:-|$)/i,
+  /-native-audio(?:-|$)/i,
+  /-image-generation(?:-|$)/i,
+];
+
+// "-latest" aliases (e.g. "gemini-flash-latest") always point at whatever is currently the
+// newest stable release of their tier, so they're recommended alongside the app's configured
+// default model. Exported so Settings UI can reuse the same definition for the "Recommended" tag.
+export const isLatestAliasModel = (modelName: string): boolean => /-latest$/.test(modelName);
+
 export class GeminiService {
   private ai: GoogleGenAI;
 
@@ -29,14 +63,52 @@ export class GeminiService {
       for await (const model of response) {
         const m = model as any;
         if (m.name && m.supportedActions?.includes('generateContent')) {
-          models.push(m.name.replace('models/', ''));
+          const modelName = m.name.replace('models/', '');
+          if (this.isMultimodalModel(modelName)) {
+            models.push(modelName);
+          }
         }
       }
-      return models;
+      return this.sortModelsByRecency(models);
     } catch (error) {
       console.error('GeminiService.listModels error:', error);
       throw this.handleError(error);
     }
+  }
+
+  private isMultimodalModel(modelName: string): boolean {
+    const inAllowedFamily = MULTIMODAL_MODEL_FAMILY_PATTERNS.some(pattern => pattern.test(modelName));
+    if (!inAllowedFamily) return false;
+    return !NON_MULTIMODAL_SUFFIX_PATTERNS.some(pattern => pattern.test(modelName));
+  }
+
+  // "-latest" aliases (e.g. "gemini-flash-latest") always point at the newest stable release
+  // of their tier, so they sort first. Versioned Gemini models (e.g. "gemini-2.5-flash") come
+  // next, by version descending then naturally by name. Everything else — other families like
+  // Gemma — sorts naturally after all of the above.
+  private sortModelsByRecency(modelNames: string[]): string[] {
+    const latestAliases: string[] = [];
+    const versioned: { name: string; version: number }[] = [];
+    const other: string[] = [];
+
+    for (const name of modelNames) {
+      if (isLatestAliasModel(name)) {
+        latestAliases.push(name);
+        continue;
+      }
+      const match = name.match(/^gemini-(\d+(?:\.\d+)?)-/);
+      if (match) {
+        versioned.push({ name, version: parseFloat(match[1]) });
+      } else {
+        other.push(name);
+      }
+    }
+
+    latestAliases.sort((a, b) => a.localeCompare(b));
+    versioned.sort((a, b) => b.version - a.version || a.name.localeCompare(b.name));
+    other.sort((a, b) => a.localeCompare(b));
+
+    return [...latestAliases, ...versioned.map(v => v.name), ...other];
   }
 
   async processImage(
