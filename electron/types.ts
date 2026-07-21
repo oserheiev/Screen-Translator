@@ -47,6 +47,7 @@ export interface Settings {
   showAlternatives?: boolean;
   showContext?: boolean;
   alwaysOnTop?: boolean;
+  startMinimizedToTray?: boolean;
   windowBounds?: { x: number; y: number; width: number; height: number };
   lastSeenVersion?: string;
   ignoredUpdateVersion?: string;
