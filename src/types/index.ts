@@ -60,6 +60,7 @@ export interface ElectronAPI {
       showAlternatives?: boolean;
       showContext?: boolean;
       alwaysOnTop?: boolean;
+      startMinimizedToTray?: boolean;
       launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
@@ -75,6 +76,7 @@ export interface ElectronAPI {
       showAlternatives?: boolean;
       showContext?: boolean;
       alwaysOnTop?: boolean;
+      startMinimizedToTray?: boolean;
       launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
