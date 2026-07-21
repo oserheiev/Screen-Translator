@@ -111,6 +111,8 @@ const App: React.FC = () => {
     setAlwaysOnTop,
     launchAtStartup,
     setLaunchAtStartup,
+    startMinimizedToTray,
+    setStartMinimizedToTray,
     updateStatus,
     updateVersion,
     updateProgress,
@@ -340,6 +342,7 @@ const App: React.FC = () => {
             theme={theme}
             alwaysOnTop={alwaysOnTop}
             launchAtStartup={launchAtStartup}
+            startMinimizedToTray={startMinimizedToTray}
             onApiKeyChange={setApiKey}
             onHotkeyChange={setHotkey}
             onModelChange={setModel}
@@ -347,6 +350,7 @@ const App: React.FC = () => {
             onThemeChange={setTheme}
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
+            onStartMinimizedToTrayChange={setStartMinimizedToTray}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
@@ -410,6 +414,7 @@ const App: React.FC = () => {
             theme={theme}
             alwaysOnTop={alwaysOnTop}
             launchAtStartup={launchAtStartup}
+            startMinimizedToTray={startMinimizedToTray}
             onApiKeyChange={setApiKey}
             onHotkeyChange={setHotkey}
             onModelChange={setModel}
@@ -417,6 +422,7 @@ const App: React.FC = () => {
             onThemeChange={setTheme}
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
+            onStartMinimizedToTrayChange={setStartMinimizedToTray}
             onClose={() => setIsFirstRun(false)}
             isFirstRun={true}
           />
