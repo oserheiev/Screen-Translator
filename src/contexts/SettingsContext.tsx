@@ -17,6 +17,7 @@ interface SettingsContextType {
   showContext: boolean;
   alwaysOnTop: boolean;
   launchAtStartup: boolean;
+  startMinimizedToTray: boolean;
   geminiService: GeminiService | null;
   setApiKey: (key: string) => void;
   setHotkey: (hotkey: string) => void;
@@ -29,6 +30,7 @@ interface SettingsContextType {
   toggleContext: () => void;
   setAlwaysOnTop: (value: boolean) => void;
   setLaunchAtStartup: (value: boolean) => void;
+  setStartMinimizedToTray: (value: boolean) => void;
 }
 
 const defaultContext: SettingsContextType = {
@@ -44,6 +46,7 @@ const defaultContext: SettingsContextType = {
   showContext: false,
   alwaysOnTop: false,
   launchAtStartup: false,
+  startMinimizedToTray: false,
   geminiService: null,
   setApiKey: () => {},
   setHotkey: () => {},
@@ -56,6 +59,7 @@ const defaultContext: SettingsContextType = {
   toggleContext: () => {},
   setAlwaysOnTop: () => {},
   setLaunchAtStartup: () => {},
+  setStartMinimizedToTray: () => {},
 };
 
 const SettingsContext = createContext<SettingsContextType>(defaultContext);
@@ -79,6 +83,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const [showContext, setShowContext] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(false);
   const [launchAtStartup, setLaunchAtStartup] = useState(false);
+  const [startMinimizedToTray, setStartMinimizedToTray] = useState(false);
   const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
 
   const { getSettings, saveSettings, getPlatform, isElectronAvailable } = useElectronIpc();
@@ -108,6 +113,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
           setShowContext(settings.showContext ?? false);
           setAlwaysOnTop(settings.alwaysOnTop ?? false);
           setLaunchAtStartup(settings.launchAtStartup ?? false);
+          setStartMinimizedToTray(settings.startMinimizedToTray ?? false);
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
@@ -133,6 +139,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
             showContext,
             alwaysOnTop,
             launchAtStartup,
+            startMinimizedToTray,
           });
         }
       } catch (error) {
@@ -141,7 +148,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     };
 
     save();
-  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, appLanguage, showAlternatives, showContext, alwaysOnTop, launchAtStartup, saveSettings, isElectronAvailable]);
+  }, [apiKey, sourceLanguage, targetLanguage, hotkey, theme, selectedModel, appLanguage, showAlternatives, showContext, alwaysOnTop, launchAtStartup, startMinimizedToTray, saveSettings, isElectronAvailable]);
 
   useEffect(() => {
     if (apiKey) {
@@ -204,6 +211,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     showContext,
     alwaysOnTop,
     launchAtStartup,
+    startMinimizedToTray,
     geminiService,
     setApiKey,
     setHotkey,
@@ -216,6 +224,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     toggleContext,
     setAlwaysOnTop,
     setLaunchAtStartup,
+    setStartMinimizedToTray,
   };
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
