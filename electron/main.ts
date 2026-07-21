@@ -83,15 +83,22 @@ function migrateApiKey() {
 
 migrateApiKey();
 
-function applyLoginItemSettings(openAtLogin: boolean) {
+function computeLoginItemSettings(openAtLogin: boolean) {
   const startHidden = !!store.get('startMinimizedToTray');
-  app.setLoginItemSettings(
-    buildLoginItemSettings(openAtLogin, startHidden, {
-      isPackaged: app.isPackaged,
-      execPath: process.execPath,
-      appEntryArg: process.argv[1] ?? '.',
-    })
-  );
+  return buildLoginItemSettings(openAtLogin, startHidden, {
+    isPackaged: app.isPackaged,
+    execPath: process.execPath,
+    appEntryArg: process.argv[1] ?? '.',
+  });
+}
+
+function applyLoginItemSettings(openAtLogin: boolean) {
+  app.setLoginItemSettings(computeLoginItemSettings(openAtLogin));
+}
+
+function isLoginItemEnabled(): boolean {
+  const { path: loginItemPath, args } = computeLoginItemSettings(true);
+  return app.getLoginItemSettings({ path: loginItemPath, args }).openAtLogin;
 }
 
 let mainWindow: BrowserWindow | null = null;
@@ -545,7 +552,7 @@ function setupIpcHandlers() {
       showContext: store.get('showContext'),
       alwaysOnTop: store.get('alwaysOnTop'),
       startMinimizedToTray: store.get('startMinimizedToTray'),
-      launchAtStartup: app.getLoginItemSettings().openAtLogin,
+      launchAtStartup: isLoginItemEnabled(),
       lastSeenVersion: store.get('lastSeenVersion'),
       ignoredUpdateVersion: store.get('ignoredUpdateVersion')
     };
@@ -576,7 +583,7 @@ function setupIpcHandlers() {
     }
     if (settings.launchAtStartup !== undefined) {
       applyLoginItemSettings(settings.launchAtStartup);
-    } else if (settings.startMinimizedToTray !== undefined && app.getLoginItemSettings().openAtLogin) {
+    } else if (settings.startMinimizedToTray !== undefined && isLoginItemEnabled()) {
       // Re-registers the login item so its --hidden marker reflects the
       // just-changed setting on the very next login, not just after the
       // next launchAtStartup toggle.
@@ -706,7 +713,7 @@ app.on('ready', () => {
   if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
-  if (app.getLoginItemSettings().openAtLogin) {
+  if (isLoginItemEnabled()) {
     // Repairs a stale/incorrect registration (e.g. from before this fix,
     // or from switching between `npm run dev` and a packaged install).
     applyLoginItemSettings(true);
