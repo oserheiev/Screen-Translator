@@ -12,6 +12,7 @@ import { validateWindowBounds } from './windowBounds';
 import { createCaptureWindow, loadCaptureInterface } from './captureWindowFactory';
 import { captureDisplayScreenshots } from './screenshot';
 import { CaptureWindowPool } from './captureWindowPool';
+import { buildLoginItemSettings } from './loginItem';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -49,7 +50,8 @@ const store = new Store<Settings>({
     hotkey: process.platform === 'darwin' ? 'Command+Alt+T' : 'Ctrl+Alt+T',
     theme: 'system',
     model: 'gemini-2.5-flash',
-    alwaysOnTop: false
+    alwaysOnTop: false,
+    startMinimizedToTray: false
   }
 });
 
@@ -81,6 +83,17 @@ function migrateApiKey() {
 
 migrateApiKey();
 
+function applyLoginItemSettings(openAtLogin: boolean) {
+  const startHidden = !!store.get('startMinimizedToTray');
+  app.setLoginItemSettings(
+    buildLoginItemSettings(openAtLogin, startHidden, {
+      isPackaged: app.isPackaged,
+      execPath: process.execPath,
+      appEntryArg: process.argv[1] ?? '.',
+    })
+  );
+}
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureWindows: Map<number, BrowserWindow> = new Map();
@@ -97,7 +110,7 @@ const captureWindowPool = new CaptureWindowPool({
   },
 });
 
-function createWindow() {
+function createWindow(startHidden: boolean = false) {
   const savedBounds = validateWindowBounds(
     store.get('windowBounds'),
     screen.getAllDisplays()
@@ -111,6 +124,7 @@ function createWindow() {
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     alwaysOnTop: store.get('alwaysOnTop') ?? false,
+    show: !startHidden,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -530,6 +544,7 @@ function setupIpcHandlers() {
       showAlternatives: store.get('showAlternatives'),
       showContext: store.get('showContext'),
       alwaysOnTop: store.get('alwaysOnTop'),
+      startMinimizedToTray: store.get('startMinimizedToTray'),
       launchAtStartup: app.getLoginItemSettings().openAtLogin,
       lastSeenVersion: store.get('lastSeenVersion'),
       ignoredUpdateVersion: store.get('ignoredUpdateVersion')
@@ -556,8 +571,16 @@ function setupIpcHandlers() {
       store.set('alwaysOnTop', settings.alwaysOnTop);
       mainWindow?.setAlwaysOnTop(settings.alwaysOnTop);
     }
+    if (settings.startMinimizedToTray !== undefined) {
+      store.set('startMinimizedToTray', settings.startMinimizedToTray);
+    }
     if (settings.launchAtStartup !== undefined) {
-      app.setLoginItemSettings({ openAtLogin: settings.launchAtStartup });
+      applyLoginItemSettings(settings.launchAtStartup);
+    } else if (settings.startMinimizedToTray !== undefined && app.getLoginItemSettings().openAtLogin) {
+      // Re-registers the login item so its --hidden marker reflects the
+      // just-changed setting on the very next login, not just after the
+      // next launchAtStartup toggle.
+      applyLoginItemSettings(true);
     }
     if (settings.lastSeenVersion !== undefined) store.set('lastSeenVersion', settings.lastSeenVersion);
     if (settings.ignoredUpdateVersion !== undefined) store.set('ignoredUpdateVersion', settings.ignoredUpdateVersion);
@@ -683,8 +706,14 @@ app.on('ready', () => {
   if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
+  if (app.getLoginItemSettings().openAtLogin) {
+    // Repairs a stale/incorrect registration (e.g. from before this fix,
+    // or from switching between `npm run dev` and a packaged install).
+    applyLoginItemSettings(true);
+  }
   const hookStarted = keyboardHook.start();
-  createWindow();
+  const launchedHidden = process.argv.includes('--hidden');
+  createWindow(launchedHidden);
 
   if (!hookStarted && process.platform === 'darwin' && mainWindow) {
     mainWindow.webContents.once('did-finish-load', () => {
