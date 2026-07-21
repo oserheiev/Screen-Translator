@@ -1,4 +1,4 @@
-import { GeminiService } from '../../services/gemini.service';
+import { GeminiService, isLatestAliasModel } from '../../services/gemini.service';
 
 // @google/genai is replaced by __mocks__/@google/genai.ts via moduleNameMapper in jest.config.js
 import { GoogleGenAI } from '@google/genai';
@@ -377,7 +377,7 @@ describe('GeminiService', () => {
   describe('listModels', () => {
     async function* makeModels() {
       yield { name: 'models/gemini-2.5-flash', supportedActions: ['generateContent'] };
-      yield { name: 'models/gemini-pro', supportedActions: ['generateContent'] };
+      yield { name: 'models/gemini-2.5-pro', supportedActions: ['generateContent'] };
       yield { name: 'models/text-embedding-004', supportedActions: ['embedContent'] };
     }
 
@@ -386,8 +386,19 @@ describe('GeminiService', () => {
 
       const models = await service.listModels();
 
-      expect(models).toEqual(['gemini-2.5-flash', 'gemini-pro']);
+      expect(models).toEqual(['gemini-2.5-flash', 'gemini-2.5-pro']);
       expect(models).not.toContain('text-embedding-004');
+    });
+
+    it('excludes the legacy text-only "gemini-pro" alias (image support was a separate "-vision" model)', async () => {
+      async function* models() {
+        yield { name: 'models/gemini-pro', supportedActions: ['generateContent'] };
+      }
+      mockList.mockResolvedValue(models());
+
+      const result = await service.listModels();
+
+      expect(result).toEqual([]);
     });
 
     it('strips the "models/" prefix from model names', async () => {
@@ -396,6 +407,78 @@ describe('GeminiService', () => {
       const models = await service.listModels();
 
       expect(models.every(m => !m.startsWith('models/'))).toBe(true);
+    });
+
+    it('excludes models that cannot accept image input', async () => {
+      async function* models() {
+        yield { name: 'models/gemini-2.5-flash', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-embedding-001', supportedActions: ['generateContent'] };
+        yield { name: 'models/aqa', supportedActions: ['generateContent'] };
+        yield { name: 'models/imagen-4.0-generate-001', supportedActions: ['generateContent'] };
+        yield { name: 'models/veo-3.0-generate-preview', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.5-flash-preview-tts', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.0-flash-live-001', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemma-3-1b-it', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemma-3-27b-it', supportedActions: ['generateContent'] };
+      }
+      mockList.mockResolvedValue(models());
+
+      const result = await service.listModels();
+
+      expect(result).toEqual(['gemini-2.5-flash', 'gemma-3-27b-it']);
+    });
+
+    it('sorts versioned Gemini models by version descending, then naturally by name', async () => {
+      async function* models() {
+        yield { name: 'models/gemini-1.5-pro', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.5-pro', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.0-flash', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.5-flash-lite', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.5-flash', supportedActions: ['generateContent'] };
+      }
+      mockList.mockResolvedValue(models());
+
+      const result = await service.listModels();
+
+      expect(result).toEqual([
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-pro',
+        'gemini-2.0-flash',
+        'gemini-1.5-pro',
+      ]);
+    });
+
+    it('puts "-latest" aliases at the top, ahead of versioned models, with other families last', async () => {
+      async function* models() {
+        yield { name: 'models/gemma-3-27b-it', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-pro-latest', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-2.5-flash', supportedActions: ['generateContent'] };
+        yield { name: 'models/gemini-flash-latest', supportedActions: ['generateContent'] };
+      }
+      mockList.mockResolvedValue(models());
+
+      const result = await service.listModels();
+
+      expect(result).toEqual([
+        'gemini-flash-latest',
+        'gemini-pro-latest',
+        'gemini-2.5-flash',
+        'gemma-3-27b-it',
+      ]);
+    });
+  });
+
+  describe('isLatestAliasModel', () => {
+    it('identifies "-latest" aliases', () => {
+      expect(isLatestAliasModel('gemini-flash-latest')).toBe(true);
+      expect(isLatestAliasModel('gemini-pro-latest')).toBe(true);
+      expect(isLatestAliasModel('gemini-flash-lite-latest')).toBe(true);
+    });
+
+    it('does not match versioned or other models', () => {
+      expect(isLatestAliasModel('gemini-2.5-flash')).toBe(false);
+      expect(isLatestAliasModel('gemma-3-27b-it')).toBe(false);
     });
   });
 });

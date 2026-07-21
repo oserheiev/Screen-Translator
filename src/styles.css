@@ -695,6 +695,11 @@ body {
   cursor: not-allowed;
 }
 
+.copy-icon-btn-dark svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* ── Source textarea ── */
 .source-content {
   flex: 1;
@@ -996,6 +1001,19 @@ body {
 .settings-tab-btn.selected {
   color: var(--text-primary);
   border-bottom-color: var(--accent-bg);
+}
+
+.settings-tab-panels {
+  display: grid;
+}
+
+.settings-tab-panel {
+  grid-area: 1 / 1;
+}
+
+.settings-tab-panel[aria-hidden='true'] {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .input-with-toggle {
@@ -1615,13 +1633,10 @@ body.alert-mode {
     width: 28px;
     height: 28px;
   }
-  .copy-icon-btn svg {
+  .copy-icon-btn svg,
+  .copy-icon-btn-dark svg {
     width: 14px;
     height: 14px;
-  }
-  .copy-icon-btn-dark svg {
-    width: 18px;
-    height: 18px;
   }
   .paste-btn {
     width: auto;

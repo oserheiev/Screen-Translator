@@ -29,6 +29,7 @@ export interface LocaleStrings {
   hotkeyHelp: string;
   model: string;
   loadingModel: string;
+  modelRecommended: string;
   appLanguageLabel: string;
   themeLabel: string;
   themeLight: string;
@@ -79,6 +80,7 @@ export interface LocaleStrings {
   sourceText: string;
   paste: string;
   copy: string;
+  clearText: string;
   typePlaceholder: string;
   pasteFailed: string;
 
