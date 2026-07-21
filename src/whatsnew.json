@@ -1,5 +1,25 @@
 [
   {
+    "version": "1.10.0",
+    "bullets": [
+      {
+        "English": "Fixed \"Launch at Startup\" opening an unrelated extra window alongside the app",
+        "Russian": "Исправлено: «Запуск при старте системы» больше не открывает лишнее постороннее окно вместе с приложением",
+        "Ukrainian": "Виправлено: «Запуск при старті системи» більше не відкриває зайве стороннє вікно разом із застосунком"
+      },
+      {
+        "English": "Added a \"Start Minimized to Tray\" option for when the app launches at startup",
+        "Russian": "Добавлена опция «Запускать свёрнутым в трей» для запуска при старте системы",
+        "Ukrainian": "Додано опцію «Запускати згорнутим у трей» для запуску при старті системи"
+      },
+      {
+        "English": "Settings is now organized into General, Appearance, and Startup tabs",
+        "Russian": "Настройки теперь разделены на вкладки «Общие», «Оформление» и «Запуск»",
+        "Ukrainian": "Налаштування тепер розділені на вкладки «Загальні», «Вигляд» та «Запуск»"
+      }
+    ]
+  },
+  {
     "version": "1.9.0",
     "bullets": [
       {

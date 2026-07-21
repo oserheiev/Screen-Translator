@@ -1,6 +1,6 @@
 {
   "name": "screen-translator",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "A desktop application that allows you to capture text from any of your screens and translate it between multiple languages",
   "main": "build/electron/main.js",
   "type": "commonjs",
