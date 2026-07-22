@@ -64,6 +64,8 @@ export interface ElectronAPI {
       launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
+      analyticsEnabled?: boolean;
+      legalDocsHashAccepted?: string;
     }>;
     save: (settings: {
       apiKey?: string;
@@ -80,6 +82,8 @@ export interface ElectronAPI {
       launchAtStartup?: boolean;
       lastSeenVersion?: string;
       ignoredUpdateVersion?: string;
+      analyticsEnabled?: boolean;
+      legalDocsHashAccepted?: string;
     }) => Promise<boolean>;
   };
   history: {
@@ -119,6 +123,9 @@ export interface ElectronAPI {
   };
   app: {
     getVersion: () => Promise<string>;
+  };
+  analytics: {
+    trackTranslationCompleted: (properties: { languagePair: string; trigger: 'capture' | 'manual' }) => Promise<void>;
   };
   on: (
     channel: string,
