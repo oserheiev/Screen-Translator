@@ -84,4 +84,10 @@ describe('trackTranslationCompleted', () => {
     trackTranslationCompleted(client as any, 'device-1', false, { languagePair: 'x', trigger: 'capture', os: 'win32', appVersion: '1.0.0' });
     expect(client.capture).not.toHaveBeenCalled();
   });
+
+  it('does not send when consent has not been decided yet (undefined)', () => {
+    const client = { capture: jest.fn() };
+    trackTranslationCompleted(client as any, 'device-1', undefined, { languagePair: 'x', trigger: 'capture', os: 'win32', appVersion: '1.0.0' });
+    expect(client.capture).not.toHaveBeenCalled();
+  });
 });
