@@ -7,6 +7,7 @@ module.exports = {
       testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
       transform: {
         '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/jest.tsconfig.json' }],
+        '\\.md$': '<rootDir>/jest-raw-transform.js',
       },
       moduleNameMapper: {
         '\\.(css|less|scss)$': 'identity-obj-proxy',
