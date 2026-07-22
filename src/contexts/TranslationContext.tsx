@@ -138,6 +138,12 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         alternatives: result.alternatives,
         context: result.context,
       });
+      if (isElectronAvailable) {
+        window.electron.analytics.trackTranslationCompleted({
+          languagePair: `${sourceLanguage} -> ${targetLanguage}`,
+          trigger: 'capture',
+        }).catch(console.error);
+      }
     } catch (error) {
       console.error('Error processing image:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -145,7 +151,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
       setIsProcessing(false);
       setIsCaptureProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showAlternatives, showContext, showWindow, appendHistory, appLanguage]);
+  }, [geminiService, sourceLanguage, targetLanguage, selectedModel, showAlternatives, showContext, showWindow, appendHistory, appLanguage, isElectronAvailable]);
 
   const translateText = useCallback(async (text: string) => {
     if (!geminiService) {
@@ -187,12 +193,18 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         alternatives: result.alternatives,
         context: result.context,
       });
+      if (isElectronAvailable) {
+        window.electron.analytics.trackTranslationCompleted({
+          languagePair: `${sourceLanguage} -> ${targetLanguage}`,
+          trigger: 'manual',
+        }).catch(console.error);
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false);
     }
-  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel, showAlternatives, showContext, appendHistory, appLanguage]);
+  }, [geminiService, sourceLanguage, targetLanguage, showWindow, selectedModel, showAlternatives, showContext, appendHistory, appLanguage, isElectronAvailable]);
 
   const clearError = () => {
     setError(null);

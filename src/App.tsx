@@ -9,6 +9,7 @@ import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import UpdateAvailableModal from './components/UpdateAvailableModal';
+import WelcomeModal from './components/WelcomeModal';
 import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
 
@@ -132,6 +133,9 @@ const App: React.FC = () => {
     dismissUpdatePrompt,
     ignoreUpdateVersion,
     updatePreviewBullets,
+    welcomeModalMode,
+    analyticsEnabled,
+    completeWelcome,
   } = useAppContext();
 
   const t = useLocale();
@@ -406,8 +410,17 @@ const App: React.FC = () => {
           />
         )}
 
+        {/* Analytics consent / legal docs modal */}
+        {welcomeModalMode && (
+          <WelcomeModal
+            mode={welcomeModalMode}
+            initialConsent={welcomeModalMode === 'docs-updated' ? (analyticsEnabled ?? true) : true}
+            onComplete={completeWelcome}
+          />
+        )}
+
         {/* First-run modal */}
-        {isFirstRun && !apiKey && (
+        {isFirstRun && !apiKey && !welcomeModalMode && (
           <SettingsModal
             apiKey={apiKey}
             hotkey={hotkey}
