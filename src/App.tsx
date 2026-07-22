@@ -135,6 +135,7 @@ const App: React.FC = () => {
     updatePreviewBullets,
     welcomeModalMode,
     analyticsEnabled,
+    setAnalyticsEnabled,
     completeWelcome,
   } = useAppContext();
 
@@ -358,6 +359,8 @@ const App: React.FC = () => {
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
             onStartMinimizedToTrayChange={setStartMinimizedToTray}
+            analyticsEnabled={analyticsEnabled ?? true}
+            onAnalyticsEnabledChange={setAnalyticsEnabled}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
@@ -439,6 +442,8 @@ const App: React.FC = () => {
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
             onStartMinimizedToTrayChange={setStartMinimizedToTray}
+            analyticsEnabled={analyticsEnabled ?? true}
+            onAnalyticsEnabledChange={setAnalyticsEnabled}
             onClose={() => setIsFirstRun(false)}
             isFirstRun={true}
           />
