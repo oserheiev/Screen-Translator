@@ -17,10 +17,8 @@ export const TRAY_ICONS = {
 
 // PostHog Project API Key is a write-only client token (safe to embed — see
 // https://posthog.com/docs — it cannot read data back), not a secret.
-// Replace PROJECT_API_KEY with your real key from your PostHog project settings
-// before packaging a release build.
 export const ANALYTICS_CONFIG = {
-    PROJECT_API_KEY: 'REPLACE_WITH_YOUR_POSTHOG_PROJECT_API_KEY',
+    PROJECT_API_KEY: 'phc_BtitSwzzhKt7btYyZR5cjD5V9PJNGj5Q7vpCQmwM5k7J',
     HOST: 'https://eu.i.posthog.com',
 } as const;
 
