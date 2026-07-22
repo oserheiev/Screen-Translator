@@ -119,6 +119,18 @@ const ru: LocaleStrings = {
   ok: 'ОК',
   modelUnavailableTitle: 'Модель недоступна',
   modelUnavailableMessage: 'Модель {oldModel} недоступна. Переключено на {newModel}.',
+
+  welcomeAnalyticsTitle: 'Помогите нам улучшить Screen Translator',
+  welcomeAnalyticsIntro: 'Прежде чем настроить API-ключ, скажите, готовы ли вы делиться анонимными данными об использовании.',
+  analyticsUpdateTitle: 'Прежде чем продолжить',
+  analyticsUpdateIntro: 'Мы хотели бы собирать анонимные данные об использовании, чтобы улучшить Screen Translator.',
+  legalDocsUpdatedTitle: 'Наша политика изменилась',
+  legalDocsUpdatedIntro: 'Мы обновили Политику конфиденциальности и Условия использования. Пожалуйста, ознакомьтесь с ними.',
+  analyticsConsentLabel: 'Делиться анонимными данными об использовании',
+  analyticsConsentDescription: 'Помогает нам понять, сколько людей используют приложение и как часто. Содержимое экрана, переводы и личные данные никогда не собираются.',
+  privacyPolicyLink: 'Политика конфиденциальности',
+  termsOfUseLink: 'Условия использования',
+  welcomeModalContinue: 'Продолжить',
 };
 
 export default ru;

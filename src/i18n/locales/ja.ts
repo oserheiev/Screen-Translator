@@ -119,6 +119,18 @@ const ja: LocaleStrings = {
   ok: 'OK',
   modelUnavailableTitle: 'モデルが利用できません',
   modelUnavailableMessage: 'モデル {oldModel} は利用できません。{newModel} に切り替えました。',
+
+  welcomeAnalyticsTitle: 'Screen Translatorの改善にご協力ください',
+  welcomeAnalyticsIntro: 'APIキーを設定する前に、匿名の利用データの共有に同意いただけるかお知らせください。',
+  analyticsUpdateTitle: '続ける前に',
+  analyticsUpdateIntro: 'Screen Translatorを改善するため、匿名の利用データを収集させていただきたいと考えています。',
+  legalDocsUpdatedTitle: 'ポリシーが変更されました',
+  legalDocsUpdatedIntro: 'プライバシーポリシーと利用規約を更新しました。ご確認ください。',
+  analyticsConsentLabel: '匿名の利用データを共有する',
+  analyticsConsentDescription: 'どれくらいの人がどのくらいの頻度でアプリを使用しているかを把握するのに役立ちます。画面の内容、翻訳内容、個人データが収集されることは一切ありません。',
+  privacyPolicyLink: 'プライバシーポリシー',
+  termsOfUseLink: '利用規約',
+  welcomeModalContinue: '続ける',
 };
 
 export default ja;

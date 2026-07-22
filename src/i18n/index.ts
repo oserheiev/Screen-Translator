@@ -125,6 +125,19 @@ export interface LocaleStrings {
   // SettingsContext — model-unavailable alert
   modelUnavailableTitle: string;
   modelUnavailableMessage: string;
+
+  // WelcomeModal / analytics consent
+  welcomeAnalyticsTitle: string;
+  welcomeAnalyticsIntro: string;
+  analyticsUpdateTitle: string;
+  analyticsUpdateIntro: string;
+  legalDocsUpdatedTitle: string;
+  legalDocsUpdatedIntro: string;
+  analyticsConsentLabel: string;
+  analyticsConsentDescription: string;
+  privacyPolicyLink: string;
+  termsOfUseLink: string;
+  welcomeModalContinue: string;
 }
 
 import en from './locales/en';

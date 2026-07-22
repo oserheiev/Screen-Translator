@@ -119,6 +119,18 @@ const pl: LocaleStrings = {
   ok: 'OK',
   modelUnavailableTitle: 'Model niedostępny',
   modelUnavailableMessage: 'Model {oldModel} jest niedostępny. Przełączono na {newModel}.',
+
+  welcomeAnalyticsTitle: 'Pomóż nam ulepszyć Screen Translator',
+  welcomeAnalyticsIntro: 'Zanim skonfigurujesz klucz API, daj nam znać, czy zgadzasz się na udostępnianie anonimowych danych o użytkowaniu.',
+  analyticsUpdateTitle: 'Zanim przejdziesz dalej',
+  analyticsUpdateIntro: 'Chcielibyśmy zbierać anonimowe dane o użytkowaniu, aby ulepszać Screen Translator.',
+  legalDocsUpdatedTitle: 'Nasza polityka się zmieniła',
+  legalDocsUpdatedIntro: 'Zaktualizowaliśmy Politykę prywatności i Warunki użytkowania. Prosimy o zapoznanie się z nimi.',
+  analyticsConsentLabel: 'Udostępniaj anonimowe dane o użytkowaniu',
+  analyticsConsentDescription: 'Pomaga nam zrozumieć, ile osób korzysta z aplikacji i jak często. Zawartość ekranu, tłumaczenia i dane osobowe nigdy nie są zbierane.',
+  privacyPolicyLink: 'Polityka prywatności',
+  termsOfUseLink: 'Warunki użytkowania',
+  welcomeModalContinue: 'Dalej',
 };
 
 export default pl;

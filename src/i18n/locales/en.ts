@@ -119,6 +119,18 @@ const en: LocaleStrings = {
   ok: 'OK',
   modelUnavailableTitle: 'Model Unavailable',
   modelUnavailableMessage: 'Model {oldModel} is not available. Switched to {newModel}.',
+
+  welcomeAnalyticsTitle: 'Help us improve Screen Translator',
+  welcomeAnalyticsIntro: "Before you set up your API key, let us know if you're comfortable sharing anonymous usage data.",
+  analyticsUpdateTitle: 'Before you continue',
+  analyticsUpdateIntro: "We'd like to collect anonymous usage data to help improve Screen Translator.",
+  legalDocsUpdatedTitle: 'Our policy has changed',
+  legalDocsUpdatedIntro: "We've updated our Privacy Policy and Terms of Use. Please take a moment to review them.",
+  analyticsConsentLabel: 'Share anonymous usage data',
+  analyticsConsentDescription: 'Helps us understand how many people use the app and how often. No screen content, translations, or personal data is ever collected.',
+  privacyPolicyLink: 'Privacy Policy',
+  termsOfUseLink: 'Terms of Use',
+  welcomeModalContinue: 'Continue',
 };
 
 export default en;
