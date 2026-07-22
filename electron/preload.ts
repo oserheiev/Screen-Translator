@@ -77,6 +77,10 @@ contextBridge.exposeInMainWorld(
     app: {
       getVersion: () => ipcRenderer.invoke('get-version')
     },
+    analytics: {
+      trackTranslationCompleted: (properties: { languagePair: string; trigger: 'capture' | 'manual' }) =>
+        ipcRenderer.invoke('track-translation-completed', properties)
+    },
     on: (channel: string, callback: (...args: any[]) => void) => {
       // Whitelist channels
       const validChannels = ['image-captured', 'capture-error', 'permission-error', 'accessibility-error', 'update-available', 'update-progress', 'update-error'];
