@@ -44,6 +44,12 @@ describe('AnalyticsProvider', () => {
     expect(screen.getByTestId('enabled')).toHaveTextContent('false');
   });
 
+  it('shows "docs-updated" mode when consent was previously granted but the docs hash is stale', async () => {
+    renderWithSettings({ apiKey: 'existing-key', analyticsEnabled: true, legalDocsHashAccepted: 'stale-hash' });
+    await waitFor(() => expect(screen.getByTestId('mode')).toHaveTextContent('docs-updated'));
+    expect(screen.getByTestId('enabled')).toHaveTextContent('true');
+  });
+
   it('shows no modal when consent is decided and the docs hash matches', async () => {
     renderWithSettings({ apiKey: 'existing-key', analyticsEnabled: true, legalDocsHashAccepted: LEGAL_DOCS_HASH });
     await waitFor(() => expect(screen.getByTestId('mode')).toHaveTextContent('none'));
