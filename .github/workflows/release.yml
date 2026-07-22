@@ -167,3 +167,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: gh release upload "v${{ needs.prepare.outputs.version }}" dist/*.exe dist/*.yml --clobber
+
+  publish:
+    needs: [prepare, release-mac, release-win]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: gh release edit "v${VERSION}" --draft=false --repo "${{ github.repository }}"
