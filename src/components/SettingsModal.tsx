@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { AppLanguage, Theme } from '../types';
 import { APP_LANGUAGES, NATIVE_LANGUAGE_NAMES } from '../i18n';
 import { useLocale } from '../i18n/useLocale';
