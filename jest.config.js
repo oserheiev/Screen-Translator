@@ -27,6 +27,7 @@ module.exports = {
         '^electron-store$': '<rootDir>/__mocks__/electron-store.ts',
         '^uiohook-napi$': '<rootDir>/__mocks__/uiohook-napi.ts',
         '^electron-updater$': '<rootDir>/__mocks__/electron-updater.ts',
+        '^posthog-node$': '<rootDir>/__mocks__/posthog-node.ts',
       },
     },
   ],
