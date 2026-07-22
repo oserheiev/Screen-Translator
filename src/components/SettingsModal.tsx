@@ -4,7 +4,9 @@ import { APP_LANGUAGES, NATIVE_LANGUAGE_NAMES } from '../i18n';
 import { useLocale } from '../i18n/useLocale';
 import { CONFIG } from '../config';
 import { isLatestAliasModel } from '../services/gemini.service';
+import { PRIVACY_POLICY, TERMS_OF_USE } from '../legalDocs';
 import Modal from './Modal';
+import LegalDocumentModal from './LegalDocumentModal';
 
 type SettingsTab = 'general' | 'appearance' | 'startup';
 
@@ -26,6 +28,8 @@ interface SettingsModalProps {
   onAlwaysOnTopChange: (value: boolean) => void;
   onLaunchAtStartupChange: (value: boolean) => void;
   onStartMinimizedToTrayChange: (value: boolean) => void;
+  analyticsEnabled: boolean;
+  onAnalyticsEnabledChange: (value: boolean) => void;
   onClose: () => void;
   isFirstRun?: boolean;
 }
@@ -48,6 +52,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onAlwaysOnTopChange,
   onLaunchAtStartupChange,
   onStartMinimizedToTrayChange,
+  analyticsEnabled,
+  onAnalyticsEnabledChange,
   onClose,
   isFirstRun = false
 }) => {
@@ -60,6 +66,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [currentAlwaysOnTop, setCurrentAlwaysOnTop] = useState(alwaysOnTop);
   const [currentLaunchAtStartup, setCurrentLaunchAtStartup] = useState(launchAtStartup);
   const [currentStartMinimizedToTray, setCurrentStartMinimizedToTray] = useState(startMinimizedToTray);
+  const [currentAnalyticsEnabled, setCurrentAnalyticsEnabled] = useState(analyticsEnabled);
+  const [openLegalDoc, setOpenLegalDoc] = useState<'privacy' | 'terms' | null>(null);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [error, setError] = useState('');
   const [showKey, setShowKey] = useState(false);
@@ -79,6 +87,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onAlwaysOnTopChange(currentAlwaysOnTop);
     onLaunchAtStartupChange(currentLaunchAtStartup);
     onStartMinimizedToTrayChange(currentStartMinimizedToTray);
+    onAnalyticsEnabledChange(currentAnalyticsEnabled);
     onClose();
   };
 
@@ -129,180 +138,211 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   );
 
   return (
-    <Modal
-      title={isFirstRun ? t.welcome : t.settings}
-      onClose={onClose}
-      closeLabel={t.close}
-      showCloseButton={!isFirstRun}
-      footer={
-        <>
-          {!isFirstRun && (
-            <button type="button" className="cancel-button" onClick={onClose}>
-              {t.cancel}
+    <>
+      <Modal
+        title={isFirstRun ? t.welcome : t.settings}
+        onClose={onClose}
+        closeLabel={t.close}
+        showCloseButton={!isFirstRun}
+        footer={
+          <>
+            {!isFirstRun && (
+              <button type="button" className="cancel-button" onClick={onClose}>
+                {t.cancel}
+              </button>
+            )}
+            <button type="submit" form="settings-form" className="save-button">
+              {isFirstRun ? t.getStarted : t.save}
             </button>
-          )}
-          <button type="submit" form="settings-form" className="save-button">
-            {isFirstRun ? t.getStarted : t.save}
-          </button>
-        </>
-      }
-    >
-      {isFirstRun && (
-        <p className="modal-subtitle">{t.welcomeSubtitle}</p>
-      )}
+          </>
+        }
+      >
+        {isFirstRun && (
+          <p className="modal-subtitle">{t.welcomeSubtitle}</p>
+        )}
 
-      {error && <div className="error-message">{error}</div>}
-
-      {!isFirstRun && (
-        <div className="settings-tabs" role="tablist" aria-label={t.settings}>
-          {tabs.map(([tabKey, label]) => (
-            <button
-              key={tabKey}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tabKey}
-              className={`settings-tab-btn${activeTab === tabKey ? ' selected' : ''}`}
-              onClick={() => setActiveTab(tabKey)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <form id="settings-form" onSubmit={handleSubmit}>
-        {isFirstRun && apiKeyField}
+        {error && <div className="error-message">{error}</div>}
 
         {!isFirstRun && (
-          <div className="settings-tab-panels">
-            <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'general'}>
-              {apiKeyField}
-
-              <div className="form-group">
-                <label htmlFor="app-language">{t.appLanguageLabel}</label>
-                <select
-                  id="app-language"
-                  value={currentLanguage}
-                  onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
-                >
-                  {APP_LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{NATIVE_LANGUAGE_NAMES[lang]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="model">{t.model}</label>
-                <select
-                  id="model"
-                  value={currentModel}
-                  onChange={e => setCurrentModel(e.target.value)}
-                  disabled={availableModels.length === 0}
-                >
-                  {availableModels.length > 0 ? (
-                    availableModels.map(model => (
-                      <option key={model} value={model}>
-                        {model === CONFIG.GEMINI.MODEL_NAME || isLatestAliasModel(model)
-                          ? `${model} (${t.modelRecommended})`
-                          : model}
-                      </option>
-                    ))
-                  ) : (
-                    <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'appearance'}>
-              <div className="form-group">
-                <label>{t.themeLabel}</label>
-                <div className="theme-option-group" role="radiogroup" aria-label={t.themeLabel}>
-                  {(['light', 'dark', 'system'] as Theme[]).map(option => (
-                    <button
-                      key={option}
-                      type="button"
-                      className={`theme-option-btn${currentTheme === option ? ' selected' : ''}`}
-                      aria-pressed={currentTheme === option}
-                      onClick={() => setCurrentTheme(option)}
-                    >
-                      {option === 'light' ? t.themeLight : option === 'dark' ? t.themeDark : t.themeSystem}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <div className="form-checkbox-row">
-                  <input
-                    id="always-on-top"
-                    type="checkbox"
-                    checked={currentAlwaysOnTop}
-                    onChange={e => setCurrentAlwaysOnTop(e.target.checked)}
-                  />
-                  <label htmlFor="always-on-top">{t.alwaysOnTopLabel}</label>
-                </div>
-              </div>
-            </div>
-
-            <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'startup'}>
-              <div className="form-group">
-                <label htmlFor="hotkey">{t.globalHotkey}</label>
-                <input
-                  id="hotkey"
-                  type="text"
-                  value={currentHotkey}
-                  readOnly
-                  placeholder={t.hotkeyPlaceholder}
-                  onKeyDown={e => {
-                    e.preventDefault();
-                    const parts: string[] = [];
-                    if (e.metaKey) parts.push('Command');
-                    if (e.ctrlKey) parts.push('Ctrl');
-                    if (e.altKey) parts.push('Alt');
-                    if (e.shiftKey) parts.push('Shift');
-                    const key = e.key;
-                    if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
-                      parts.push(key.length === 1 ? key.toUpperCase() : key);
-                    }
-                    if (parts.length > 1) setCurrentHotkey(parts.join('+'));
-                  }}
-                />
-                <small className="form-help">{t.hotkeyHelp}</small>
-              </div>
-
-              <div className="form-group">
-                <div className="form-checkbox-row">
-                  <input
-                    id="launch-at-startup"
-                    type="checkbox"
-                    checked={currentLaunchAtStartup}
-                    onChange={e => setCurrentLaunchAtStartup(e.target.checked)}
-                  />
-                  <label htmlFor="launch-at-startup">{t.launchAtStartupLabel}</label>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <div className="form-checkbox-row">
-                  <input
-                    id="start-minimized-to-tray"
-                    type="checkbox"
-                    checked={currentStartMinimizedToTray}
-                    disabled={!currentLaunchAtStartup}
-                    onChange={e => setCurrentStartMinimizedToTray(e.target.checked)}
-                  />
-                  <label htmlFor="start-minimized-to-tray">{t.startMinimizedToTrayLabel}</label>
-                </div>
-                {!currentLaunchAtStartup && (
-                  <small className="form-help">{t.startMinimizedToTrayHelp}</small>
-                )}
-              </div>
-            </div>
+          <div className="settings-tabs" role="tablist" aria-label={t.settings}>
+            {tabs.map(([tabKey, label]) => (
+              <button
+                key={tabKey}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tabKey}
+                className={`settings-tab-btn${activeTab === tabKey ? ' selected' : ''}`}
+                onClick={() => setActiveTab(tabKey)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         )}
-      </form>
-    </Modal>
+
+        <form id="settings-form" onSubmit={handleSubmit}>
+          {isFirstRun && apiKeyField}
+
+          {!isFirstRun && (
+            <div className="settings-tab-panels">
+              <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'general'}>
+                {apiKeyField}
+
+                <div className="form-group">
+                  <label htmlFor="app-language">{t.appLanguageLabel}</label>
+                  <select
+                    id="app-language"
+                    value={currentLanguage}
+                    onChange={e => setCurrentLanguage(e.target.value as AppLanguage)}
+                  >
+                    {APP_LANGUAGES.map(lang => (
+                      <option key={lang} value={lang}>{NATIVE_LANGUAGE_NAMES[lang]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="model">{t.model}</label>
+                  <select
+                    id="model"
+                    value={currentModel}
+                    onChange={e => setCurrentModel(e.target.value)}
+                    disabled={availableModels.length === 0}
+                  >
+                    {availableModels.length > 0 ? (
+                      availableModels.map(model => (
+                        <option key={model} value={model}>
+                          {model === CONFIG.GEMINI.MODEL_NAME || isLatestAliasModel(model)
+                            ? `${model} (${t.modelRecommended})`
+                            : model}
+                        </option>
+                      ))
+                    ) : (
+                      <option value={currentModel}>{currentModel} ({t.loadingModel})</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="analytics-enabled"
+                      type="checkbox"
+                      checked={currentAnalyticsEnabled}
+                      onChange={e => setCurrentAnalyticsEnabled(e.target.checked)}
+                    />
+                    <label htmlFor="analytics-enabled">{t.analyticsConsentLabel}</label>
+                  </div>
+                  <small className="form-help">{t.analyticsConsentDescription}</small>
+                  <p className="legal-links">
+                    <button type="button" className="link-button" onClick={() => setOpenLegalDoc('privacy')}>
+                      {t.privacyPolicyLink}
+                    </button>
+                    {' · '}
+                    <button type="button" className="link-button" onClick={() => setOpenLegalDoc('terms')}>
+                      {t.termsOfUseLink}
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'appearance'}>
+                <div className="form-group">
+                  <label>{t.themeLabel}</label>
+                  <div className="theme-option-group" role="radiogroup" aria-label={t.themeLabel}>
+                    {(['light', 'dark', 'system'] as Theme[]).map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`theme-option-btn${currentTheme === option ? ' selected' : ''}`}
+                        aria-pressed={currentTheme === option}
+                        onClick={() => setCurrentTheme(option)}
+                      >
+                        {option === 'light' ? t.themeLight : option === 'dark' ? t.themeDark : t.themeSystem}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="always-on-top"
+                      type="checkbox"
+                      checked={currentAlwaysOnTop}
+                      onChange={e => setCurrentAlwaysOnTop(e.target.checked)}
+                    />
+                    <label htmlFor="always-on-top">{t.alwaysOnTopLabel}</label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-tab-panel" role="tabpanel" aria-hidden={activeTab !== 'startup'}>
+                <div className="form-group">
+                  <label htmlFor="hotkey">{t.globalHotkey}</label>
+                  <input
+                    id="hotkey"
+                    type="text"
+                    value={currentHotkey}
+                    readOnly
+                    placeholder={t.hotkeyPlaceholder}
+                    onKeyDown={e => {
+                      e.preventDefault();
+                      const parts: string[] = [];
+                      if (e.metaKey) parts.push('Command');
+                      if (e.ctrlKey) parts.push('Ctrl');
+                      if (e.altKey) parts.push('Alt');
+                      if (e.shiftKey) parts.push('Shift');
+                      const key = e.key;
+                      if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
+                        parts.push(key.length === 1 ? key.toUpperCase() : key);
+                      }
+                      if (parts.length > 1) setCurrentHotkey(parts.join('+'));
+                    }}
+                  />
+                  <small className="form-help">{t.hotkeyHelp}</small>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="launch-at-startup"
+                      type="checkbox"
+                      checked={currentLaunchAtStartup}
+                      onChange={e => setCurrentLaunchAtStartup(e.target.checked)}
+                    />
+                    <label htmlFor="launch-at-startup">{t.launchAtStartupLabel}</label>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-checkbox-row">
+                    <input
+                      id="start-minimized-to-tray"
+                      type="checkbox"
+                      checked={currentStartMinimizedToTray}
+                      disabled={!currentLaunchAtStartup}
+                      onChange={e => setCurrentStartMinimizedToTray(e.target.checked)}
+                    />
+                    <label htmlFor="start-minimized-to-tray">{t.startMinimizedToTrayLabel}</label>
+                  </div>
+                  {!currentLaunchAtStartup && (
+                    <small className="form-help">{t.startMinimizedToTrayHelp}</small>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </form>
+      </Modal>
+
+      {openLegalDoc === 'privacy' && (
+        <LegalDocumentModal title={t.privacyPolicyLink} content={PRIVACY_POLICY} onClose={() => setOpenLegalDoc(null)} />
+      )}
+      {openLegalDoc === 'terms' && (
+        <LegalDocumentModal title={t.termsOfUseLink} content={TERMS_OF_USE} onClose={() => setOpenLegalDoc(null)} />
+      )}
+    </>
   );
 };
 

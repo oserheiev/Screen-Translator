@@ -119,6 +119,18 @@ const ko: LocaleStrings = {
   ok: '확인',
   modelUnavailableTitle: '모델을 사용할 수 없음',
   modelUnavailableMessage: '모델 {oldModel}을(를) 사용할 수 없습니다. {newModel}(으)로 전환되었습니다.',
+
+  welcomeAnalyticsTitle: 'Screen Translator 개선에 도움을 주세요',
+  welcomeAnalyticsIntro: 'API 키를 설정하기 전에 익명 사용 데이터를 공유할 의향이 있는지 알려주세요.',
+  analyticsUpdateTitle: '계속하기 전에',
+  analyticsUpdateIntro: 'Screen Translator를 개선하기 위해 익명의 사용 데이터를 수집하고자 합니다.',
+  legalDocsUpdatedTitle: '정책이 변경되었습니다',
+  legalDocsUpdatedIntro: '개인정보 처리방침과 이용약관을 업데이트했습니다. 잠시 확인해 주세요.',
+  analyticsConsentLabel: '익명 사용 데이터 공유',
+  analyticsConsentDescription: '얼마나 많은 사람이 앱을 얼마나 자주 사용하는지 파악하는 데 도움이 됩니다. 화면 내용, 번역 내용, 개인 데이터는 절대 수집되지 않습니다.',
+  privacyPolicyLink: '개인정보 처리방침',
+  termsOfUseLink: '이용약관',
+  welcomeModalContinue: '계속',
 };
 
 export default ko;

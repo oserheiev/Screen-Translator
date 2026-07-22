@@ -119,6 +119,18 @@ const uk: LocaleStrings = {
   ok: 'OK',
   modelUnavailableTitle: 'Модель недоступна',
   modelUnavailableMessage: 'Модель {oldModel} недоступна. Перемкнено на {newModel}.',
+
+  welcomeAnalyticsTitle: 'Допоможіть нам покращити Screen Translator',
+  welcomeAnalyticsIntro: 'Перш ніж налаштувати API-ключ, повідомте, чи готові ви ділитися анонімними даними про використання.',
+  analyticsUpdateTitle: 'Перш ніж продовжити',
+  analyticsUpdateIntro: 'Ми хотіли б збирати анонімні дані про використання, щоб покращити Screen Translator.',
+  legalDocsUpdatedTitle: 'Наша політика змінилася',
+  legalDocsUpdatedIntro: 'Ми оновили Політику конфіденційності та Умови використання. Будь ласка, ознайомтеся з ними.',
+  analyticsConsentLabel: 'Ділитися анонімними даними про використання',
+  analyticsConsentDescription: 'Допомагає нам зрозуміти, скільки людей використовують застосунок і як часто. Вміст екрана, переклади та особисті дані ніколи не збираються.',
+  privacyPolicyLink: 'Політика конфіденційності',
+  termsOfUseLink: 'Умови використання',
+  welcomeModalContinue: 'Продовжити',
 };
 
 export default uk;

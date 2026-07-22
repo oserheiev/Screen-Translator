@@ -9,6 +9,7 @@ import SettingsModal from './components/SettingsModal';
 import PermissionModal from './components/PermissionModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import UpdateAvailableModal from './components/UpdateAvailableModal';
+import WelcomeModal from './components/WelcomeModal';
 import HistoryPanel from './components/HistoryPanel';
 import { useAppContext } from './contexts/AppContext';
 
@@ -132,6 +133,10 @@ const App: React.FC = () => {
     dismissUpdatePrompt,
     ignoreUpdateVersion,
     updatePreviewBullets,
+    welcomeModalMode,
+    analyticsEnabled,
+    setAnalyticsEnabled,
+    completeWelcome,
   } = useAppContext();
 
   const t = useLocale();
@@ -354,6 +359,8 @@ const App: React.FC = () => {
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
             onStartMinimizedToTrayChange={setStartMinimizedToTray}
+            analyticsEnabled={analyticsEnabled ?? true}
+            onAnalyticsEnabledChange={setAnalyticsEnabled}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
@@ -391,12 +398,12 @@ const App: React.FC = () => {
         )}
 
         {/* What's New modal */}
-        {whatsNewEntries.length > 0 && !isFirstRun && (
+        {whatsNewEntries.length > 0 && !isFirstRun && !welcomeModalMode && (
           <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
         )}
 
         {/* Update available modal — only after What's New has been dismissed/shown, so the two modals never stack */}
-        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && (
+        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && !welcomeModalMode && (
           <UpdateAvailableModal
             version={updatePromptVersion}
             previewBullets={updatePreviewBullets}
@@ -406,8 +413,17 @@ const App: React.FC = () => {
           />
         )}
 
+        {/* Analytics consent / legal docs modal */}
+        {welcomeModalMode && (
+          <WelcomeModal
+            mode={welcomeModalMode}
+            initialConsent={welcomeModalMode === 'docs-updated' ? (analyticsEnabled ?? true) : true}
+            onComplete={completeWelcome}
+          />
+        )}
+
         {/* First-run modal */}
-        {isFirstRun && !apiKey && (
+        {isFirstRun && !apiKey && !welcomeModalMode && (
           <SettingsModal
             apiKey={apiKey}
             hotkey={hotkey}
@@ -426,6 +442,8 @@ const App: React.FC = () => {
             onAlwaysOnTopChange={setAlwaysOnTop}
             onLaunchAtStartupChange={setLaunchAtStartup}
             onStartMinimizedToTrayChange={setStartMinimizedToTray}
+            analyticsEnabled={analyticsEnabled ?? true}
+            onAnalyticsEnabledChange={setAnalyticsEnabled}
             onClose={() => setIsFirstRun(false)}
             isFirstRun={true}
           />

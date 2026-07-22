@@ -209,6 +209,23 @@ describe('AppContext — processImage', () => {
 
     expect(screen.getByTestId('error').textContent).not.toBe('');
   });
+
+  it('reports a capture-triggered translation_completed event on a successful screen capture', async () => {
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() => expect(GeminiService).toHaveBeenCalled());
+
+    await act(async () => {
+      await ctx.processImage('data:image/png;base64,ABC');
+    });
+
+    await waitFor(() => {
+      expect(window.electron.analytics.trackTranslationCompleted).toHaveBeenCalledWith(
+        expect.objectContaining({ trigger: 'capture' })
+      );
+    });
+  });
 });
 
 describe('AppContext — translateText', () => {
@@ -249,6 +266,23 @@ describe('AppContext — translateText', () => {
 
     expect(mockTranslateText).not.toHaveBeenCalled();
     expect(screen.getByTestId('history-count').textContent).toBe('0');
+  });
+
+  it('reports a manual-triggered translation_completed event on a successful manual translation', async () => {
+    let ctx!: ReturnType<typeof useAppContext>;
+    renderWithProvider(<Consumer onRender={c => { ctx = c; }} />);
+
+    await waitFor(() => expect(GeminiService).toHaveBeenCalled());
+
+    await act(async () => {
+      await ctx.translateText('Hello');
+    });
+
+    await waitFor(() => {
+      expect(window.electron.analytics.trackTranslationCompleted).toHaveBeenCalledWith(
+        expect.objectContaining({ trigger: 'manual' })
+      );
+    });
   });
 });
 

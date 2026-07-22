@@ -34,6 +34,7 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.3.9",
     "markdown-to-jsx": "^9.3.5",
+    "posthog-node": "^5.46.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uiohook-napi": "^1.5.4"

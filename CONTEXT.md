@@ -28,3 +28,25 @@ entry, is the unit of translation: it carries a mandatory English string
 plus any number of optional per-language translations. This lets one
 release mix fully-translated and English-only bullets — the app falls back
 to English per bullet, not per whole entry.
+
+### Translation event
+The unit counted toward "translations per day" in usage analytics: one
+successful translation the user obtained, whether from a fresh screen
+capture or from re-translating already-captured text. A retry behind the
+scenes still counts as a single translation once it succeeds; viewing
+alternates or context for an existing result is not a new translation.
+_Avoid_: translation attempt, API call
+
+### Consent decision
+Whether the user currently allows anonymous usage analytics to be shared,
+defaulting to allowed until the user turns it off. A change to the Privacy
+Policy or Terms of Use re-notifies the user but never silently resets this
+choice.
+_Avoid_: opt-in status, tracking permission
+
+### Legal docs acknowledgement
+That the user has been shown the currently-in-effect Privacy Policy and
+Terms of Use. Tracked by comparing a content fingerprint of the current
+docs against the fingerprint last shown — any wording change, however
+small, is treated as new docs requiring a fresh acknowledgement.
+_Avoid_: docs version, accepted version

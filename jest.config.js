@@ -7,6 +7,7 @@ module.exports = {
       testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
       transform: {
         '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/jest.tsconfig.json' }],
+        '\\.md$': '<rootDir>/jest-raw-transform.js',
       },
       moduleNameMapper: {
         '\\.(css|less|scss)$': 'identity-obj-proxy',
@@ -27,6 +28,7 @@ module.exports = {
         '^electron-store$': '<rootDir>/__mocks__/electron-store.ts',
         '^uiohook-napi$': '<rootDir>/__mocks__/uiohook-napi.ts',
         '^electron-updater$': '<rootDir>/__mocks__/electron-updater.ts',
+        '^posthog-node$': '<rootDir>/__mocks__/posthog-node.ts',
       },
     },
   ],

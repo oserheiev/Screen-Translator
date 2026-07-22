@@ -45,6 +45,9 @@ const makeElectronMock = () => ({
   app: {
     getVersion: jest.fn().mockResolvedValue('1.3.1'),
   },
+  analytics: {
+    trackTranslationCompleted: jest.fn().mockResolvedValue(undefined),
+  },
   on: jest.fn().mockReturnValue(() => {}),
   removeListener: jest.fn(),
 });

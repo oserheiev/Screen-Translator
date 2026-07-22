@@ -119,6 +119,18 @@ const zh: LocaleStrings = {
   ok: '确定',
   modelUnavailableTitle: '模型不可用',
   modelUnavailableMessage: '模型 {oldModel} 不可用。已切换到 {newModel}。',
+
+  welcomeAnalyticsTitle: '帮助我们改进 Screen Translator',
+  welcomeAnalyticsIntro: '在设置 API 密钥之前，请告诉我们您是否愿意共享匿名使用数据。',
+  analyticsUpdateTitle: '继续之前',
+  analyticsUpdateIntro: '我们希望收集匿名使用数据，以改进 Screen Translator。',
+  legalDocsUpdatedTitle: '我们的政策已更新',
+  legalDocsUpdatedIntro: '我们更新了隐私政策和使用条款，请花一点时间查看。',
+  analyticsConsentLabel: '共享匿名使用数据',
+  analyticsConsentDescription: '帮助我们了解有多少人使用该应用以及使用频率。我们绝不会收集屏幕内容、翻译内容或个人数据。',
+  privacyPolicyLink: '隐私政策',
+  termsOfUseLink: '使用条款',
+  welcomeModalContinue: '继续',
 };
 
 export default zh;

@@ -15,6 +15,13 @@ export const TRAY_ICONS = {
     LINUX: '../../assets/icons/icon.png',
 } as const;
 
+// PostHog Project API Key is a write-only client token (safe to embed — see
+// https://posthog.com/docs — it cannot read data back), not a secret.
+export const ANALYTICS_CONFIG = {
+    PROJECT_API_KEY: 'phc_BtitSwzzhKt7btYyZR5cjD5V9PJNGj5Q7vpCQmwM5k7J',
+    HOST: 'https://eu.i.posthog.com',
+} as const;
+
 export const IPC_CHANNELS = {
     START_CAPTURE: 'start-screen-capture',
     GET_SETTINGS: 'get-settings',
@@ -45,4 +52,5 @@ export const IPC_CHANNELS = {
     ACCESSIBILITY_ERROR: 'accessibility-error',
     SCREENSHOT_READY: 'screenshot-ready',
     CAPTURE_RESET: 'capture-reset',
+    TRACK_TRANSLATION_COMPLETED: 'track-translation-completed',
 } as const;

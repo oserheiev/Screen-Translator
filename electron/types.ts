@@ -51,6 +51,11 @@ export interface Settings {
   windowBounds?: { x: number; y: number; width: number; height: number };
   lastSeenVersion?: string;
   ignoredUpdateVersion?: string;
+  analyticsEnabled?: boolean;
+  legalDocsHashAccepted?: string;
+  // Anonymous per-install identifier for analytics. Generated once, main-process-only —
+  // never sent to the renderer or exposed over IPC.
+  distinctId?: string;
 }
 
 // Create a type for the store with proper methods

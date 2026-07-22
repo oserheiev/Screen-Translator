@@ -13,6 +13,7 @@ import { createCaptureWindow, loadCaptureInterface } from './captureWindowFactor
 import { captureDisplayScreenshots } from './screenshot';
 import { CaptureWindowPool } from './captureWindowPool';
 import { buildLoginItemSettings } from './loginItem';
+import { createAnalyticsClient, getOrCreateDistinctId, buildTranslationEventProperties, trackAppStarted, trackTranslationCompleted } from './analytics';
 
 // Enforce single application instance
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -82,6 +83,9 @@ function migrateApiKey() {
 }
 
 migrateApiKey();
+
+const analyticsClient = createAnalyticsClient();
+const analyticsDistinctId = getOrCreateDistinctId(store);
 
 function computeLoginItemSettings(openAtLogin: boolean) {
   const startHidden = !!store.get('startMinimizedToTray');
@@ -554,7 +558,9 @@ function setupIpcHandlers() {
       startMinimizedToTray: store.get('startMinimizedToTray'),
       launchAtStartup: isLoginItemEnabled(),
       lastSeenVersion: store.get('lastSeenVersion'),
-      ignoredUpdateVersion: store.get('ignoredUpdateVersion')
+      ignoredUpdateVersion: store.get('ignoredUpdateVersion'),
+      analyticsEnabled: store.get('analyticsEnabled'),
+      legalDocsHashAccepted: store.get('legalDocsHashAccepted')
     };
   });
 
@@ -591,6 +597,8 @@ function setupIpcHandlers() {
     }
     if (settings.lastSeenVersion !== undefined) store.set('lastSeenVersion', settings.lastSeenVersion);
     if (settings.ignoredUpdateVersion !== undefined) store.set('ignoredUpdateVersion', settings.ignoredUpdateVersion);
+    if (settings.analyticsEnabled !== undefined) store.set('analyticsEnabled', settings.analyticsEnabled);
+    if (settings.legalDocsHashAccepted !== undefined) store.set('legalDocsHashAccepted', settings.legalDocsHashAccepted);
     return true;
   });
 
@@ -706,6 +714,11 @@ function setupIpcHandlers() {
     return app.getVersion();
   });
 
+  ipcMain.handle(IPC_CHANNELS.TRACK_TRANSLATION_COMPLETED, (_, properties: { languagePair: string; trigger: 'capture' | 'manual' }) => {
+    const enriched = buildTranslationEventProperties(properties, app.getVersion());
+    trackTranslationCompleted(analyticsClient, analyticsDistinctId, store.get('analyticsEnabled'), enriched);
+  });
+
 }
 
 // App lifecycle events
@@ -713,6 +726,7 @@ app.on('ready', () => {
   if (!store.get('appLanguage')) {
     store.set('appLanguage', detectAppLanguage(app.getLocale()));
   }
+  trackAppStarted(analyticsClient, analyticsDistinctId, store.get('analyticsEnabled'));
   if (isLoginItemEnabled()) {
     // Repairs a stale/incorrect registration (e.g. from before this fix,
     // or from switching between `npm run dev` and a packaged install).
@@ -770,6 +784,7 @@ app.on('before-quit', () => {
   app.quitting = true;
   keyboardHook.stop();
   captureWindowPool.destroyAll();
+  analyticsClient.shutdown().catch(() => { /* best-effort flush on quit */ });
 });
 
 declare global {
