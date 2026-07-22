@@ -398,12 +398,12 @@ const App: React.FC = () => {
         )}
 
         {/* What's New modal */}
-        {whatsNewEntries.length > 0 && !isFirstRun && (
+        {whatsNewEntries.length > 0 && !isFirstRun && !welcomeModalMode && (
           <WhatsNewModal entries={whatsNewEntries} onClose={dismissWhatsNew} />
         )}
 
         {/* Update available modal — only after What's New has been dismissed/shown, so the two modals never stack */}
-        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && (
+        {updatePromptVersion && !isFirstRun && whatsNewEntries.length === 0 && !welcomeModalMode && (
           <UpdateAvailableModal
             version={updatePromptVersion}
             previewBullets={updatePreviewBullets}
