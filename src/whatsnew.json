@@ -1,5 +1,45 @@
 [
   {
+    "version": "1.11.0",
+    "bullets": [
+      {
+        "English": "Settings no longer jump in height when switching tabs",
+        "Russian": "Настройки больше не меняют высоту при переключении вкладок",
+        "Ukrainian": "Налаштування більше не змінюють висоту при перемиканні вкладок"
+      },
+      {
+        "English": "Copy buttons now match in size across panels",
+        "Russian": "Кнопки копирования теперь одинакового размера на обеих панелях",
+        "Ukrainian": "Кнопки копіювання тепер однакового розміру на обох панелях"
+      },
+      {
+        "English": "Added a button to clear the source text",
+        "Russian": "Добавлена кнопка очистки исходного текста",
+        "Ukrainian": "Додано кнопку очищення вихідного тексту"
+      },
+      {
+        "English": "Settings model list now shows only image-capable models, with the newest and recommended ones sorted to the top",
+        "Russian": "Список моделей в настройках теперь показывает только модели с поддержкой изображений, а новейшие и рекомендуемые модели отсортированы вверху",
+        "Ukrainian": "Список моделей у налаштуваннях тепер показує лише моделі з підтримкою зображень, а найновіші та рекомендовані моделі відсортовані вгорі"
+      },
+      {
+        "English": "Fixed the welcome screen briefly flashing on startup",
+        "Russian": "Исправлено кратковременное появление приветственного окна при запуске",
+        "Ukrainian": "Виправлено короткочасну появу вітального вікна під час запуску"
+      },
+      {
+        "English": "Added optional, anonymous usage analytics (how many people use the app and how often) with a clear opt-out choice and a bundled Privacy Policy / Terms of Use — no screen content or translations are ever collected",
+        "Russian": "Добавлена опциональная анонимная аналитика использования (сколько людей пользуются приложением и как часто) с понятным отказом от участия и встроенными Политикой конфиденциальности и Условиями использования — содержимое экрана и переводы никогда не собираются",
+        "Ukrainian": "Додано опціональну анонімну аналітику використання (скільки людей користуються застосунком і як часто) із зрозумілою відмовою від участі та вбудованими Політикою конфіденційності й Умовами використання — вміст екрана та переклади ніколи не збираються"
+      },
+      {
+        "English": "Added a Settings > General toggle to turn anonymous usage sharing on or off at any time, with links to the Privacy Policy and Terms of Use",
+        "Russian": "Добавлен переключатель в Настройки > Общие для включения или отключения анонимного обмена данными об использовании в любое время, со ссылками на Политику конфиденциальности и Условия использования",
+        "Ukrainian": "Додано перемикач у Налаштування > Загальні для увімкнення чи вимкнення анонімного обміну даними про використання в будь-який час, з посиланнями на Політику конфіденційності та Умови використання"
+      }
+    ]
+  },
+  {
     "version": "1.10.0",
     "bullets": [
       {
