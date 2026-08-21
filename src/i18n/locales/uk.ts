@@ -83,6 +83,9 @@ const uk: LocaleStrings = {
   alternatives: 'Варіанти перекладу',
   contextOfUse: 'Контекст вживання',
 
+  expandPanelTooltip: 'Розгорнути',
+  restoreSplitViewTooltip: 'Відновити розділений вигляд',
+
   apiKeyNotSet: 'API-ключ не вказано. Будь ласка, задайте ваш API-ключ Gemini у налаштуваннях.',
 
   whatsNewTitle: "Що нового в v{version}",

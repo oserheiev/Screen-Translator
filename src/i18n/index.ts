@@ -94,6 +94,10 @@ export interface LocaleStrings {
   alternatives: string;
   contextOfUse: string;
 
+  // TextDisplay / TranslationDisplay — panel expand/collapse
+  expandPanelTooltip: string;
+  restoreSplitViewTooltip: string;
+
   // AppContext errors
   apiKeyNotSet: string;
 

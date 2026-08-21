@@ -83,6 +83,9 @@ const pt: LocaleStrings = {
   alternatives: 'Alternativas',
   contextOfUse: 'Contexto de uso',
 
+  expandPanelTooltip: 'Expandir',
+  restoreSplitViewTooltip: 'Restaurar visualização dividida',
+
   apiKeyNotSet: 'Chave API não definida. Por favor, configure sua chave API Gemini nas configurações.',
 
   whatsNewTitle: "Novidades em v{version}",

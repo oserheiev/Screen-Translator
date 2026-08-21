@@ -83,6 +83,9 @@ const ja: LocaleStrings = {
   alternatives: '代替語',
   contextOfUse: '使用状況',
 
+  expandPanelTooltip: '拡大',
+  restoreSplitViewTooltip: '分割表示に戻す',
+
   apiKeyNotSet: 'APIキーが設定されていません。設定からGemini APIキーを入力してください。',
 
   whatsNewTitle: "v{version}の新機能",
