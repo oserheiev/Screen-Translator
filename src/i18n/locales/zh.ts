@@ -83,6 +83,9 @@ const zh: LocaleStrings = {
   alternatives: '替换词',
   contextOfUse: '使用情境',
 
+  expandPanelTooltip: '展开',
+  restoreSplitViewTooltip: '恢复分屏视图',
+
   apiKeyNotSet: '未设置 API 密钥。请在设置中配置您的 Gemini API 密钥。',
 
   whatsNewTitle: "v{version} 中的新增功能",

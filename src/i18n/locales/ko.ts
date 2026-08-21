@@ -83,6 +83,9 @@ const ko: LocaleStrings = {
   alternatives: '대안어',
   contextOfUse: '사용 맥락',
 
+  expandPanelTooltip: '확장',
+  restoreSplitViewTooltip: '분할 보기로 복원',
+
   apiKeyNotSet: 'API 키가 설정되지 않았습니다. 설정에서 Gemini API 키를 입력해 주세요.',
 
   whatsNewTitle: "v{version}의 새로운 기능",

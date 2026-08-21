@@ -83,6 +83,9 @@ const ru: LocaleStrings = {
   alternatives: 'Варианты перевода',
   contextOfUse: 'Контекст употребления',
 
+  expandPanelTooltip: 'Развернуть',
+  restoreSplitViewTooltip: 'Восстановить разделение',
+
   apiKeyNotSet: 'API-ключ не задан. Укажите ваш API-ключ Gemini в настройках.',
 
   whatsNewTitle: "Что нового в v{version}",

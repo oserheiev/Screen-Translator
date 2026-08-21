@@ -147,6 +147,7 @@ const App: React.FC = () => {
   const [permissionPlatform, setPermissionPlatform] = useState<string | null>(null);
   const [accessibilityDenied, setAccessibilityDenied] = useState<boolean>(false);
   const [accessibilitySkipped, setAccessibilitySkipped] = useState<boolean>(false);
+  const [layoutMode, setLayoutMode] = useState<'split' | 'source' | 'translation'>('split');
 
   // Wait for the saved API key to actually load before deciding whether to show the
   // first-run welcome screen — deciding from the initial (empty) apiKey would flash it
@@ -166,6 +167,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const removeListener = onImageCaptured((imageData: string) => {
+      setLayoutMode('split');
       processImage(imageData);
     });
     return () => { removeListener(); };
@@ -199,6 +201,14 @@ const App: React.FC = () => {
     if (originalText && !isProcessing) {
       translateText(originalText);
     }
+  };
+
+  const toggleSourceExpand = () => {
+    setLayoutMode(mode => (mode === 'source' ? 'split' : 'source'));
+  };
+
+  const toggleTranslationExpand = () => {
+    setLayoutMode(mode => (mode === 'translation' ? 'split' : 'translation'));
   };
 
   const modelLabel = selectedModel
@@ -319,13 +329,16 @@ const App: React.FC = () => {
         )}
 
         {/* Panels */}
-        <div className="panels-row">
+        <div className={`panels-row${layoutMode !== 'split' ? ' is-focused' : ''}`}>
           <TextDisplay
             text={originalText}
             onTextEdit={setOriginalText}
             onPasteError={() => reportError(t.pasteFailed)}
             disabled={isProcessing}
             isLoading={isCaptureProcessing}
+            isExpanded={layoutMode === 'source'}
+            isCollapsed={layoutMode === 'translation'}
+            onToggleExpand={toggleSourceExpand}
           />
           <TranslationDisplay
             text={translatedText}
@@ -336,6 +349,9 @@ const App: React.FC = () => {
             contextData={contextData}
             onToggleAlternatives={toggleAlternatives}
             onToggleContext={toggleContext}
+            isExpanded={layoutMode === 'translation'}
+            isCollapsed={layoutMode === 'source'}
+            onToggleExpand={toggleTranslationExpand}
           />
         </div>
 

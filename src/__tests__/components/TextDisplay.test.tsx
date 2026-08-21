@@ -18,6 +18,8 @@ jest.mock('../../i18n/useLocale', () => ({
     yesterday: 'Yesterday',
     languageNames: {},
     apiKeyNotSet: 'API key not set',
+    expandPanelTooltip: 'Expand',
+    restoreSplitViewTooltip: 'Restore split view',
   }),
 }));
 
@@ -102,5 +104,41 @@ describe('TextDisplay', () => {
   it('disables the clear button when there is no text', () => {
     render(<TextDisplay text="" />);
     expect(screen.getByTitle('Clear text')).toBeDisabled();
+  });
+
+  it('does not show the expand button when onToggleExpand is not provided', () => {
+    render(<TextDisplay text="" />);
+    expect(screen.queryByTitle('Expand')).not.toBeInTheDocument();
+  });
+
+  it('shows the expand button with the expand label when not expanded', () => {
+    render(<TextDisplay text="" onToggleExpand={jest.fn()} />);
+    expect(screen.getByTitle('Expand')).toBeInTheDocument();
+  });
+
+  it('shows the restore label on the expand button when expanded', () => {
+    render(<TextDisplay text="" isExpanded={true} onToggleExpand={jest.fn()} />);
+    expect(screen.getByTitle('Restore split view')).toBeInTheDocument();
+  });
+
+  it('calls onToggleExpand when the expand button is clicked, even with no text', () => {
+    const onToggleExpand = jest.fn();
+    render(<TextDisplay text="" onToggleExpand={onToggleExpand} />);
+
+    fireEvent.click(screen.getByTitle('Expand'));
+
+    expect(onToggleExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds the is-expanded class when isExpanded is true', () => {
+    const { container } = render(<TextDisplay text="text" isExpanded={true} onToggleExpand={jest.fn()} />);
+    expect(container.querySelector('.source-panel')).toHaveClass('is-expanded');
+  });
+
+  it('adds the is-collapsed class and marks the panel inert when isCollapsed is true', () => {
+    const { container } = render(<TextDisplay text="text" isCollapsed={true} onToggleExpand={jest.fn()} />);
+    const panel = container.querySelector('.source-panel');
+    expect(panel).toHaveClass('is-collapsed');
+    expect(panel).toHaveAttribute('inert');
   });
 });

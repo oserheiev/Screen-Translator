@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import TranslationDisplay from '../../components/TranslationDisplay';
 
 jest.mock('../../i18n/useLocale', () => ({
@@ -20,6 +20,8 @@ jest.mock('../../i18n/useLocale', () => ({
     contextToggleLabel: 'Context',
     alternatives: 'Alternatives',
     contextOfUse: 'Context of Use',
+    expandPanelTooltip: 'Expand',
+    restoreSplitViewTooltip: 'Restore split view',
   }),
 }));
 
@@ -68,6 +70,42 @@ describe('TranslationDisplay', () => {
   it('labels the copy button for accessibility', () => {
     render(<TranslationDisplay text="some translated text" />);
     expect(screen.getByTitle('Copy')).toBeInTheDocument();
+  });
+
+  it('does not show the expand button when onToggleExpand is not provided', () => {
+    render(<TranslationDisplay text="" />);
+    expect(screen.queryByTitle('Expand')).not.toBeInTheDocument();
+  });
+
+  it('shows the expand button with the expand label when not expanded', () => {
+    render(<TranslationDisplay text="" onToggleExpand={jest.fn()} />);
+    expect(screen.getByTitle('Expand')).toBeInTheDocument();
+  });
+
+  it('shows the restore label on the expand button when expanded', () => {
+    render(<TranslationDisplay text="" isExpanded={true} onToggleExpand={jest.fn()} />);
+    expect(screen.getByTitle('Restore split view')).toBeInTheDocument();
+  });
+
+  it('calls onToggleExpand when the expand button is clicked, even with no text', () => {
+    const onToggleExpand = jest.fn();
+    render(<TranslationDisplay text="" onToggleExpand={onToggleExpand} />);
+
+    fireEvent.click(screen.getByTitle('Expand'));
+
+    expect(onToggleExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds the is-expanded class when isExpanded is true', () => {
+    const { container } = render(<TranslationDisplay text="text" isExpanded={true} onToggleExpand={jest.fn()} />);
+    expect(container.querySelector('.translation-panel')).toHaveClass('is-expanded');
+  });
+
+  it('adds the is-collapsed class and marks the panel inert when isCollapsed is true', () => {
+    const { container } = render(<TranslationDisplay text="text" isCollapsed={true} onToggleExpand={jest.fn()} />);
+    const panel = container.querySelector('.translation-panel');
+    expect(panel).toHaveClass('is-collapsed');
+    expect(panel).toHaveAttribute('inert');
   });
 });
 
