@@ -28,6 +28,7 @@ export class CaptureWindowPool {
   private preparing = false;
   private inUse = false;
   private needsRebuild = false;
+  private shuttingDown = false;
 
   private readonly windowFactory: (display: Electron.Display) => BrowserWindow;
   private readonly interfaceLoader: (win: BrowserWindow) => Promise<void>;
@@ -77,6 +78,7 @@ export class CaptureWindowPool {
   }
 
   async prepare(): Promise<void> {
+    if (this.shuttingDown) return;
     if (this.inUse || this.preparing) {
       this.needsRebuild = true;
       return;
@@ -97,6 +99,7 @@ export class CaptureWindowPool {
       await Promise.all(
         Array.from(this.windows.values()).map(win => this.interfaceLoader(win))
       );
+      if (this.shuttingDown) return;
 
       this.snapshot = displays.map(d => ({
         id: d.id,
@@ -107,6 +110,7 @@ export class CaptureWindowPool {
         scaleFactor: d.scaleFactor,
       }));
     } catch (error) {
+      if (this.shuttingDown) return;
       console.error('Failed to prepare capture window pool:', error);
       this.disposeWindows();
     } finally {
@@ -119,8 +123,10 @@ export class CaptureWindowPool {
     }
   }
 
-  /** App-shutdown cleanup. Not safe mid-capture: destroys windows without checking inUse. */
+  /** Permanently dispose of the pool during app shutdown. */
   destroyAll(): void {
+    this.shuttingDown = true;
+    this.needsRebuild = false;
     this.disposeWindows();
   }
 
