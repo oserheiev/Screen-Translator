@@ -1,5 +1,25 @@
 [
   {
+    "version": "1.12.0",
+    "bullets": [
+      {
+        "English": "Added a button to expand the source or translation panel to full width, hiding the other",
+        "Russian": "Добавлена кнопка для разворачивания панели исходного текста или перевода на всю ширину со скрытием другой",
+        "Ukrainian": "Додано кнопку для розгортання панелі вихідного тексту або перекладу на всю ширину з приховуванням іншої"
+      },
+      {
+        "English": "Fixed inconsistent icon sizes and alignment in context-of-use tags",
+        "Russian": "Исправлены несогласованные размеры и выравнивание значков в тегах контекста употребления",
+        "Ukrainian": "Виправлено неузгоджені розміри та вирівнювання значків у тегах контексту вживання"
+      },
+      {
+        "English": "Fixed an error that could appear when shutting down or restarting Windows.",
+        "Russian": "Исправлена ошибка, которая могла появляться при выключении или перезагрузке Windows.",
+        "Ukrainian": "Виправлено помилку, яка могла з’являтися під час вимкнення або перезавантаження Windows."
+      }
+    ]
+  },
+  {
     "version": "1.11.0",
     "bullets": [
       {
