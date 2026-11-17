@@ -309,17 +309,18 @@ async function requestScreenCapturePermission(): Promise<boolean> {
 }
 
 async function startScreenCapture() {
-  if (isCapturing) return;
+  if (isCapturing || app.quitting) return;
   isCapturing = true;
   console.log('Starting screen capture...');
 
   const hasPermission = await requestScreenCapturePermission();
-  if (!hasPermission) {
+  if (!hasPermission || app.quitting) {
     isCapturing = false;
     return;
   }
 
   await closeAllCaptureWindows();
+  if (app.quitting) return;
 
   const displays = screen.getAllDisplays();
   console.log(`Found ${displays.length} displays`);
@@ -328,6 +329,7 @@ async function startScreenCapture() {
     // Capture the frozen screenshot FIRST (freeze-at-hotkey semantics),
     // then show pre-created windows — or fall back to creating them now.
     const screenshotsByDisplayId = await captureDisplayScreenshots(displays);
+    if (app.quitting) return;
 
     const pooled = captureWindowPool.acquire();
     captureFromPool = pooled !== null;
@@ -343,6 +345,7 @@ async function startScreenCapture() {
         await loadCaptureInterface(window);
       }));
     }
+    if (app.quitting) return;
 
     for (const display of displays) {
       const window = captureWindows.get(display.id);
@@ -376,8 +379,9 @@ async function startScreenCapture() {
 
     console.log(`Initialized capture windows for ${captureWindows.size} displays (pool: ${captureFromPool})`);
   } catch (error) {
-    console.error('Failed to start screen capture:', error);
     isCapturing = false;
+    if (app.quitting) return;
+    console.error('Failed to start screen capture:', error);
     if (mainWindow) {
       mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
         `Failed to start screen capture: ${error instanceof Error ? error.message : String(error)}`
@@ -431,6 +435,7 @@ async function closeAllCaptureWindows() {
 
 function setupCaptureWindowEvents(captureWindow: BrowserWindow, displayId: number) {
   captureWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    if (app.quitting) return;
     console.error(`Capture window for display ${displayId} failed to load:`, errorDescription);
     if (mainWindow) {
       mainWindow.webContents.send(IPC_CHANNELS.CAPTURE_ERROR,
@@ -773,6 +778,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
+  if (app.quitting) return;
   if (mainWindow === null) {
     createWindow();
   } else {
@@ -780,12 +786,33 @@ app.on('activate', () => {
   }
 });
 
-app.on('before-quit', () => {
+function stopBackgroundWork() {
   app.quitting = true;
-  keyboardHook.stop();
+  try {
+    keyboardHook.stop();
+  } catch (error) {
+    console.error('Failed to stop keyboard hook during shutdown:', error);
+  }
   captureWindowPool.destroyAll();
+}
+
+app.on('before-quit', () => {
+  stopBackgroundWork();
   analyticsClient.shutdown().catch(() => { /* best-effort flush on quit */ });
 });
+
+if (process.platform === 'win32') {
+  app.on('browser-window-created', (_event, window) => {
+    window.once('session-end', () => {
+      if (app.quitting) return;
+      // Windows skips before-quit during shutdown. Stop background work before
+      // Electron closes its windows so capture renderers cannot be rebuilt.
+      stopBackgroundWork();
+      mainWindow = null;
+      app.exit(0);
+    });
+  });
+}
 
 declare global {
   namespace Electron {

@@ -4,6 +4,7 @@ const app = {
   getPath: jest.fn().mockReturnValue('/tmp/test-app'),
   getVersion: jest.fn().mockReturnValue('1.3.1'),
   quit: jest.fn(),
+  exit: jest.fn(),
   on: jest.fn(),
   whenReady: jest.fn().mockResolvedValue(undefined),
   isPackaged: false,

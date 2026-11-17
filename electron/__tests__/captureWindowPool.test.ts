@@ -205,6 +205,24 @@ describe('CaptureWindowPool', () => {
     expect(pool.acquire()).toBeNull();
   });
 
+  it('does not recreate capture windows after shutdown, even with a rebuild queued', async () => {
+    const { pool, created, interfaceLoader } = makePool();
+    let finishLoading!: () => void;
+    interfaceLoader.mockReturnValueOnce(new Promise<void>(resolve => {
+      finishLoading = resolve;
+    }));
+    const preparing = pool.prepare();
+    await pool.prepare();
+
+    pool.destroyAll();
+    finishLoading();
+    await preparing;
+    await pool.prepare();
+
+    expect(created).toHaveLength(1);
+    expect(pool.acquire()).toBeNull();
+  });
+
   it('prepare replaces existing pooled windows', async () => {
     const { pool, created } = makePool();
     await pool.prepare();
